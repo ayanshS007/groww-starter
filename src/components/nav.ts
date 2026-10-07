@@ -1,20 +1,26 @@
-// Navigation items and screen titles for the shell (README 4.1, PLAN item 45:
-// Dashboard and bell stay hidden until Stage 3d).
+// Navigation items and screen titles for the shell (README 4.1). Stage 3d turns
+// on the Dashboard tab: 5 mobile tabs and 6 sidebar items.
 import type { ScreenId } from '../lib/routes';
 import type { IconName } from './Icon';
 
-export type NavId = 'home' | 'explore' | 'portfolio' | 'learn' | 'you';
+export type NavId = 'home' | 'dashboard' | 'explore' | 'portfolio' | 'learn' | 'you';
 
 export type NavItem = { id: NavId; label: string; to: string; icon: IconName; mobile: boolean };
 
-/** Desktop order; mobile shows the items with mobile: true in the same order. */
+/** Desktop sidebar order: Home · Dashboard · Explore · Portfolio · Learn · You. */
 export const NAV_ITEMS: NavItem[] = [
   { id: 'home', label: 'Home', to: '/home', icon: 'home', mobile: true },
+  { id: 'dashboard', label: 'Dashboard', to: '/dashboard', icon: 'dashboard', mobile: true },
   { id: 'explore', label: 'Explore', to: '/explore', icon: 'explore', mobile: true },
   { id: 'portfolio', label: 'Portfolio', to: '/portfolio', icon: 'portfolio', mobile: true },
   { id: 'learn', label: 'Learn', to: '/learn', icon: 'book', mobile: false },
   { id: 'you', label: 'You', to: '/you', icon: 'user', mobile: true },
 ];
+
+/** Mobile tab order: Home · Explore · Dashboard · Portfolio · You (Learn is the top-bar book icon). */
+const MOBILE_ORDER: NavId[] = ['home', 'explore', 'dashboard', 'portfolio', 'you'];
+
+export const MOBILE_NAV: NavItem[] = MOBILE_ORDER.map((id) => NAV_ITEMS.find((n) => n.id === id)!).filter((n) => n.mobile);
 
 const ACTIVE: Partial<Record<ScreenId, NavId>> = {
   home: 'home',
@@ -30,6 +36,7 @@ const ACTIVE: Partial<Record<ScreenId, NavId>> = {
   glossary: 'learn',
   you: 'you',
   review: 'you',
+  dashboard: 'dashboard',
 };
 
 export function activeNav(screen: ScreenId): NavId | undefined {
@@ -57,4 +64,6 @@ export const SCREEN_TITLE: Record<ScreenId, string> = {
   glossary: 'Glossary',
   you: 'You',
   review: 'Reviewer tools',
+  dashboard: 'Dashboard',
+  notifications: 'Notifications',
 };
