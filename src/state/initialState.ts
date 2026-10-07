@@ -18,7 +18,7 @@ export function createInitialState(today: ISODate): State {
     orders: [],
     goals: [],
     watchlist: [],
-    prefs: { view: 'starter', stockBudgetPct: DEFAULT_STOCK_BUDGET_PCT, readinessPassed: false, notif: defaultNotifPrefs() },
+    prefs: { view: 'starter', proUnlocked: false, stockBudgetPct: DEFAULT_STOCK_BUDGET_PCT, readinessPassed: false, notif: defaultNotifPrefs() },
     market: { scenario: 'normal', week: 0, history: [], startDate: today },
     activity: [],
     readNotifications: [],

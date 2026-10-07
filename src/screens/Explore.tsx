@@ -1,6 +1,7 @@
 // S7 Explore hub (README 9 item 7). Starter view: hub tiles (funds, stocks), one plain
 // "Markets this week" line, collections preview. No index strip, no movers.
-// Pro view (README 9 item 22, PLAN S31) lives in ExplorePro.
+// Pro view (README 9 item 22, PLAN S31) lives in ExplorePro. While Pro is locked, the hub
+// carries the one upgrade banner and the locked index strip and watchlist table (Stage 6b).
 import { ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
 import { Chip } from '../components/Chip';
@@ -13,11 +14,17 @@ import { useAmbience } from '../components/useAmbience';
 import { buildPath } from '../lib/routes';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
+import { IndexStrip } from '../components/IndexStrip';
+import { ProGate, useUpgradeBanner } from '../components/ProGate';
+import { UpgradeBanner } from '../components/UpgradeBanner';
+import { WatchlistSample } from '../components/WatchlistSample';
+import { proViewOn } from '../lib/pro';
+import { indexQuotes } from '../lib/proView';
 import { ExplorePro } from './ExplorePro';
 
 export function Explore({ query = {} }: { query?: Record<string, string> }) {
   const { state } = useStore();
-  if (state.prefs.view === 'pro') return <ExplorePro query={query} />;
+  if (proViewOn(state)) return <ExplorePro query={query} />;
   return <ExploreStarter />;
 }
 
@@ -25,12 +32,19 @@ function ExploreStarter() {
   const { state } = useStore();
   const { weekend } = useAmbience();
   const saved = state.watchlist.filter((id) => FUNDS.some((f) => f.id === id)).length;
+  const banner = useUpgradeBanner();
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-bold text-ink">Explore</h1>
         <p className="mt-1 text-base text-ink-muted">Look around at your own pace. Nothing here is a tip.</p>
       </header>
+
+      {banner && <UpgradeBanner />}
+
+      <ProGate label="Sample index strip">
+        <IndexStrip quotes={indexQuotes(state.market)} />
+      </ProGate>
 
       <Card tint="mint" pad="lg" aria-labelledby="funds-tile">
         <div className="flex items-start gap-4">
@@ -79,6 +93,10 @@ function ExploreStarter() {
           {MARKETS_THIS_WEEK[state.market.scenario]} <span className="text-ink-muted">Sample data.</span>
         </span>
       </p>
+
+      <ProGate label="Watchlist table with 52-week range" preview={<WatchlistSample />}>
+        {null}
+      </ProGate>
 
       <section aria-labelledby="collections-title">
         <h2 id="collections-title" className="text-lg font-semibold text-ink">

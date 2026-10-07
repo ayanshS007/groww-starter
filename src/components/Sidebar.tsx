@@ -5,13 +5,13 @@ import type { State } from '../state/types';
 import { Icon } from './Icon';
 import { NAV_ITEMS, type NavId } from './nav';
 import { PlanSummaryCard } from './PlanSummaryCard';
-import { useViewName, Wordmark } from './Wordmark';
+import { useBrandName, Wordmark } from './Wordmark';
 
 export function Sidebar({ active, state }: { active?: NavId; state: State }) {
-  const view = useViewName();
+  const brand = useBrandName();
   return (
     <aside className="sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col border-r border-border bg-surface px-4 py-6 lg:flex">
-      <Link to="/home" className="mb-8 flex min-h-tap items-center px-3" aria-label={`Groww ${view}, Home`}>
+      <Link to="/home" className="mb-8 flex min-h-tap items-center px-3" aria-label={`${brand}, Home`}>
         <Wordmark />
       </Link>
       <nav aria-label="Main">

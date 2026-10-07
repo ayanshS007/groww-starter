@@ -60,6 +60,9 @@ export function parseSavedState(raw: string | null, today: ISODate): State | nul
   if (!isObject(data.user)) return null;
   const fresh = createInitialState(today);
   const prefs = isObject(data.prefs) ? data.prefs : {};
+  // Stage 6b: Pro is earned. Someone who already passed the quick check keeps it;
+  // a saved "Pro view" without it goes back to Starter.
+  const proUnlocked = prefs.proUnlocked === true || (prefs.proUnlocked === undefined && prefs.readinessPassed === true);
   return {
     ...fresh,
     ...(data as Partial<State>),
@@ -67,6 +70,8 @@ export function parseSavedState(raw: string | null, today: ISODate): State | nul
     prefs: {
       ...fresh.prefs,
       ...(prefs as Partial<State['prefs']>),
+      proUnlocked,
+      view: proUnlocked && prefs.view === 'pro' ? 'pro' : 'starter',
       notif: { ...fresh.prefs.notif, ...(isObject(prefs.notif) ? (prefs.notif as State['prefs']['notif']) : {}) },
     },
     market: market as unknown as State['market'],

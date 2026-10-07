@@ -23,6 +23,7 @@ import {
 } from '../lib/explore';
 import { buildPath } from '../lib/routes';
 import { Link } from '../router';
+import { proViewOn } from '../lib/pro';
 import { useStore } from '../state/store';
 
 function initialFilters(query: Record<string, string>): FundFilters {
@@ -47,7 +48,7 @@ export function Funds({ query }: { query: Record<string, string> }) {
   const inPlan = planFundIds(state);
   const from: From = filters.query.trim() ? 'search' : filters.collection ? 'collection' : 'link';
   const extra = sheetFilterCount(filters);
-  const pro = state.prefs.view === 'pro';
+  const pro = proViewOn(state);
   const collections = [...COLLECTIONS.map((c) => ({ id: c.id as CollectionId | 'saved', label: c.label })), { id: 'saved' as const, label: 'Saved' }];
 
   return (

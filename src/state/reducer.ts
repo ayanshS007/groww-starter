@@ -74,6 +74,8 @@ export type Action =
   | { type: 'setStockBudget'; pct: number }
   | { type: 'passReadiness'; passed: boolean }
   | { type: 'setView'; view: 'starter' | 'pro' }
+  | { type: 'unlockPro' }
+  | { type: 'lockPro' }
   | { type: 'setNotifPref'; kind: NotifKind; on: boolean }
   | { type: 'markNotificationsRead'; ids: string[] }
   | { type: 'seeMilestone'; id: MilestoneId }
@@ -450,9 +452,19 @@ export function reducer(state: State, action: Action): State {
       return { ...state, prefs: { ...state.prefs, stockBudgetPct: Math.min(100, Math.max(1, Math.round(action.pct))) } };
 
     case 'passReadiness':
+      // Passing the quick check (4 of 5) unlocks Pro and turns Pro view on. A fail changes nothing.
+      if (action.passed && !state.prefs.proUnlocked) return reducer(state, { type: 'unlockPro' });
       return { ...state, prefs: { ...state.prefs, readinessPassed: state.prefs.readinessPassed || action.passed } };
 
+    case 'unlockPro':
+      return { ...state, prefs: { ...state.prefs, readinessPassed: true, proUnlocked: true, view: 'pro' } };
+
+    case 'lockPro':
+      return { ...state, prefs: { ...state.prefs, readinessPassed: false, proUnlocked: false, view: 'starter' } };
+
     case 'setView':
+      // Pro view needs Pro to be unlocked first.
+      if (action.view === 'pro' && !state.prefs.proUnlocked) return state;
       return { ...state, prefs: { ...state.prefs, view: action.view } };
 
     case 'setNotifPref':

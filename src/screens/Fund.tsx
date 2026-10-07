@@ -1,6 +1,13 @@
 // S9 Fund detail (README 9 item 8, PLAN item 28). All three Confidence blocks
 // visible without tabs (Starter view), a fit banner when the fund differs from
 // the plan, illustrative range band, costs as Terms, sticky actions.
+import { ChartRanges } from '../components/ChartRanges';
+import { FundCompare } from '../components/FundCompare';
+import { FundMetrics } from '../components/FundMetrics';
+import { ProGate, useProMode } from '../components/ProGate';
+import { sliceRange, type ChartRange } from '../lib/chartRanges';
+import { proViewOn } from '../lib/pro';
+import { useState } from 'react';
 import { BackLink } from '../components/BackLink';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -41,6 +48,8 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
     />
   );
   const saved = state.watchlist.includes(fund.id);
+  const [range, setRange] = useState<ChartRange>('All');
+  const live = useProMode() === 'live';
 
   const start = (type: InvestType) => {
     const planAmount = type === 'sip' && fit.bucket && fit.bucket.amount >= fund.minSip ? fit.bucket.amount : undefined;
@@ -132,9 +141,12 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
           <Sparkline
             className="mt-3"
             height={72}
-            points={fund.sparkline}
+            points={live ? sliceRange(fund.sparkline, range) : fund.sparkline}
             label={`Sample price trend for ${fund.name}, 24 points. Illustrative data.`}
           />
+          <ProGate label="More chart ranges" className="mt-3">
+            <ChartRanges value={range} onChange={setRange} />
+          </ProGate>
           <h3 className="mt-6 text-base font-semibold text-ink">A year can look like this</h3>
           <p className="mt-1 text-sm text-ink-muted">
             Sample 1-year range for funds of this type. Real results differ, and a year can fall outside it.
@@ -142,7 +154,15 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
           <RangeBand className="mt-4" low={fund.illustrativeRange1y.low} high={fund.illustrativeRange1y.high} />
         </Card>
 
-        {state.prefs.view === 'pro' ? (
+        <ProGate label="Extra fund numbers">
+          <FundMetrics fund={fund} />
+        </ProGate>
+
+        <ProGate label="Compare two funds">
+          <FundCompare fund={fund} />
+        </ProGate>
+
+        {proViewOn(state) ? (
           // Pro view keeps the Confidence Layer one tap away (README 9, Starter vs Pro).
           <details className="group rounded-card border border-border bg-surface">
             <summary className="flex min-h-tap cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 font-semibold text-brand-text">

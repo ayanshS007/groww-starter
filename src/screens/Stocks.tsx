@@ -3,6 +3,10 @@
 // allowed), main risk, stock budget status, "Why is intraday hidden?".
 // No gainers/losers, most bought, target prices, tips, F&O or intraday buttons.
 import { useState } from 'react';
+import { ChartRanges } from '../components/ChartRanges';
+import { MoreOrderTypes } from '../components/MoreOrderTypes';
+import { ProGate, useProMode } from '../components/ProGate';
+import { sliceRange, type ChartRange } from '../lib/chartRanges';
 import { AmountInput } from '../components/AmountInput';
 import { BackLink } from '../components/BackLink';
 import { Button } from '../components/Button';
@@ -17,6 +21,7 @@ import { Sparkline } from '../components/Sparkline';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { getStock, STOCKS } from '../data/stocks';
+import { proViewOn } from '../lib/pro';
 import { searchStocks } from '../lib/explore';
 import { formatINR, formatPct, formatUnits } from '../lib/format';
 import { currentNav, portfolioValue, stockValue } from '../lib/market';
@@ -39,7 +44,7 @@ export function StocksList({ query = {} }: { query?: Record<string, string> }) {
   const [size, setSize] = useState<StockSize | null>(null);
   const [q, setQ] = useState(query.q ?? '');
   const list = searchStocks(STOCKS, q).filter((s) => !size || s.sizeLabel === size);
-  const starter = state.prefs.view === 'starter';
+  const starter = !proViewOn(state);
 
   return (
     <div className="space-y-6">
@@ -146,6 +151,8 @@ export function StockDetail({ id }: { id: string }) {
   const { state, dispatch } = useStore();
   const toast = useToast();
   const [why, setWhy] = useState(false);
+  const [range, setRange] = useState<ChartRange>('All');
+  const live = useProMode() === 'live';
   const [amountText, setAmountText] = useState(String(EXAMPLE_AMOUNT));
   const stock = getStock(id)!;
   const price = currentNav(stock.id, state.market);
@@ -199,8 +206,12 @@ export function StockDetail({ id }: { id: string }) {
           </div>
           <p className="mt-3 text-4xl font-extrabold tabular-nums text-ink">{formatINR(price, 2)}</p>
           <p className="text-sm text-ink-muted">per share, sample data</p>
-          <Sparkline className="mt-4" height={72} points={stock.sparkline} label={`Sample price trend for ${stock.name}, 24 points. Illustrative data.`} />
+          <Sparkline className="mt-4" height={72} points={live ? sliceRange(stock.sparkline, range) : stock.sparkline} label={`Sample price trend for ${stock.name}, 24 points. Illustrative data.`} />
         </Card>
+
+        <ProGate label="More chart ranges" className="-mt-3">
+          <ChartRanges value={range} onChange={setRange} />
+        </ProGate>
 
         <Card pad="lg" tint="mint" aria-labelledby="buys-title">
           <h2 id="buys-title" className="text-lg font-semibold text-ink">
@@ -262,6 +273,10 @@ export function StockDetail({ id }: { id: string }) {
             Why is intraday hidden?
           </button>
         </Note>
+
+        <ProGate label="More order types">
+          <MoreOrderTypes />
+        </ProGate>
 
         <Disclaimer />
       </div>

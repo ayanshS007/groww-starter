@@ -173,6 +173,33 @@ export function ReviewerTools({ compact = false, onDone }: { compact?: boolean; 
 
       <MoodPreview compact={compact} />
 
+      <Card pad={compact ? 'sm' : 'md'}>
+        <H className="text-base font-semibold text-ink">Pro</H>
+        <p className="mt-1 text-sm text-ink-muted">
+          Pro is {state.prefs.proUnlocked ? 'unlocked' : 'locked'}. Unlock turns Pro view on; Lock puts everything back to Starter.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              dispatch({ type: 'unlockPro' });
+              toast.show('Pro unlocked. Pro view is on.');
+            }}
+          >
+            Unlock Pro
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              dispatch({ type: 'lockPro' });
+              toast.show('Pro locked.');
+            }}
+          >
+            Lock Pro
+          </Button>
+        </div>
+      </Card>
+
       <PayCredit key={state.user.persona ?? 'none'} compact={compact} onDone={onDone} />
 
       <Card pad={compact ? 'sm' : 'md'}>

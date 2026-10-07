@@ -1,5 +1,5 @@
 // S19 You (README 9 item 18). Account, verification status, bank and autopay,
-// Redo check-in, Starter/Pro view, stock budget and readiness, notification
+// Redo check-in, Pro view (once unlocked), stock budget and readiness, notification
 // toggles, Help, About, Reviewer tools, Log out.
 // No theme toggle, language switcher or referral offers.
 import { useState, type ReactNode } from 'react';
@@ -10,7 +10,6 @@ import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
-import { ViewToggle } from '../components/ViewToggle';
 import { HELP_FAQS } from '../data/learn';
 import { realToday } from '../lib/dates';
 import { maskMobile } from '../lib/format';
@@ -142,17 +141,29 @@ export function You() {
         </ul>
       </Card>
 
-      <Card aria-labelledby="view-title">
-        <h2 id="view-title" className="text-lg font-semibold text-ink">
-          App view
-        </h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          Starter keeps things simple. Pro shows denser lists, sample market data and a watchlist table. Switch back any time.
-        </p>
-        <div className="mt-4">
-          <ViewToggle />
-        </div>
-      </Card>
+      {state.prefs.proUnlocked && (
+        <Card aria-labelledby="view-title">
+          <h2 id="view-title" className="text-lg font-semibold text-ink">
+            Pro
+          </h2>
+          <ul className="mt-1 divide-y divide-border">
+            <Row
+              title="Pro view"
+              detail="Shows your Pro features: more chart ranges, index strip, watchlist table, compare, extra fund numbers and analytics. Off keeps the simple Starter look."
+              action={
+                <Switch
+                  on={state.prefs.view === 'pro'}
+                  label="Pro view"
+                  onChange={(on) => {
+                    dispatch({ type: 'setView', view: on ? 'pro' : 'starter' });
+                    toast.show(on ? 'Pro view on.' : 'Pro view off. Your Pro stays unlocked.');
+                  }}
+                />
+              }
+            />
+          </ul>
+        </Card>
+      )}
 
       <Card aria-labelledby="stocks-title">
         <h2 id="stocks-title" className="text-lg font-semibold text-ink">
