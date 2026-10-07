@@ -435,15 +435,29 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
         const lower = text(html).toLowerCase();
         for (const w of ALARM_WORDS) expect(lower, `${name} ${scenario}`).not.toContain(w);
         expect(html, `${name} ${scenario}`).not.toMatch(/market-down|text-red|bg-red|border-red/);
-        expect(lower).toContain('this week:');
+        expect(lower).toMatch(/this week[: ]/);
       }
     });
   }
 
-  it('an up week after a big dip keeps the big-dip words (overall is still ≤ −10%), then turns calm once it recovers', () => {
+  it('an up week while still ≤ −10% overall leads with the gain, says the total is below what was put in, and keeps Review optional', () => {
     const oneUp = advance(riya, 1, 'up');
-    expect(portfolioIn(oneUp)).toContain('This week: +');
-    expect(portfolioIn(oneUp)).toContain('bigger fall than usual'); // PLAN item 15, rule 1 comes first
+    for (const [name, html] of [['Portfolio', renderAt('#/portfolio', oneUp)], ['Home', renderAt('#/home', oneUp)]] as const) {
+      expect(text(html), name).toMatch(/Up ₹[\d,]+ \(\+2\.4%\) this week\./);
+    }
+    const t = portfolioIn(oneUp);
+    expect(t).toContain('below what you put in');
+    expect(t).toContain('Nothing needs doing');
+    expect(t).toContain('Review my plan (optional)');
+    expect(t).not.toContain('lock in the fall');
+    expect(t).not.toContain('Worth a look'); // not the amber caution card
+    const lower = t.toLowerCase();
+    for (const w of ALARM_WORDS) expect(lower).not.toContain(w);
+    expect(renderAt('#/portfolio', oneUp)).not.toMatch(/text-red|bg-red|market-down/);
+    // a down or flat-sized week at the same overall level keeps the original words
+    expect(portfolioIn(advance(riya, 1, 'dip_small'))).toContain('lock in the fall');
+  });
+  it('turns calm once the overall change is back above −10%', () => {
     const recovered = advance(riya, 3, 'up');
     expect(portfolioIn(recovered)).toContain('One week is not a trend');
     expect(portfolioIn(recovered)).not.toContain('Review my plan');
@@ -462,15 +476,15 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
     let s = riya;
     for (const sc of ['dip_sharp', 'normal', 'up', 'dip_small'] as const) {
       s = advance(s, 1, sc);
-      heads.add(portfolioIn(s).match(/This week: [^.]*\.\d*[^.]*%\)/)?.[0] ?? '');
+      heads.add(portfolioIn(s).match(/(?:This week: |Up )[^)]*\)/)?.[0] ?? '');
     }
     expect(heads.size).toBe(4);
   });
 
   it('Advance one week ×3 keeps the insight and the numbers consistent between Home and Portfolio', () => {
     const s = advance(riya, 3, 'dip_small');
-    const p = portfolioIn(s).match(/This week: ([^)]*\))/)?.[1];
-    const h = homeIn(s).match(/This week: ([^)]*\))/)?.[1];
+    const p = portfolioIn(s).match(/(?:This week: |Up )([^)]*\))/)?.[1];
+    const h = homeIn(s).match(/(?:This week: |Up )([^)]*\))/)?.[1];
     expect(p).toBeDefined();
     expect(p).toBe(h);
   });
@@ -487,5 +501,38 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
     const html = renderAt('#/home', riya);
     expect(html).toMatch(/aria-live="polite"[^>]*>(<p class="flex gap-2 rounded-card-sm)/);
     expect(renderAt('#/portfolio', riya)).toMatch(/aria-label="This week"/);
+  });
+});
+
+describe('Home after a stop: quiet, not pushy (owner decision)', () => {
+  const riya = buildPersona('riya', TODAY);
+  const stopped = run(riya, { type: 'stopSip', sipId: 'sip_1', reason: 'market_fell' });
+  const homeHtml = renderAt('#/home', stopped);
+  const home = text(homeHtml);
+
+  it('Riya has her cushion SIP missing, so the card is not asked to restart anything for the stopped part', () => {
+    // Riya's cushion part was never set up, so that card is still the one she sees; the stopped grow part is not offered.
+    expect(home).toContain('Set up your cushion SIP');
+    expect(home).not.toContain('Set up your grow SIP');
+    expect(home).not.toContain('Restart my plan');
+  });
+  it('shows the one quiet line with a Restart link to that fund', () => {
+    expect(home).toContain('One part of your plan isn’t running. Restart any time.');
+    expect(homeHtml).toContain('href="#/invest/index50?amount=2000"');
+    expect((home.match(/Restart any time/g) ?? []).length).toBe(1);
+  });
+  it('with the cushion part running too, the card moves on to “You’re set” and the line is the only mention', () => {
+    const both = run(startSip(withCheckin(fresh()), 'liquid1', 2000), { type: 'startInvestDraft', draft: { mode: 'single', fundId: 'index50', type: 'sip', amount: 2000, dayOfMonth: 10, step: 'review', riskAck: true } }, { type: 'placeInvestOrder' }, { type: 'stopSip', sipId: 'sip_2', reason: 'none' });
+    const t = text(renderAt('#/home', both));
+    expect(t).toMatch(/You’re set\. Next SIP on /);
+    expect(t).not.toContain('Set up your grow SIP');
+    expect(t).toContain('One part of your plan isn’t running. Restart any time.');
+  });
+  it('after 5 weeks the card is back and the line is gone', () => {
+    const later = text(renderAt('#/home', advance(stopped, 5, 'normal')));
+    expect(later).not.toContain('Restart any time');
+  });
+  it('no line when nothing was stopped', () => {
+    expect(text(renderAt('#/home', riya))).not.toContain('Restart any time');
   });
 });
