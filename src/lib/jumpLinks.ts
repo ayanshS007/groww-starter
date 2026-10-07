@@ -9,6 +9,9 @@ export function jumpLinks(state: State): JumpLink[] {
   const order = state.orders.find((o) => o.type !== 'redeem');
   const holding = state.holdings.find((h) => h.units > 0) ?? state.holdings[0];
   const sip = state.sips.find((s) => s.status !== 'stopped') ?? state.sips[0];
+  const goal = state.goals[0];
+  // A sample company priced above ₹1,000, so “₹1,000 buys 0 shares” is easy to find.
+  const stock = state.holdings.find((h) => h.kind === 'stock')?.assetId ?? 'stk_voltara';
   const fill: Record<string, { value?: string; missing: string }> = {
     step: { value: '1', missing: '' },
     id: { value: 'index50', missing: '' },
@@ -31,12 +34,17 @@ export function jumpLinks(state: State): JumpLink[] {
           if (!sip) note = 'needs a SIP; redirects';
           return sip?.id ?? 'none';
         }
+        if (key === 'id' && all[i - 1] === 'goal') {
+          if (!goal) note = 'needs a goal; redirects';
+          return goal?.id ?? 'none';
+        }
+        if (key === 'id' && all[i - 1] === 'stock') return stock;
         const f = fill[key];
         if (!f?.value) note = f?.missing || 'redirects';
         return f?.value ?? 'none';
       })
       .join('/');
-    if ((pattern === '/plan' || pattern === '/invest/plan') && !state.plan) note = 'needs a check-in; redirects';
+    if ((pattern === '/plan' || pattern === '/invest/plan' || pattern === '/payday') && !state.plan) note = 'needs a check-in; redirects';
     if ((pattern === '/checkin/:step' || pattern === '/kyc/:step') && !state.user.signedUp) note = 'needs sign-up; redirects';
     if (pattern === '/signup' && state.user.signedUp) note = 'already signed up; redirects';
     if (pattern === '/kyc/:step' && state.user.kyc === 'done') note = 'already verified; redirects';

@@ -5,6 +5,7 @@
 import { nextId, postInstalment } from '../lib/activity';
 import { addDays, addMonths, dayOfMonth } from '../lib/dates';
 import { simDate } from '../lib/market';
+import { earnedMilestones } from '../lib/milestones';
 import { buildPlan } from '../lib/planner';
 import { createInitialState } from '../state/initialState';
 import type { CheckinAnswers, FundId, ISODate, Order, PersonaId, Scenario, Sip, State } from '../state/types';
@@ -210,5 +211,10 @@ export function buildPersona(id: PersonaId, today: ISODate): State {
     };
   }
 
-  return { ...s, market: { ...s.market, scenario: seed.scenario } };
+  // Milestones earned before this week happened "in the past": treat them as seen,
+  // so Home only shows one earned from here on (README 8.10: shown once).
+  const seenMilestones = earnedMilestones(s)
+    .filter((m) => m.week < s.market.week)
+    .map((m) => m.id);
+  return { ...s, seenMilestones, market: { ...s.market, scenario: seed.scenario } };
 }

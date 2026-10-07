@@ -163,7 +163,17 @@ export function SipDetail({ id }: { id: string }) {
             <Row label={stopped ? 'Stopped' : paused ? 'Restarts' : 'Next instalment'}>
               {stopped ? (sip.stoppedAt ? dateLabel(sip.stoppedAt) : 'Stopped') : paused ? (sip.pausedUntil ? `after ${dateLabel(sip.pausedUntil)}` : 'Paused') : facts.next}
             </Row>
-            <Row label="Linked goal">{goal ?? <span className="font-normal text-ink-muted">None yet</span>}</Row>
+            <Row label="Linked goal">
+              {goal && sip.goalId ? (
+                <Link to={`/portfolio/goal/${sip.goalId}`} className="inline-flex min-h-tap items-center text-brand-text underline-offset-4 hover:underline">
+                  {goal}
+                </Link>
+              ) : (
+                <Link to="/portfolio/goals" className="inline-flex min-h-tap items-center font-normal text-brand-text underline-offset-4 hover:underline">
+                  None yet · link one in Goals
+                </Link>
+              )}
+            </Row>
           </dl>
         </Card>
 

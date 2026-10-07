@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { advance, fresh, oneTime, run, startSip } from '../test/fixtures';
+import { buildPersona } from '../data/personas';
+import { advance, fresh, oneTime, run, startSip, TODAY, withCheckin } from '../test/fixtures';
 import { earnedMilestones, MILESTONE_COPY, nextUnseen } from './milestones';
 
 const ids = (s: Parameters<typeof earnedMilestones>[0]) => earnedMilestones(s).map((m) => m.id);
@@ -61,5 +62,26 @@ describe('milestones', () => {
   it('has calm copy with no streak or confetti language', () => {
     const text = JSON.stringify(MILESTONE_COPY).toLowerCase();
     for (const w of ['streak', 'confetti', 'points', 'don’t break', "don't break"]) expect(text).not.toContain(w);
+  });
+});
+
+describe('milestones on demo personas (shown once)', () => {
+  it('milestones earned before the current week start as seen, so Home starts calm', () => {
+    for (const p of ['riya', 'meera', 'arjun', 'kabir'] as const) expect(nextUnseen(buildPersona(p, TODAY))).toBeNull();
+  });
+  it('Meera’s third instalment shows “3 instalments made” once; Got it hides it for good', () => {
+    let s = buildPersona('meera', TODAY);
+    s = advance(s, 5);
+    expect(nextUnseen(s)).toBe('instalments_3');
+    s = run(s, { type: 'seeMilestone', id: 'instalments_3' });
+    expect(nextUnseen(s)).toBeNull();
+    s = run(s, { type: 'skipNext', sipId: 'sip_1' });
+    s = advance(s, 5);
+    expect(earnedMilestones(s).map((m) => m.id)).toContain('instalments_3');
+    expect(nextUnseen(s)).toBeNull();
+  });
+  it('a first investment on a fresh account shows the first-investment card', () => {
+    const s = startSip(withCheckin(fresh()), 'index50', 500);
+    expect(nextUnseen(s)).toBe('first_investment');
   });
 });

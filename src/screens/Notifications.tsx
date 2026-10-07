@@ -7,7 +7,6 @@ import { Icon, type IconName } from '../components/Icon';
 import { useToast } from '../components/Toast';
 import { dateLabel } from '../lib/format';
 import { deriveNotifications, groupNotifications, type Notification } from '../lib/notifications';
-import { routeExists } from '../lib/routes';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
 import type { NotifKind } from '../state/types';
@@ -22,17 +21,12 @@ const KIND_ICON: Record<NotifKind, IconName> = {
   kyc_pending: 'shield',
 };
 
-/** Goal screens arrive later in Stage 3d; until then goal items open the Dashboard's Goals card. */
-function target(n: Notification): string {
-  if (routeExists(n.route)) return n.route;
-  return n.kind === 'goal_progress' ? '/dashboard' : '/home';
-}
 
 function Item({ n }: { n: Notification }) {
   const { dispatch } = useStore();
   const open = () => {
     if (!n.read) dispatch({ type: 'markNotificationsRead', ids: [n.id] });
-    navigate(target(n));
+    navigate(n.route);
   };
   return (
     <li>

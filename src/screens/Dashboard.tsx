@@ -9,6 +9,7 @@ import { Card } from '../components/Card';
 import { ChangeText } from '../components/ChangeText';
 import { Chip } from '../components/Chip';
 import { Disclaimer } from '../components/Disclaimer';
+import { GoalRow } from '../components/GoalRow';
 import { Donut } from '../components/Donut';
 import { Icon, type IconName } from '../components/Icon';
 import { INSIGHT_TONE } from '../components/InsightCard';
@@ -36,7 +37,6 @@ import {
   type Period,
 } from '../lib/dashboard';
 import { dateLabel, formatINR, formatSigned, keepSignsTogether } from '../lib/format';
-import { goalProgress, goalValue, monthlyNeeded, WITHOUT_RETURNS } from '../lib/goals';
 import { insightFromState } from '../lib/insight';
 import { overallChange, portfolioValue, simToday, totalInvested, weekChange } from '../lib/market';
 import { nextStep, upcomingSips } from '../lib/nextStep';
@@ -272,7 +272,7 @@ function HealthCard({ state }: { state: State }) {
       </h2>
       <ul className="mt-2 divide-y divide-border">
         {planHealth(state).map((c) => {
-          const link = healthLink(c, state);
+          const link = healthLink(c);
           const pill = HEALTH_PILL[c.status];
           return (
             <li key={c.id} className="py-3">
@@ -342,43 +342,25 @@ function SipsCard({ state }: { state: State }) {
 }
 
 function GoalsCard({ state }: { state: State }) {
-  const today = simToday(state.market);
   return (
     <Card pad="md" aria-labelledby="goals-title">
       <h2 id="goals-title" className={cardTitle}>
         Goals
       </h2>
       {state.goals.length === 0 ? (
-        <p className="mt-3 text-base text-ink-muted">No goals yet. You’ll be able to set one here soon.</p>
+        <p className="mt-3 text-base text-ink-muted">No goals yet. A goal shows how much a month gets you there, without counting returns.</p>
       ) : (
-        <ul className="mt-3 space-y-4">
-          {state.goals.map((g) => {
-            const value = goalValue(state, g);
-            const { pct } = goalProgress(g.target, value);
-            const needed = monthlyNeeded(g, value, today);
-            return (
-              <li key={g.id} className="rounded-card-sm bg-surface2 p-4">
-                <div className="flex items-baseline justify-between gap-2">
-                  <p className="font-semibold text-ink">{g.name}</p>
-                  <p className="text-sm tabular-nums text-ink-muted">{Math.round(pct)}%</p>
-                </div>
-                <p className="mt-1 text-sm tabular-nums text-ink">
-                  {formatINR(value)} of {formatINR(g.target)} · by {dateLabel(g.byDate, { short: true })}
-                </p>
-                <ProgressBar className="mt-2" value={Math.round(pct)} label={`${g.name}: ${Math.round(pct)}% of target`} />
-                <p className="mt-2 text-sm text-ink">
-                  {needed === null
-                    ? 'The date has passed. Pick a new one to keep tracking it.'
-                    : needed === 0
-                      ? 'Target reached.'
-                      : `${formatINR(needed)}/month needed`}
-                  {needed !== null && needed > 0 && <span className="block text-xs text-ink-muted">{WITHOUT_RETURNS}</span>}
-                </p>
-              </li>
-            );
-          })}
+        <ul className="mt-3 space-y-3">
+          {state.goals.map((g) => (
+            <li key={g.id}>
+              <GoalRow goal={g} state={state} />
+            </li>
+          ))}
         </ul>
       )}
+      <Link to="/portfolio/goals" className={textLink}>
+        {state.goals.length === 0 ? 'Create a goal' : 'See all goals'} <Icon name="chevronRight" size={16} />
+      </Link>
     </Card>
   );
 }

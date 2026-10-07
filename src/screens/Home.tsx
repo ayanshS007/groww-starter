@@ -1,10 +1,12 @@
 // S5 Home (README 9 item 5, PLAN C6): "What should I do next?" One primary
-// action (the Next-step card). No news, indices, gainers/losers or banners.
+// action (the Next-step card). P1: "Got paid? Split it" and a calm milestone
+// card. No news, indices, gainers/losers or banners.
 import { Button, ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
 import { Disclaimer } from '../components/Disclaimer';
 import { Icon, type IconName } from '../components/Icon';
 import { InsightLine } from '../components/InsightCard';
+import { MilestoneCard } from '../components/MilestoneCard';
 import { NextStepCard } from '../components/NextStepCard';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { Term } from '../components/Term';
@@ -13,6 +15,7 @@ import { getFund } from '../data/funds';
 import { dateLabel, formatINR, formatSigned } from '../lib/format';
 import { insightFromState } from '../lib/insight';
 import { overallChange, portfolioValue, totalInvested } from '../lib/market';
+import { nextUnseen } from '../lib/milestones';
 import { greeting, nextStep, quietRestart, statusLine, upcomingSips } from '../lib/nextStep';
 import { Link } from '../router';
 import { useStore } from '../state/store';
@@ -140,6 +143,21 @@ function UpcomingSip() {
   );
 }
 
+/** README 9 item 5 (P1): "Got paid? Split it" → Payday Split. */
+function PaydayCard() {
+  return (
+    <Card tint="sky" pad="lg" aria-labelledby="payday-title">
+      <h2 id="payday-title" className="flex items-center gap-2 text-lg font-semibold text-ink">
+        <Icon name="wallet" size={20} /> Got paid? Split it
+      </h2>
+      <p className="mt-2 text-base text-ink">See what’s already going to SIPs, a small cushion top-up, and what’s yours to spend.</p>
+      <ButtonLink to="/payday" variant="secondary" className="mt-4 w-full sm:w-auto">
+        Split my pay
+      </ButtonLink>
+    </Card>
+  );
+}
+
 const BROWSE: { to: string; icon: IconName; title: string; body: string; tint: string }[] = [
   { to: '/explore', icon: 'explore', title: 'Look at funds', body: 'Sample funds with plain-English notes.', tint: 'bg-lavender' },
   { to: '/learn/glossary', icon: 'book', title: 'Learn the words', body: 'SIP, NAV and more, in one line each.', tint: 'bg-peach' },
@@ -150,6 +168,7 @@ export function Home() {
   const step = nextStep(state);
   const hasPlan = !!state.plan;
   const quiet = quietRestart(state);
+  const milestone = nextUnseen(state);
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
@@ -186,6 +205,8 @@ export function Home() {
       </div>
       <div className="space-y-6 lg:col-span-5">
         {hasPlan && <PlanSummaryCard state={state} />}
+        {hasPlan && <PaydayCard />}
+        {milestone && <MilestoneCard id={milestone} />}
         <UpcomingSip />
       </div>
       <Disclaimer className="lg:col-span-12" />

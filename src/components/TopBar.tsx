@@ -8,7 +8,7 @@ import { useStore } from '../state/store';
 import { Avatar } from './Avatar';
 import { Icon } from './Icon';
 import { ViewToggle } from './ViewToggle';
-import { Wordmark } from './Wordmark';
+import { useViewName, Wordmark } from './Wordmark';
 
 const iconBtn = 'flex min-h-tap min-w-tap items-center justify-center rounded-full text-ink hover:bg-surface2';
 
@@ -57,10 +57,11 @@ function Bell() {
 }
 
 export function TopBar({ title, name, search = false }: { title: string; name?: string; search?: boolean }) {
+  const view = useViewName();
   return (
     <header className="sticky top-0 z-20 border-b border-border/60 bg-bg/90 pt-safe backdrop-blur">
       <div className="mx-auto flex max-w-tablet items-center gap-2 px-safe py-2 lg:max-w-content lg:px-8 lg:py-3">
-        <Link to="/home" className="flex min-h-tap items-center lg:hidden" aria-label="Groww Starter, Home">
+        <Link to="/home" className="flex min-h-tap items-center lg:hidden" aria-label={`Groww ${view}, Home`}>
           <Wordmark />
         </Link>
         <p className="hidden text-lg font-semibold text-ink lg:block">{title}</p>

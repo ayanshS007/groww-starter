@@ -8,6 +8,7 @@ import { dateLabel, formatINR, ordinal } from './format';
 import { simToday } from './market';
 import { comfortCeiling, defaultSipDay } from './planner';
 import { missingBuckets } from './planStatus';
+import { assetName } from './portfolio';
 
 export const MAX_INVEST = 100_000;
 
@@ -192,7 +193,7 @@ export function checkUpiId(input: string): { ok: true } | { ok: false; error: st
 // ---------- success ----------
 export type SuccessKind = 'plan' | 'first_sip' | 'sip' | 'one_time' | 'buy' | 'redeem';
 
-export type SuccessRow = { fundId: string; name: string; amount: number; role?: PlanBucket['role']; day?: number };
+export type SuccessRow = { fundId: string; name: string; amount: number; role?: PlanBucket['role']; day?: number; units?: number };
 
 export type SuccessInfo = {
   kind: SuccessKind;
@@ -272,9 +273,9 @@ export function successInfo(state: State, orderId: string): SuccessInfo | null {
   return {
     kind: isBuy ? 'buy' : 'redeem',
     headline: isBuy ? 'Order placed (simulated).' : 'Withdrawal placed (simulated).',
-    rows: [{ fundId: order.assetId, name: order.assetId, amount: order.amount }],
+    rows: [{ fundId: order.assetId, name: assetName(order.assetId), amount: order.amount, units: order.units }],
     steps: isBuy
-      ? ['Your order is filled at the sample price.', 'The shares show in your portfolio.', 'Sell any time from the holding.']
+      ? ['Your order is filled at the sample price (simulated).', 'The shares show in your portfolio, held for delivery.', 'Buy more or sell any time from the holding.']
       : ['Your units are removed right away.', 'The money reaches your bank in 1–3 working days.', 'Nothing else changes.'],
     processing: order.status === 'processing',
     single: true,

@@ -1,4 +1,4 @@
-// S7 Explore hub (README 9 item 7). Starter view: hub tiles, one plain
+// S7 Explore hub (README 9 item 7). Starter view: hub tiles (funds, stocks), one plain
 // "Markets this week" line, collections preview. No index strip, no movers.
 // Pro view (README 9 item 22, PLAN S31) lives in ExplorePro.
 import { ButtonLink } from '../components/Button';
@@ -6,6 +6,7 @@ import { Card } from '../components/Card';
 import { Chip } from '../components/Chip';
 import { Icon } from '../components/Icon';
 import { COLLECTIONS, FUNDS } from '../data/funds';
+import { STOCKS } from '../data/stocks';
 import { MARKETS_THIS_WEEK } from '../lib/market';
 import { buildPath } from '../lib/routes';
 import { Link, navigate } from '../router';
@@ -42,6 +43,26 @@ function ExploreStarter() {
             </p>
             <ButtonLink to="/explore/funds" className="mt-4">
               Browse mutual funds
+              <Icon name="chevronRight" size={20} />
+            </ButtonLink>
+          </div>
+        </div>
+      </Card>
+
+      <Card tint="lavender" pad="lg" aria-labelledby="stocks-tile">
+        <div className="flex items-start gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface text-ink">
+            <Icon name="dashboard" size={24} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 id="stocks-tile" className="text-xl font-bold text-ink">
+              Stocks
+            </h2>
+            <p className="mt-1 text-base text-ink">
+              {STOCKS.length} sample companies in beginner mode: delivery only, with your own stock budget.
+            </p>
+            <ButtonLink to="/explore/stocks" variant="secondary" className="mt-4">
+              Browse stocks
               <Icon name="chevronRight" size={20} />
             </ButtonLink>
           </div>

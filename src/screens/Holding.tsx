@@ -1,5 +1,5 @@
 // S14 Holding detail with the Withdraw sheet (README 9 item 11). Funds: Invest
-// more (primary) and Withdraw. Stocks: Sell only until the stock screens land.
+// more (primary) and Withdraw. Stocks: Buy more (primary) and Sell (PLAN item 22).
 import { useState } from 'react';
 import { BackLink } from '../components/BackLink';
 import { Button } from '../components/Button';
@@ -40,7 +40,11 @@ export function HoldingDetail({ id, query = {} }: { id: string; query?: Record<s
 
   const actions = (
     <div className="flex flex-col gap-3">
-      {!isStock && (
+      {isStock ? (
+        <Button block onClick={() => navigate(`/stock/${h.assetId}/buy`)}>
+          Buy more
+        </Button>
+      ) : (
         <Button block onClick={investMore}>
           Invest more
         </Button>
@@ -125,6 +129,13 @@ export function HoldingDetail({ id, query = {} }: { id: string; query?: Record<s
           </Card>
         )}
 
+        {isStock && (
+          <p className="text-sm text-ink-muted">
+            <Link to={`/stock/${h.assetId}`} className="font-semibold text-brand-text underline-offset-4 hover:underline">
+              Read about this company
+            </Link>
+          </p>
+        )}
         {fund && (
           <p className="text-sm text-ink-muted">
             <Link to={`/fund/${fund.id}?from=portfolio`} className="font-semibold text-brand-text underline-offset-4 hover:underline">

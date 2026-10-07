@@ -37,6 +37,13 @@ const ACTIVE: Partial<Record<ScreenId, NavId>> = {
   you: 'you',
   review: 'you',
   dashboard: 'dashboard',
+  payday: 'home',
+  goals: 'portfolio',
+  goal: 'portfolio',
+  stocks: 'explore',
+  stock: 'explore',
+  tipCheck: 'learn',
+  trading: 'you',
 };
 
 export function activeNav(screen: ScreenId): NavId | undefined {
@@ -66,4 +73,12 @@ export const SCREEN_TITLE: Record<ScreenId, string> = {
   review: 'Reviewer tools',
   dashboard: 'Dashboard',
   notifications: 'Notifications',
+  payday: 'Payday Split',
+  goals: 'Goals',
+  goal: 'Goal',
+  stocks: 'Stocks',
+  stock: 'Stock',
+  stockBuy: 'Buy shares',
+  tipCheck: 'Tip Check',
+  trading: 'Stocks: budget and readiness',
 };

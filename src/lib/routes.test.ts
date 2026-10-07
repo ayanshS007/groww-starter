@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { advance, fresh, run, startSip, withCheckin } from '../test/fixtures';
+import { buildPersona } from '../data/personas';
+import { advance, fresh, run, startSip, TODAY, withCheckin } from '../test/fixtures';
 import type { State } from '../state/types';
-import { buildPath, matchPath, parseHash, resolveRoute, routeExists, safeNext, TOASTS } from './routes';
+import { buildPath, FLOW_SCREENS, matchPath, parseHash, resolveRoute, routeExists, safeNext, TOASTS } from './routes';
 
 const go = (hash: string, state: State) => resolveRoute(parseHash(hash), state);
 
@@ -39,17 +40,43 @@ describe('guards (PLAN section 3)', () => {
     expect(go('#/notifications', fresh())).toMatchObject({ kind: 'screen', screen: 'notifications' });
     expect(go('#/explore?tab=watchlist', fresh())).toMatchObject({ kind: 'screen', screen: 'explore', query: { tab: 'watchlist' } });
   });
-  it('routeExists tells built routes from ones still to come', () => {
+  it('routeExists: every P0/P1 route is built; the P2 card route is not', () => {
     expect(routeExists('/dashboard')).toBe(true);
     expect(routeExists('/portfolio/sip/sip_9')).toBe(true);
     expect(routeExists('/invest/liquid1?amount=2000')).toBe(true);
-    expect(routeExists('/payday')).toBe(false);
-    expect(routeExists('/portfolio/goal/goal_1')).toBe(false);
+    for (const p of ['/payday', '/portfolio/goals', '/portfolio/goal/goal_1', '/explore/stocks', '/stock/stk_voltara', '/stock/stk_voltara/buy', '/learn/tip-check', '/you/trading']) {
+      expect(routeExists(p)).toBe(true);
+    }
+    expect(routeExists('/learn/card/sip')).toBe(false);
   });
-  it('unknown and not-yet-built P1 routes go to Home', () => {
-    for (const p of ['/nope', '/payday', '/learn/card/sip', '/you/trading']) {
+  it('unknown routes and the unbuilt P2 card route go to Home', () => {
+    for (const p of ['/nope', '/learn/card/sip']) {
       expect(go('#' + p, fresh())).toEqual({ kind: 'redirect', to: '/home' });
     }
+  });
+  it('Stage 3d-2 routes open, with missing-state redirects and toasts', () => {
+    const planned = withCheckin(fresh());
+    expect(go('#/payday', planned)).toMatchObject({ kind: 'screen', screen: 'payday' });
+    expect(go('#/payday', fresh())).toMatchObject({ kind: 'redirect', to: '/signup?next=%2Fcheckin%2F1' });
+    expect(go('#/payday', run(fresh(), { type: 'signUp', mobile: '9876543210', name: 'A' }))).toEqual({
+      kind: 'redirect',
+      to: '/checkin/1',
+      toast: TOASTS.checkinFirst,
+    });
+    expect(go('#/portfolio/goals', fresh())).toMatchObject({ kind: 'screen', screen: 'goals' });
+    expect(go('#/portfolio/goal/goal_9', fresh())).toEqual({ kind: 'redirect', to: '/portfolio/goals', toast: TOASTS.noGoal });
+    const meera = buildPersona('meera', TODAY);
+    expect(go('#/portfolio/goal/goal_1', meera)).toMatchObject({ kind: 'screen', screen: 'goal', params: { id: 'goal_1' } });
+    expect(go('#/explore/stocks', fresh())).toMatchObject({ kind: 'screen', screen: 'stocks' });
+    expect(go('#/stock/stk_voltara', fresh())).toMatchObject({ kind: 'screen', screen: 'stock' });
+    expect(go('#/stock/stk_voltara/buy?qty=2', fresh())).toMatchObject({ kind: 'screen', screen: 'stockBuy', query: { qty: '2' } });
+    expect(go('#/stock/nope', fresh())).toEqual({ kind: 'redirect', to: '/explore/stocks', toast: TOASTS.noStock });
+    expect(go('#/stock/nope/buy', fresh())).toEqual({ kind: 'redirect', to: '/explore/stocks', toast: TOASTS.noStock });
+    expect(go('#/learn/tip-check', fresh())).toMatchObject({ kind: 'screen', screen: 'tipCheck' });
+    expect(go('#/you/trading', fresh())).toMatchObject({ kind: 'screen', screen: 'trading' });
+  });
+  it('the stock buy flow hides the tab bar', () => {
+    expect(FLOW_SCREENS).toContain('stockBuy');
   });
   it('/signup when already signed up → next or /home', () => {
     expect(go('#/signup', signedUp)).toEqual({ kind: 'redirect', to: '/home' });

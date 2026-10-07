@@ -1,6 +1,6 @@
 // Goal pots (README 8.8, PLAN item 34). P1 logic. Never projects returns.
 import { getFund } from '../data/funds';
-import type { FundId, Goal, ISODate, State } from '../state/types';
+import type { FundId, Goal, ISODate, Sip, State } from '../state/types';
 import { addYears, monthsBetweenCeil } from './dates';
 import { holdingValue } from './market';
 
@@ -66,3 +66,78 @@ export function goalWarnings(goal: Pick<Goal, 'byDate'>, today: ISODate, linkedF
 export function goalShortfall(needed: number | null, linkedSipTotal: number): number {
   return needed === null ? 0 : Math.max(0, needed - linkedSipTotal);
 }
+
+// ---------- create and edit ----------
+export type GoalInput = { name: string; target: string | number; byDate: string };
+export type GoalErrors = Partial<Record<'name' | 'target' | 'byDate', string>>;
+export const MAX_GOAL = 10_000_000;
+
+/** Validates the create/edit form. A date today or earlier asks for a later one (README 8.8). */
+export function validateGoalInput(
+  input: GoalInput,
+  today: ISODate,
+): { ok: true; value: { name: string; target: number; byDate: ISODate } } | { ok: false; errors: GoalErrors } {
+  const errors: GoalErrors = {};
+  const name = input.name.trim();
+  if (!name) errors.name = 'Give your goal a name.';
+  else if (name.length > 40) errors.name = 'Keep the name under 40 characters.';
+  const raw = typeof input.target === 'number' ? input.target : Number(String(input.target).replace(/[,\s₹]/g, ''));
+  if (String(input.target).trim() === '' || !Number.isFinite(raw)) errors.target = 'Enter how much you need.';
+  else if (!Number.isInteger(raw)) errors.target = 'Use whole rupees.';
+  else if (raw < 500) errors.target = 'Enter at least ₹500.';
+  else if (raw > MAX_GOAL) errors.target = 'Enter up to ₹1,00,00,000.';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.byDate)) errors.byDate = 'Pick the date you need it by.';
+  else if (input.byDate <= today) errors.byDate = 'Pick a date after today.';
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  return { ok: true, value: { name, target: raw, byDate: input.byDate } };
+}
+
+/** Prefill for a suggestion chip. Only the cushion has a known target: 3 × income midpoint. */
+export function suggestionPrefill(
+  name: (typeof GOAL_SUGGESTIONS)[number],
+  cushionTarget: number | undefined,
+  today: ISODate,
+): { name: string; target?: number; byDate?: ISODate; isCushion: boolean } {
+  if (name === 'Emergency cushion') {
+    return { name, target: cushionTarget || undefined, byDate: addYears(today, 1), isCushion: true };
+  }
+  return { name, isCushion: false };
+}
+
+// ---------- detail ----------
+export type GoalSummary = {
+  value: number;
+  pct: number;
+  needed: number | null;
+  linkedSips: Sip[];
+  linkedTotal: number;
+  shortfall: number;
+  warnings: GoalWarning[];
+  monthsLeft: number;
+};
+
+/** Everything the goal screens show. Only active SIPs count toward the monthly total. */
+export function goalSummary(state: Pick<State, 'sips' | 'holdings' | 'market'>, goal: Goal, today: ISODate): GoalSummary {
+  const value = goalValue(state, goal);
+  const linkedSips = state.sips.filter((s) => goal.sipIds.includes(s.id));
+  const linkedTotal = linkedSips.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.amount, 0);
+  const needed = monthlyNeeded(goal, value, today);
+  return {
+    value,
+    pct: goalProgress(goal.target, value).pct,
+    needed,
+    linkedSips,
+    linkedTotal,
+    shortfall: goalShortfall(needed, linkedTotal),
+    warnings: goalWarnings(goal, today, linkedSips.filter((s) => s.status !== 'stopped').map((s) => s.fundId)),
+    monthsLeft: monthsLeft(today, goal.byDate),
+  };
+}
+
+/** SIPs that can be linked: not stopped and not already linked to this goal. */
+export function linkableSips(state: Pick<State, 'sips'>, goal: Pick<Goal, 'id'>): Sip[] {
+  return state.sips.filter((s) => s.status !== 'stopped' && s.goalId !== goal.id);
+}
+
+/** "Switch to a steadier fund" opens the funds suited to money needed within a year. */
+export const STEADIER_FUNDS_ROUTE = '/explore/funds?collection=need_this_year';

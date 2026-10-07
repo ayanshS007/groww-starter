@@ -1,4 +1,4 @@
-// Root: hash routing with guards, the responsive shell and every built screen (Stages 3a–3d).
+// Root: hash routing with guards, the responsive shell and every P0/P1 screen (Stages 3a–3d).
 import { useEffect, useRef } from 'react';
 import { AppShell } from './components/AppShell';
 import { SCREEN_TITLE } from './components/nav';
@@ -13,6 +13,7 @@ import { Explore } from './screens/Explore';
 import { FundDetail } from './screens/Fund';
 import { Funds } from './screens/Funds';
 import { Glossary } from './screens/Glossary';
+import { GoalDetail, Goals } from './screens/Goals';
 import { HoldingDetail } from './screens/Holding';
 import { Home } from './screens/Home';
 import { Invest, InvestPlan } from './screens/Invest';
@@ -20,13 +21,18 @@ import { Kyc } from './screens/Kyc';
 import { Landing } from './screens/Landing';
 import { Learn } from './screens/Learn';
 import { Notifications } from './screens/Notifications';
+import { Payday } from './screens/Payday';
 import { Plan } from './screens/Plan';
 import { Portfolio } from './screens/Portfolio';
 import { Review } from './screens/Review';
 import { Signup } from './screens/Signup';
 import { SipDetail } from './screens/Sip';
+import { StockBuy } from './screens/StockBuy';
+import { StockDetail, StocksList } from './screens/Stocks';
 import { StopCoach } from './screens/StopCoach';
 import { Success } from './screens/Success';
+import { TipCheck } from './screens/TipCheck';
+import { Trading } from './screens/Trading';
 import { You } from './screens/You';
 import { useStore } from './state/store';
 import type { FundId } from './state/types';
@@ -79,6 +85,22 @@ export function renderScreen(r: ScreenRoute) {
       return <Dashboard />;
     case 'notifications':
       return <Notifications />;
+    case 'payday':
+      return <Payday query={r.query} />;
+    case 'goals':
+      return <Goals />;
+    case 'goal':
+      return <GoalDetail id={r.params.id} />;
+    case 'stocks':
+      return <StocksList query={r.query} />;
+    case 'stock':
+      return <StockDetail id={r.params.id} />;
+    case 'stockBuy':
+      return <StockBuy id={r.params.id} query={r.query} />;
+    case 'tipCheck':
+      return <TipCheck query={r.query} />;
+    case 'trading':
+      return <Trading />;
   }
 }
 

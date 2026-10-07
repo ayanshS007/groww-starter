@@ -1,4 +1,5 @@
 // Tip Check (README 8.7). Never says whether the market call is right or wrong.
+import type { PickReason } from '../state/types';
 
 export type TipSource = 'friend' | 'social' | 'chat' | 'news';
 
@@ -65,4 +66,26 @@ export function scoreTipCheck(answers: TipAnswers): TipResult {
   const tier: TipTier =
     answers.guaranteed || riskCount >= 3 ? 'red_flag' : riskCount >= 1 ? 'be_careful' : 'fine_to_research';
   return { tier, label: TIER_LABEL[tier], drivers: risky.map((q) => q.driver), riskCount, nextStep: NEXT_STEP[tier] };
+}
+
+// ---------- pick reason in buy flows (README 8.7) ----------
+export const PICK_REASONS: { id: PickReason; label: string }[] = [
+  { id: 'plan', label: 'My starter plan' },
+  { id: 'researched', label: 'I researched it' },
+  { id: 'social', label: 'A friend or social media' },
+  { id: 'not_sure', label: 'Not sure' },
+];
+
+/** "A friend or social media" and "Not sure" bring the inline Tip Check offer. */
+export function offersTipCheck(reason: PickReason | undefined): boolean {
+  return reason === 'social' || reason === 'not_sure';
+}
+
+/** Partial answers → the result, or the ids still unanswered. */
+export function tipCheckOutcome(
+  answers: Partial<TipAnswers>,
+): { done: true; result: TipResult } | { done: false; missing: TipQuestionId[] } {
+  const missing = TIP_QUESTIONS.filter((q) => answers[q.id] === undefined).map((q) => q.id);
+  if (missing.length > 0) return { done: false, missing };
+  return { done: true, result: scoreTipCheck(answers as TipAnswers) };
 }

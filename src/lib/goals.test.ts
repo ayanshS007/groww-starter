@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { goalProgress, goalShortfall, goalValue, goalWarnings, monthlyNeeded, monthsLeft } from './goals';
+import { buildPersona } from '../data/personas';
+import { advance, run } from '../test/fixtures';
+import { addDays, addMonths } from './dates';
+import {
+  GOAL_SUGGESTIONS,
+  goalProgress,
+  goalShortfall,
+  goalSummary,
+  goalValue,
+  goalWarnings,
+  linkableSips,
+  monthlyNeeded,
+  monthsLeft,
+  STEADIER_FUNDS_ROUTE,
+  suggestionPrefill,
+  validateGoalInput,
+} from './goals';
+import { simToday } from './market';
 import type { Holding, Sip } from '../state/types';
 
 const TODAY = '2026-10-07';
@@ -61,5 +78,77 @@ describe('progress, value and shortfall', () => {
     expect(goalShortfall(7000, 1500)).toBe(5500);
     expect(goalShortfall(1000, 1500)).toBe(0);
     expect(goalShortfall(null, 1500)).toBe(0);
+  });
+});
+
+describe('goal form (README 8.8: past date asks to update)', () => {
+  it('accepts a valid goal', () => {
+    expect(validateGoalInput({ name: ' Laptop ', target: '45,000', byDate: '2027-04-07' }, TODAY)).toEqual({
+      ok: true,
+      value: { name: 'Laptop', target: 45000, byDate: '2027-04-07' },
+    });
+  });
+  it('a date today or in the past asks for a later one', () => {
+    for (const byDate of [TODAY, '2026-01-01']) {
+      const r = validateGoalInput({ name: 'Trip', target: 15000, byDate }, TODAY);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.errors.byDate).toBe('Pick a date after today.');
+    }
+  });
+  it('names, amounts and missing dates are checked', () => {
+    const r = validateGoalInput({ name: ' ', target: '', byDate: '' }, TODAY);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(['byDate', 'name', 'target']);
+    const small = validateGoalInput({ name: 'X', target: '499', byDate: '2027-01-01' }, TODAY);
+    expect(small.ok).toBe(false);
+  });
+  it('the Emergency cushion suggestion prefills 3 × income and a year; others only the name', () => {
+    expect(suggestionPrefill('Emergency cushion', 112500, TODAY)).toEqual({
+      name: 'Emergency cushion',
+      target: 112500,
+      byDate: '2027-10-07',
+      isCushion: true,
+    });
+    expect(suggestionPrefill('Laptop', 112500, TODAY)).toEqual({ name: 'Laptop', isCushion: false });
+    expect(GOAL_SUGGESTIONS).toEqual(['Emergency cushion', 'Laptop', 'Trip', 'Course fees']);
+  });
+});
+
+describe('goalSummary (goal detail)', () => {
+  it('Laptop under a year linked to Riya’s index SIP: short-goal-in-equity warning and a shortfall', () => {
+    let s = buildPersona('riya', TODAY);
+    const today = simToday(s.market);
+    s = run(s, { type: 'createGoal', name: 'Laptop', target: 50000, byDate: addMonths(today, 8), sipIds: ['sip_1'] });
+    const goal = s.goals[0];
+    const sum = goalSummary(s, goal, today);
+    expect(sum.linkedSips.map((x) => x.id)).toEqual(['sip_1']);
+    expect(sum.warnings.map((w) => w.kind)).toEqual(['short_equity']);
+    expect(sum.warnings[0].text).toContain('Nifty 50 Index Fund');
+    expect(sum.linkedTotal).toBe(2000);
+    expect(sum.needed).toBeGreaterThan(2000);
+    expect(sum.shortfall).toBe((sum.needed ?? 0) - 2000);
+    expect(STEADIER_FUNDS_ROUTE).toBe('/explore/funds?collection=need_this_year');
+  });
+  it('a goal more than a year away has no warning; after its date passes it asks for a new date', () => {
+    let s = buildPersona('riya', TODAY);
+    const today = simToday(s.market);
+    s = run(s, { type: 'createGoal', name: 'Trip', target: 20000, byDate: addDays(today, 400), sipIds: ['sip_1'] });
+    expect(goalSummary(s, s.goals[0], today).warnings).toEqual([]);
+    s = run(s, { type: 'updateGoal', goalId: s.goals[0].id, patch: { byDate: addDays(today, 10) } });
+    s = advance(s, 2);
+    const later = goalSummary(s, s.goals[0], simToday(s.market));
+    expect(later.needed).toBeNull();
+    expect(later.warnings.map((w) => w.kind)).toEqual(['past_date']);
+  });
+  it('paused SIPs don’t count toward the monthly total; stopped ones can’t be linked', () => {
+    let s = buildPersona('riya', TODAY);
+    const today = simToday(s.market);
+    s = run(s, { type: 'createGoal', name: 'Laptop', target: 50000, byDate: addMonths(today, 20), sipIds: ['sip_1'] });
+    s = run(s, { type: 'pauseSip', sipId: 'sip_1', months: 1 });
+    expect(goalSummary(s, s.goals[0], today).linkedTotal).toBe(0);
+    const other = run(s, { type: 'createGoal', name: 'Trip', target: 9000, byDate: addMonths(today, 20) });
+    expect(linkableSips(other, other.goals[1]).map((x) => x.id)).toEqual(['sip_1']);
+    const stopped = run(other, { type: 'stopSip', sipId: 'sip_1', reason: 'none' });
+    expect(linkableSips(stopped, stopped.goals[1])).toEqual([]);
   });
 });

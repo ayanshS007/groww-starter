@@ -15,7 +15,13 @@ describe('reviewer jump links', () => {
       }
     }
     const notes = jumpLinks(buildPersona('riya', TODAY)).filter((l) => l.note).map((l) => l.pattern);
-    expect(notes).toEqual(['/signup', '/kyc/:step']);
+    // Riya has no goal, so the goal detail link shows the missing-state rule.
+    expect(notes).toEqual(['/signup', '/kyc/:step', '/portfolio/goal/:id']);
+    expect(jumpLinks(buildPersona('meera', TODAY)).find((l) => l.pattern === '/portfolio/goal/:id')).toEqual({
+      pattern: '/portfolio/goal/:id',
+      to: '/portfolio/goal/goal_1',
+    });
+    expect(jumpLinks(fresh()).find((l) => l.pattern === '/stock/:id')).toEqual({ pattern: '/stock/:id', to: '/stock/stk_voltara' });
   });
   it('marks links that will redirect on a fresh state', () => {
     const links = jumpLinks(fresh());
