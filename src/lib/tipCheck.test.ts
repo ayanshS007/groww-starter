@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scoreTipCheck, TIP_QUESTIONS, type TipAnswers } from './tipCheck';
+import { PICK_REASONS, TIP_QUESTIONS, offersTipCheck, scoreTipCheck, tipCheckOutcome, type TipAnswers } from './tipCheck';
 
 const safe: TipAnswers = {
   guaranteed: false,
@@ -42,5 +42,23 @@ describe('scoreTipCheck', () => {
       expect(r.nextStep.length).toBeGreaterThan(10);
       expect(r.nextStep.toLowerCase()).not.toMatch(/will (go up|rise|fall)|right call|wrong call/);
     }
+  });
+});
+
+describe('pick reason in buy flows (README 8.7)', () => {
+  it('the four chips, in order', () => {
+    expect(PICK_REASONS.map((r) => r.label)).toEqual(['My starter plan', 'I researched it', 'A friend or social media', 'Not sure']);
+  });
+  it('only "friend or social media" and "not sure" bring the Tip Check offer', () => {
+    expect(offersTipCheck('social')).toBe(true);
+    expect(offersTipCheck('not_sure')).toBe(true);
+    expect(offersTipCheck('plan')).toBe(false);
+    expect(offersTipCheck('researched')).toBe(false);
+    expect(offersTipCheck(undefined)).toBe(false);
+  });
+  it('the result needs all six answers', () => {
+    expect(tipCheckOutcome({ guaranteed: false })).toMatchObject({ done: false });
+    const all = { guaranteed: false, urgency: false, promoter: false, canFind: true, registered: true, wouldHurt: false };
+    expect(tipCheckOutcome(all)).toMatchObject({ done: true, result: { tier: 'fine_to_research' } });
   });
 });

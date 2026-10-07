@@ -2,6 +2,7 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { App, renderScreen } from './App';
 import { ToastProvider } from './components/Toast';
+import { Wordmark } from './components/Wordmark';
 import { buildPersona } from './data/personas';
 import { ALARM_WORDS } from './lib/insight';
 import { deriveNotifications } from './lib/notifications';
@@ -587,10 +588,12 @@ describe('Stage 3d-1: Dashboard (README 9 item 21)', () => {
     expect(html).not.toContain('market-down');
     expect(html).not.toContain('market-up');
   });
-  it('plan-health rows link to built screens only (no dead links)', () => {
+  it('plan-health rows link to their real fix screens (no dead links)', () => {
     const html = renderAt('#/dashboard', riya);
     const hrefs = [...html.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]);
-    expect(hrefs).toContain('/invest/liquid1?amount=2000');
+    expect(hrefs).toContain('/payday');
+    expect(hrefs).toContain('/you/trading');
+    expect(hrefs).toContain('/portfolio/goals');
     for (const h of hrefs) expect(resolveRoute(parseHash('#' + h), riya)).not.toEqual({ kind: 'redirect', to: '/home' });
   });
   it('Meera’s goal shows as a progress row with the monthly amount needed', () => {
@@ -673,5 +676,127 @@ describe('Stage 3d-1: Starter / Pro view (README 9 item 22)', () => {
     expect(t).toContain('App view');
     expect(t).toContain('Starter');
     expect(t).toContain('Pro');
+  });
+});
+
+describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
+  const riya = buildPersona('riya', TODAY);
+
+  it('Home shows "Got paid? Split it" with a plan, and the milestone card once earned', () => {
+    const t = text(renderAt('#/home', riya));
+    expect(t).toContain('Got paid? Split it');
+    expect(t).not.toContain('Milestone');
+    const first = startSip(withCheckin(fresh()), 'index50', 500);
+    const home = text(renderAt('#/home', first));
+    expect(home).toContain('Your first investment is in');
+    expect(home).toContain('Got it');
+    expect(text(renderAt('#/home', run(first, { type: 'seeMilestone', id: 'first_investment' })))).not.toContain('Your first investment is in');
+  });
+
+  it('Payday Split: the three lines and the top-up CTA for Riya’s ₹28,000', () => {
+    const t = text(renderAt('#/payday?pay=28000', riya));
+    for (const s of ['Already going to SIPs', 'Cushion top-up', 'Yours to spend', 'A suggestion, not a rule. Change any number.']) expect(t).toContain(s);
+    expect(t).toContain('₹2,000');
+    expect(t).toContain('₹23,200');
+    expect(t).toContain('Top up cushion with ₹2,800');
+    expect(t).toContain('What is this?');
+  });
+
+  it('Goals list and detail: progress, monthly needed without counting returns, links', () => {
+    const meera = buildPersona('meera', TODAY);
+    const list = text(renderAt('#/portfolio/goals', meera));
+    expect(list).toContain('Laptop');
+    expect(list).toContain('Create a goal');
+    const detail = text(renderAt('#/portfolio/goal/goal_1', meera));
+    expect(detail).toMatch(/₹[\d,]+\s*\/month needed, without counting returns/);
+    expect(detail).toContain('Liquid Fund – A');
+    expect(detail).toContain('Unlink');
+    expect(text(renderAt('#/portfolio/goals', fresh()))).toContain('No goals yet');
+  });
+
+  it('a short goal linked to an equity SIP warns and offers a steadier fund', () => {
+    // Riya's simulated today is TODAY (2026-10-07); June 2027 is under a year away.
+    const s = run(riya, { type: 'createGoal', name: 'Laptop', target: 50000, byDate: '2027-06-30', sipIds: ['sip_1'] });
+    const t = text(renderAt('#/portfolio/goal/goal_1', s));
+    expect(t).toContain('can fall a lot in a year');
+    expect(t).toContain('Switch to a steadier fund');
+  });
+
+  it('Stocks: list with the Starter banner, detail with "₹1,000 buys 0 shares"', () => {
+    const list = text(renderAt('#/explore/stocks', fresh()));
+    expect(list).toContain('New to stocks? ‘Stocks vs funds’ in 60 seconds');
+    expect(list).toContain('Sample data');
+    const pro = text(renderAt('#/explore/stocks', run(fresh(), { type: 'setView', view: 'pro' })));
+    expect(pro).not.toContain('New to stocks?');
+    const d = text(renderAt('#/stock/stk_voltara', fresh()));
+    expect(d).toContain('₹1,000 buys 0 shares');
+    expect(d).toContain('Indian exchanges don’t sell parts of a share.');
+    expect(d).toContain('Why is intraday hidden?');
+    expect(d).toContain('Main risk');
+    expect(d).not.toMatch(/intraday buy|F&O order|target price/i);
+  });
+
+  it('Stock buy: stepper, Market/Limit explained, delivery only; review has pick reason chips and the Tip Check offer', () => {
+    const order = text(renderAt('#/stock/stk_voltara/buy', riya));
+    for (const s of ['How many shares?', 'Market', 'Limit', 'Buys only at your price or lower', 'Delivery only', 'Take the readiness check']) expect(order).toContain(s);
+    const zero = text(renderAt('#/stock/stk_voltara/buy?mode=amount&amt=1000', riya));
+    expect(zero).toContain('buys 0 shares');
+    const review = text(renderAt('#/stock/stk_voltara/buy?step=review&qty=1&reason=social', riya));
+    expect(review).toContain('What made you pick this?');
+    expect(review).toContain('Run a 30-second Tip Check?');
+    expect(review).toContain('Over your stock budget');
+    expect(text(renderAt('#/stock/stk_voltara/buy?step=review&qty=1&reason=social&tc=1', riya))).not.toContain('Run a 30-second Tip Check?');
+    const passed = text(renderAt('#/stock/stk_voltara/buy', run(riya, { type: 'passReadiness', passed: true })));
+    expect(passed).toContain('More order types, explained');
+  });
+
+  it('single-fund Invest review shows the pick reason chips; the plan flow does not', () => {
+    const s = run(riya, {
+      type: 'startInvestDraft',
+      draft: { mode: 'single', fundId: 'liquid1', type: 'one_time', amount: 2800, step: 'review', riskAck: false, pickReason: 'not_sure' },
+    });
+    const t = text(renderAt('#/invest/liquid1', s));
+    expect(t).toContain('What made you pick this?');
+    expect(t).toContain('Run a 30-second Tip Check?');
+    const plan = run(riya, { type: 'startInvestDraft', draft: { mode: 'plan', type: 'sip', step: 'review', riskAck: false, planAmounts: [{ fundId: 'liquid1', amount: 2000, role: 'cushion' }] } });
+    expect(text(renderAt('#/invest/plan', plan))).not.toContain('What made you pick this?');
+  });
+
+  it('Tip Check, Trading and Learn', () => {
+    const tc = text(renderAt('#/learn/tip-check?next=%2Fstock%2Fstk_voltara%2Fbuy', fresh()));
+    expect(tc).toContain('Does it promise a guaranteed return?');
+    expect(tc).toContain('Skip, back to my order');
+    const tr = text(renderAt('#/you/trading', riya));
+    expect(tr).toContain('Stock budget');
+    expect(tr).toContain('Readiness check');
+    expect(tr).toContain('Not available in this prototype');
+    expect(text(renderAt('#/learn', fresh()))).toContain('Tip Check');
+    expect(text(renderAt('#/you', riya))).toContain('Stock budget and readiness');
+    expect(text(renderAt('#/explore', fresh()))).toContain('Browse stocks');
+  });
+
+  it('a stock holding offers Buy more and Sell; Success names the company', () => {
+    const s = run(riya, { type: 'buyStock', stockId: 'stk_pinecrest', shares: 2, orderType: 'market' });
+    const t = text(renderAt('#/portfolio/holding/h_stk_pinecrest', s));
+    expect(t).toContain('Buy more');
+    expect(t).toContain('Sell');
+    const order = s.orders[s.orders.length - 1];
+    const ok = text(renderAt(`#/invest/success/${order.id}`, s));
+    expect(ok).toContain('Order placed (simulated).');
+    expect(ok).toContain('Pinecrest Bank (sample)');
+    expect(ok).toContain('2 shares · delivery');
+  });
+
+  it('the badge next to the wordmark shows the current view', () => {
+    const badge = (s: State) =>
+      text(
+        renderToString(
+          <StoreProvider storage={{ getItem: () => JSON.stringify(s), setItem: () => {}, removeItem: () => {} }} today={TODAY}>
+            <Wordmark />
+          </StoreProvider>,
+        ),
+      ).trim();
+    expect(badge(riya)).toBe('Groww Starter');
+    expect(badge(run(riya, { type: 'setView', view: 'pro' }))).toBe('Groww Pro');
   });
 });

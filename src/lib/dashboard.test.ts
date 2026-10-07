@@ -14,6 +14,7 @@ import {
 } from './dashboard';
 import { portfolioValue } from './market';
 import { planHealth } from './planHealth';
+import { parseHash, resolveRoute } from './routes';
 
 const riya = () => buildPersona('riya', TODAY);
 
@@ -133,17 +134,14 @@ describe('activity rows', () => {
   });
 });
 
-describe('plan health links (no dead links before Payday and Stock budget exist)', () => {
-  it('cushion falls back to the cushion SIP of the plan', () => {
+describe('plan health links go to the screen that fixes each check', () => {
+  it('cushion → Payday Split, stocks → Stock budget, and every link resolves to a screen', () => {
     const s = riya();
-    const cushion = planHealth(s).find((c) => c.id === 'cushion')!;
-    expect(healthLink(cushion, s)).toEqual({ to: '/invest/liquid1?amount=2000', label: 'Top up cushion' });
-  });
-  it('stocks fall back to Portfolio; built routes are used as they are', () => {
-    const s = riya();
-    const [, horizon, stocks, sips] = planHealth(s);
-    expect(healthLink(stocks, s).to).toBe('/portfolio');
-    expect(healthLink(horizon, s)).toEqual({ to: '/plan', label: 'See my plan' });
-    expect(healthLink(sips, s)).toEqual({ to: '/portfolio', label: 'See my SIPs' });
+    const [cushion, horizon, stocks, sips] = planHealth(s);
+    expect(healthLink(cushion)).toEqual({ to: '/payday', label: 'Top up cushion' });
+    expect(healthLink(stocks)).toEqual({ to: '/you/trading', label: 'Stock budget' });
+    expect(healthLink(horizon)).toEqual({ to: '/plan', label: 'See my plan' });
+    expect(healthLink(sips)).toEqual({ to: '/portfolio', label: 'See my SIPs' });
+    for (const c of planHealth(s)) expect(resolveRoute(parseHash('#' + healthLink(c).to), s).kind).toBe('screen');
   });
 });
