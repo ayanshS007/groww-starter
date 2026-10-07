@@ -1,4 +1,4 @@
-// Root: hash routing with guards, the responsive shell and every P0 screen (Stages 3a–3c).
+// Root: hash routing with guards, the responsive shell and every built screen (Stages 3a–3d).
 import { useEffect, useRef } from 'react';
 import { AppShell } from './components/AppShell';
 import { SCREEN_TITLE } from './components/nav';
@@ -8,6 +8,7 @@ import { useKeyboardAvoidance } from './components/useKeyboardAvoidance';
 import { FLOW_SCREENS, type Resolved } from './lib/routes';
 import { useLocation, useRoute } from './router';
 import { Checkin } from './screens/Checkin';
+import { Dashboard } from './screens/Dashboard';
 import { Explore } from './screens/Explore';
 import { FundDetail } from './screens/Fund';
 import { Funds } from './screens/Funds';
@@ -18,6 +19,7 @@ import { Invest, InvestPlan } from './screens/Invest';
 import { Kyc } from './screens/Kyc';
 import { Landing } from './screens/Landing';
 import { Learn } from './screens/Learn';
+import { Notifications } from './screens/Notifications';
 import { Plan } from './screens/Plan';
 import { Portfolio } from './screens/Portfolio';
 import { Review } from './screens/Review';
@@ -46,7 +48,7 @@ export function renderScreen(r: ScreenRoute) {
     case 'kyc':
       return <Kyc step={r.params.step} query={r.query} />;
     case 'explore':
-      return <Explore />;
+      return <Explore query={r.query} />;
     case 'funds':
       return <Funds query={r.query} />;
     case 'fund':
@@ -73,6 +75,10 @@ export function renderScreen(r: ScreenRoute) {
       return <You />;
     case 'review':
       return <Review />;
+    case 'dashboard':
+      return <Dashboard />;
+    case 'notifications':
+      return <Notifications />;
   }
 }
 

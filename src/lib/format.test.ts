@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dateLabel, formatINR, formatPct, formatSigned, formatUnits, keepSignsTogether, maskMobile, MINUS, ordinal } from './format';
+import { compactINR, dateLabel, formatINR, formatPct, formatSigned, formatUnits, keepSignsTogether, maskMobile, MINUS, ordinal } from './format';
 
 describe('formatINR', () => {
   it('uses Indian grouping', () => {
@@ -67,5 +67,15 @@ describe('keepSignsTogether', () => {
     const once = keepSignsTogether('Overall: −₹732 (−12.2%)');
     expect(once).toBe('Overall: −\u2060₹732 (−\u206012.2%)');
     expect(keepSignsTogether(once)).toBe(once);
+  });
+});
+
+describe('compactINR', () => {
+  it('shortens axis labels', () => {
+    expect(compactINR(0)).toBe('₹0');
+    expect(compactINR(900)).toBe('₹900');
+    expect(compactINR(6200)).toBe('₹6.2k');
+    expect(compactINR(25000)).toBe('₹25k');
+    expect(compactINR(150000)).toBe('₹1.5L');
   });
 });

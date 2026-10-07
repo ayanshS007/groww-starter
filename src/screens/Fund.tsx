@@ -27,6 +27,19 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
   const toast = useToast();
   const fund = getFund(id)!;
   const fit = fundFit(fund, state, parseFrom(query.from));
+  const confidence = (
+    <ConfidenceBlock
+      what={fund.whatItIs}
+      why={fit.why}
+      next={
+        <ol className="list-decimal space-y-1 pl-4">
+          {fund.whatHappensNext.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ol>
+      }
+    />
+  );
   const saved = state.watchlist.includes(fund.id);
 
   const start = (type: InvestType) => {
@@ -129,17 +142,18 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
           <RangeBand className="mt-4" low={fund.illustrativeRange1y.low} high={fund.illustrativeRange1y.high} />
         </Card>
 
-        <ConfidenceBlock
-          what={fund.whatItIs}
-          why={fit.why}
-          next={
-            <ol className="list-decimal space-y-1 pl-4">
-              {fund.whatHappensNext.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ol>
-          }
-        />
+        {state.prefs.view === 'pro' ? (
+          // Pro view keeps the Confidence Layer one tap away (README 9, Starter vs Pro).
+          <details className="group rounded-card border border-border bg-surface">
+            <summary className="flex min-h-tap cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 font-semibold text-brand-text">
+              Why this? What it is and what happens next
+              <Icon name="chevronDown" size={20} className="shrink-0 transition group-open:rotate-180" />
+            </summary>
+            <div className="px-2 pb-2">{confidence}</div>
+          </details>
+        ) : (
+          confidence
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Card tint="mint" pad="lg" aria-labelledby="good-for">

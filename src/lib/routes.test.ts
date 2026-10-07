@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { advance, fresh, run, startSip, withCheckin } from '../test/fixtures';
 import type { State } from '../state/types';
-import { buildPath, matchPath, parseHash, resolveRoute, safeNext, TOASTS } from './routes';
+import { buildPath, matchPath, parseHash, resolveRoute, routeExists, safeNext, TOASTS } from './routes';
 
 const go = (hash: string, state: State) => resolveRoute(parseHash(hash), state);
 
@@ -34,8 +34,20 @@ describe('guards (PLAN section 3)', () => {
       expect(go('#' + p, fresh()).kind).toBe('screen');
     }
   });
+  it('Dashboard and the inbox open without any state (Stage 3d)', () => {
+    expect(go('#/dashboard', fresh())).toMatchObject({ kind: 'screen', screen: 'dashboard' });
+    expect(go('#/notifications', fresh())).toMatchObject({ kind: 'screen', screen: 'notifications' });
+    expect(go('#/explore?tab=watchlist', fresh())).toMatchObject({ kind: 'screen', screen: 'explore', query: { tab: 'watchlist' } });
+  });
+  it('routeExists tells built routes from ones still to come', () => {
+    expect(routeExists('/dashboard')).toBe(true);
+    expect(routeExists('/portfolio/sip/sip_9')).toBe(true);
+    expect(routeExists('/invest/liquid1?amount=2000')).toBe(true);
+    expect(routeExists('/payday')).toBe(false);
+    expect(routeExists('/portfolio/goal/goal_1')).toBe(false);
+  });
   it('unknown and not-yet-built P1 routes go to Home', () => {
-    for (const p of ['/nope', '/dashboard', '/payday', '/learn/card/sip', '/notifications']) {
+    for (const p of ['/nope', '/payday', '/learn/card/sip', '/you/trading']) {
       expect(go('#' + p, fresh())).toEqual({ kind: 'redirect', to: '/home' });
     }
   });

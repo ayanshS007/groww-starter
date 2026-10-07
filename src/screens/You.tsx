@@ -9,6 +9,7 @@ import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
+import { ViewToggle } from '../components/ViewToggle';
 import { HELP_FAQS } from '../data/learn';
 import { realToday } from '../lib/dates';
 import { maskMobile } from '../lib/format';
@@ -140,9 +141,26 @@ export function You() {
         </ul>
       </Card>
 
+      <Card aria-labelledby="view-title">
+        <h2 id="view-title" className="text-lg font-semibold text-ink">
+          App view
+        </h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          Starter keeps things simple. Pro shows denser lists, sample market data and a watchlist table. Switch back any time.
+        </p>
+        <div className="mt-4">
+          <ViewToggle />
+        </div>
+      </Card>
+
       <Card>
         <h2 className="text-lg font-semibold text-ink">Notifications</h2>
-        <p className="mt-1 text-sm text-ink-muted">In-app only. Only things that happened to your money, never offers.</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          In-app only. Only things that happened to your money, never offers.{' '}
+          <Link to="/notifications" className="font-semibold text-brand-text underline-offset-4 hover:underline">
+            Open inbox
+          </Link>
+        </p>
         <ul className="mt-1 divide-y divide-border">
           {NOTIF_KINDS.map((k) => (
             <Row

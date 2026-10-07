@@ -24,7 +24,14 @@ export type ColorTokens = {
   marketUp: string; // Pro view market prices only
   marketDown: string; // Pro view market prices only, never the user's own money
   focus: string;
-};
+  // Chart fills (Dashboard donut and value chart). Identity only, always with a
+  // text legend. Validated with the dataviz palette checker (all pairs, CVD).
+  chartCushion: string;
+  chartGrow: string;
+  chartGold: string;
+  chartStocks: string; // neutral grey: the fourth slot can't be a fourth hue
+  chartInvested: string; // invested step line
+}
 
 export const light: ColorTokens = {
   bg: '#F7F9F8',
@@ -48,6 +55,11 @@ export const light: ColorTokens = {
   marketUp: '#15803D',
   marketDown: '#B42318',
   focus: '#3B4FE0',
+  chartCushion: '#2A78D6',
+  chartGrow: '#1BAF7A',
+  chartGold: '#EDA100',
+  chartStocks: '#8A94A6',
+  chartInvested: '#6B7280',
 };
 
 export const dark: ColorTokens = {
@@ -72,6 +84,11 @@ export const dark: ColorTokens = {
   marketUp: '#4ADE80',
   marketDown: '#F87171',
   focus: '#8EA0FF',
+  chartCushion: '#3987E5',
+  chartGrow: '#199E70',
+  chartGold: '#C98500',
+  chartStocks: '#64748B',
+  chartInvested: '#A3AEC2',
 };
 
 /** Text-on-background pairs that must reach WCAG AA (4.5:1). */

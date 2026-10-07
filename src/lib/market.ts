@@ -85,11 +85,13 @@ export function overallChange(state: MoneyState): Change {
 }
 
 export type SeriesPoint = { week: number; invested: number; value: number };
-type FullPoint = SeriesPoint & { flow: number };
+/** A weekly point plus the money that went in (+) or out (−) that week. */
+export type FlowPoint = SeriesPoint & { flow: number };
 
 const UNIT_KINDS = new Set<ActivityItem['kind']>(['sip_instalment', 'one_time', 'buy', 'redeem']);
 
-function fullSeries(state: Pick<State, 'activity' | 'market'>): FullPoint[] {
+/** Weekly points with each week's net money in or out, from week 0 to the current week. */
+export function seriesWithFlow(state: Pick<State, 'activity' | 'market'>): FlowPoint[] {
   const { week, history } = state.market;
   const byWeek = new Map<number, ActivityItem[]>();
   for (const a of state.activity) {
@@ -106,7 +108,7 @@ function fullSeries(state: Pick<State, 'activity' | 'market'>): FullPoint[] {
   };
   const units = new Map<AssetId, number>();
   const invested = new Map<AssetId, number>();
-  const out: FullPoint[] = [];
+  const out: FlowPoint[] = [];
   for (let w = 0; w <= week; w++) {
     let flow = 0;
     for (const a of byWeek.get(w) ?? []) {
@@ -135,7 +137,7 @@ function fullSeries(state: Pick<State, 'activity' | 'market'>): FullPoint[] {
 
 /** Weekly { week, invested, value } points from week 0 to the current week (README 8.4). */
 export function valueSeries(state: Pick<State, 'activity' | 'market'>): SeriesPoint[] {
-  return fullSeries(state).map(({ week, invested, value }) => ({ week, invested, value }));
+  return seriesWithFlow(state).map(({ week, invested, value }) => ({ week, invested, value }));
 }
 
 /**
@@ -143,7 +145,7 @@ export function valueSeries(state: Pick<State, 'activity' | 'market'>): SeriesPo
  * money that went in or out that week. Percent is against last week's value.
  */
 export function weekChange(state: Pick<State, 'activity' | 'market'>): Change {
-  const s = fullSeries(state);
+  const s = seriesWithFlow(state);
   if (s.length < 2) return { amount: 0, pct: 0 };
   const cur = s[s.length - 1];
   const prev = s[s.length - 2];

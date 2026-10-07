@@ -4,6 +4,7 @@ import { App, renderScreen } from './App';
 import { ToastProvider } from './components/Toast';
 import { buildPersona } from './data/personas';
 import { ALARM_WORDS } from './lib/insight';
+import { deriveNotifications } from './lib/notifications';
 import { parseHash, resolveRoute } from './lib/routes';
 import { StoreProvider } from './state/store';
 import { STORAGE_KEY } from './state/storage';
@@ -534,5 +535,143 @@ describe('Home after a stop: quiet, not pushy (owner decision)', () => {
   });
   it('no line when nothing was stopped', () => {
     expect(text(renderAt('#/home', riya))).not.toContain('Restart any time');
+  });
+});
+
+describe('Stage 3d-1: Dashboard (README 9 item 21)', () => {
+  const riya = buildPersona('riya', TODAY);
+
+  it('a fresh account sees the empty state with the Home next-step action', () => {
+    const html = renderAt('#/dashboard', fresh());
+    const t = text(html);
+    expect(t).toContain('Your dashboard fills in after your first investment');
+    expect(t).toContain('Take the check-in');
+    expect(t).not.toContain('Value vs invested');
+  });
+  it('Riya sees every tile, the chart, the donut, plan health, SIPs, goals, activity and the insight', () => {
+    const t = text(renderAt('#/dashboard', riya));
+    for (const s of [
+      'Your money at a glance',
+      'Last 4 weeks',
+      'Last 12 weeks',
+      'Since start',
+      'Current value',
+      'Invested so far',
+      'This week',
+      'Next SIP',
+      'Skip this one, free',
+      'Value vs invested',
+      'You stayed invested',
+      'Where your money is',
+      'Plan split: 50 / 50 · Actual: 0 / 100',
+      'Plan health',
+      'Cushion',
+      'Time frame match',
+      'Stock budget',
+      'SIPs running',
+      'This month’s',
+      'Upcoming',
+      'Goals',
+      'Recent activity',
+      'Review my plan',
+    ]) {
+      expect(t).toContain(s);
+    }
+  });
+  it('shows only her own money: no indices, movers, other users, projections or red', () => {
+    const html = renderAt('#/dashboard', riya);
+    const t = text(html).toLowerCase();
+    for (const w of ['indices', 'large 50 (sample)', 'gainers', 'losers', 'most bought', 'leaderboard', 'other users', 'projected', 'you will have', 'best', 'guaranteed']) {
+      expect(t).not.toContain(w);
+    }
+    expect(html).not.toContain('market-down');
+    expect(html).not.toContain('market-up');
+  });
+  it('plan-health rows link to built screens only (no dead links)', () => {
+    const html = renderAt('#/dashboard', riya);
+    const hrefs = [...html.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]);
+    expect(hrefs).toContain('/invest/liquid1?amount=2000');
+    for (const h of hrefs) expect(resolveRoute(parseHash('#' + h), riya)).not.toEqual({ kind: 'redirect', to: '/home' });
+  });
+  it('Meera’s goal shows as a progress row with the monthly amount needed', () => {
+    const t = text(renderAt('#/dashboard', buildPersona('meera', TODAY)));
+    expect(t).toContain('Laptop');
+    expect(t).toMatch(/₹[\d,]+\/month needed/);
+    expect(t).toContain('Without counting returns');
+  });
+  it('after Advance one week ×3 the tiles, SIP list and activity change', () => {
+    const before = text(renderAt('#/dashboard', riya));
+    const after = text(renderAt('#/dashboard', advance(riya, 3)));
+    expect(before).toContain('Upcoming');
+    expect(after).toContain('Done');
+    expect(after).not.toBe(before);
+    expect(after).toContain('16 Oct 2026');
+  });
+});
+
+describe('Stage 3d-1: notifications inbox (README 8.12, 9 item 19)', () => {
+  it('Riya has Today / Earlier groups, unread items and Mark all read', () => {
+    const t = text(renderAt('#/notifications', buildPersona('riya', TODAY)));
+    expect(t).toContain('Today');
+    expect(t).toContain('Earlier');
+    expect(t).toContain('Mark all read');
+    expect(t).toContain('unread');
+    for (const w of ['buy now', 'special offer', 'limited time', 'market is up']) expect(t.toLowerCase()).not.toContain(w);
+  });
+  it('once everything is read there is no Mark all read button', () => {
+    const riya = buildPersona('riya', TODAY);
+    const ids = deriveNotifications(riya).map((n) => n.id);
+    const t = text(renderAt('#/notifications', run(riya, { type: 'markNotificationsRead', ids })));
+    expect(t).toContain('All caught up.');
+    expect(t).not.toContain('Mark all read');
+  });
+  it('a fresh account has an empty inbox', () => {
+    expect(text(renderAt('#/notifications', fresh()))).toContain('Nothing yet');
+  });
+});
+
+describe('Stage 3d-1: Starter / Pro view (README 9 item 22)', () => {
+  const pro = (s: State) => run(s, { type: 'setView', view: 'pro' });
+  const riya = buildPersona('riya', TODAY);
+
+  it('Starter Explore keeps the plain markets line and no index strip', () => {
+    const t = text(renderAt('#/explore', riya));
+    expect(t).toContain('Markets this week:');
+    expect(t).not.toContain('Indices');
+  });
+  it('Pro Explore has underline sub-tabs, the sample index strip, stock cards and dense fund rows', () => {
+    const html = renderAt('#/explore', pro(riya));
+    const t = text(html);
+    for (const s of ['Explore', 'Holdings', 'Orders', 'Watchlist', 'Indices', 'Sample data', 'Large 50 (sample)', 'Stocks', 'Expense', '3Y illustrative sample return', 'not a ranking']) {
+      expect(t).toContain(s);
+    }
+    expect(t).not.toContain('Markets this week:');
+    expect(t.toLowerCase()).not.toMatch(/top gainers|most bought|top movers/);
+    expect(html).toContain('aria-current="page"');
+  });
+  it('Pro holdings keep the user’s own dip amber, never market red', () => {
+    const html = renderAt('#/explore?tab=holdings', pro(riya));
+    expect(text(html)).toContain('Nifty 50 Index Fund');
+    expect(html).not.toContain('market-down');
+    expect(html).toContain('text-caution');
+  });
+  it('Pro watchlist shows a table for Arjun’s stocks; orders list Riya’s payments', () => {
+    const arjun = pro(buildPersona('arjun', TODAY));
+    const w = text(renderAt('#/explore?tab=watchlist', arjun));
+    for (const s of ['Your watchlist', 'Add stocks', 'Edit', 'Mkt price', '1D change', '52W range', 'Saved funds']) expect(w).toContain(s);
+    const o = text(renderAt('#/explore?tab=orders', pro(riya)));
+    expect(o).toContain('SIP, first payment');
+  });
+  it('Pro fund list is dense; fund detail puts the Confidence blocks behind “Why this?”', () => {
+    expect(text(renderAt('#/explore/funds', pro(riya)))).toContain('Expense');
+    const fund = text(renderAt('#/fund/index50', pro(riya)));
+    expect(fund).toContain('Why this?');
+    expect(text(renderAt('#/fund/index50', riya))).not.toContain('Why this? What it is');
+  });
+  it('the You screen has the view toggle', () => {
+    const t = text(renderAt('#/you', riya));
+    expect(t).toContain('App view');
+    expect(t).toContain('Starter');
+    expect(t).toContain('Pro');
   });
 });
