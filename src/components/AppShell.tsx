@@ -11,6 +11,24 @@ import { TopBar } from './TopBar';
 
 type Props = { screen: ScreenId; flow: boolean; children: ReactNode };
 
+/** In a hash-routed app "#main" would change the route, so move focus instead of following the link. */
+function SkipLink() {
+  return (
+    <a
+      href="#main"
+      onClick={(e) => {
+        e.preventDefault();
+        const main = document.getElementById('main');
+        main?.focus();
+        main?.scrollIntoView({ block: 'start' });
+      }}
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2"
+    >
+      Skip to content
+    </a>
+  );
+}
+
 function StorageNotice() {
   const { storageOk } = useStore();
   if (storageOk) return null;
@@ -23,10 +41,8 @@ export function AppShell({ screen, flow, children }: Props) {
   if (flow || screen === 'landing') {
     return (
       <>
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2">
-          Skip to content
-        </a>
-        <div className="flex min-h-full flex-col">
+        <SkipLink />
+        <div className="flex min-h-full flex-col pb-safe">
           {(
             <div className="mx-auto max-w-tablet px-safe pt-2">
               <StorageNotice />
@@ -42,9 +58,7 @@ export function AppShell({ screen, flow, children }: Props) {
   const active = activeNav(screen);
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2">
-        Skip to content
-      </a>
+      <SkipLink />
       <div className="min-h-full lg:flex">
         <Sidebar active={active} state={state} />
         <div className="flex min-w-0 flex-1 flex-col">

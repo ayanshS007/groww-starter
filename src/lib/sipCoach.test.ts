@@ -72,6 +72,11 @@ describe('coachFor', () => {
     expect(fell).toContain('₹458');
     expect(fell).toContain('8.0%');
     expect(fell).toContain('buys more units');
+    // An up or flat week: no "lower prices" claim.
+    const up = coachFor('market_fell', sip(), { weekChange: { amount: 120, pct: 1.2 } }).response!;
+    expect(up).toContain('+₹120');
+    expect(up).not.toContain('while prices are lower');
+    expect(up).toContain('more units when prices dip and fewer when they rise');
     expect(coachFor('money_tight', sip()).response).toBe('Skipping is free and keeps your plan alive.');
     const need = coachFor('need_money', sip()).response!;
     expect(need).toContain('doesn’t return any money');

@@ -72,8 +72,13 @@ export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachCon
       const move = context.weekChange
         ? `This week your portfolio moved ${formatSigned(context.weekChange.amount)} (${formatSigned(context.weekChange.pct, 'pct')}). `
         : '';
+      // The "more units at lower prices" line is only true while prices are down.
+      const upWeek = !!context.weekChange && context.weekChange.amount >= 0;
+      const keepGoing = upWeek
+        ? `If you keep going, the same ${formatINR(sip.amount)} buys more units when prices dip and fewer when they rise.`
+        : `If you keep going, the same ${formatINR(sip.amount)} buys more units while prices are lower.`;
       return {
-        response: `${move}If you keep going, the same ${formatINR(sip.amount)} buys more units while prices are lower.`,
+        response: `${move}${keepGoing}`,
         options: withPrimary([
           { id: 'keep_going', label: 'Keep going' },
           paused ? pause : { id: 'pause', label: 'Pause 1–3 months' },

@@ -28,7 +28,7 @@ export function BottomSheet({ open, onClose, title, children, side = 'bottom' }:
   const position =
     side === 'right'
       ? 'ml-auto mr-0 h-full max-h-full w-[400px] max-w-full rounded-l-card-lg'
-      : 'mb-0 mt-auto w-full max-w-full rounded-t-card-lg md:mb-auto md:max-w-lg md:rounded-card-lg';
+      : 'mb-[var(--kb,0px)] mt-auto w-full max-w-full rounded-t-card-lg md:mb-auto md:max-w-lg md:rounded-card-lg';
 
   return (
     <dialog
@@ -42,11 +42,13 @@ export function BottomSheet({ open, onClose, title, children, side = 'bottom' }:
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      className={`${position} max-h-[85%] overflow-y-auto bg-surface p-0 text-ink backdrop:bg-ink/40`}
+      // --kb lifts the sheet above the on-screen keyboard (set by useKeyboardAvoidance).
+      style={side === 'bottom' ? { maxHeight: 'min(85%, calc(100% - var(--kb, 0px)))' } : undefined}
+      className={`${position} ${side === 'bottom' ? '' : 'max-h-[85%]'} overflow-y-auto bg-surface p-0 text-ink backdrop:bg-ink/40`}
     >
       {open && (
         <div className="pb-safe">
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-surface px-5 pb-2 pt-4">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-surface px-sheet pb-2 pt-4">
             <h2 id={titleId} className="text-lg font-semibold">
               {title}
             </h2>
@@ -59,7 +61,7 @@ export function BottomSheet({ open, onClose, title, children, side = 'bottom' }:
               <Icon name="close" />
             </button>
           </div>
-          <div className="px-5 pb-6">{children}</div>
+          <div className="px-sheet pb-6">{children}</div>
         </div>
       )}
     </dialog>

@@ -13,19 +13,21 @@ type Props<T extends string | number> = {
   value: T | undefined;
   onChange: (v: T) => void;
   columns?: 1 | 2;
+  /** Tighter tiles (still ≥ 44 px tall) for screens that must fit above a fixed action row. */
+  dense?: boolean;
 };
 
-export function OptionTiles<T extends string | number>({ name, legend, legendClassName, options, value, onChange, columns = 1 }: Props<T>) {
+export function OptionTiles<T extends string | number>({ name, legend, legendClassName, options, value, onChange, columns = 1, dense = false }: Props<T>) {
   return (
     <fieldset>
       <legend className={legendClassName ?? 'mb-3 text-base font-semibold text-ink'}>{legend}</legend>
-      <div className={`grid gap-3 ${columns === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <div className={`grid ${dense ? 'gap-2' : 'gap-3'} ${columns === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {options.map((o) => {
           const checked = value === o.value;
           return (
             <label
               key={String(o.value)}
-              className={`relative flex min-h-[56px] cursor-pointer items-center gap-3 rounded-card-sm border-2 px-4 py-3 transition focus-within:outline focus-within:outline-[3px] focus-within:outline-offset-2 focus-within:outline-focus ${
+              className={`relative flex ${dense ? 'min-h-[48px] py-2' : 'min-h-[56px] py-3'} cursor-pointer items-center gap-3 rounded-card-sm border-2 px-4 transition focus-within:outline focus-within:outline-[3px] focus-within:outline-offset-2 focus-within:outline-focus ${
                 checked ? 'border-brand bg-mint' : 'border-border bg-surface hover:bg-surface2'
               }`}
             >

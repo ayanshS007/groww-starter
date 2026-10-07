@@ -10,7 +10,7 @@ import { EmptyState } from '../components/EmptyState';
 import { Icon } from '../components/Icon';
 import { InsightCard } from '../components/InsightCard';
 import { LetterAvatar } from '../components/LetterAvatar';
-import { StatusPill } from '../components/StatusPill';
+import { SipStatusPill } from '../components/StatusPill';
 import { Term } from '../components/Term';
 import { getFund } from '../data/funds';
 import { dateLabel, formatINR, ordinal } from '../lib/format';
@@ -20,13 +20,6 @@ import { nextStep, upcomingSips } from '../lib/nextStep';
 import { assetSplit, holdingRows } from '../lib/portfolio';
 import { Link } from '../router';
 import { useStore } from '../state/store';
-import type { Sip } from '../state/types';
-
-function SipStatus({ sip }: { sip: Sip }) {
-  if (sip.status === 'paused') return <StatusPill tone="watch" icon="pause">Paused</StatusPill>;
-  if (sip.status === 'stopped') return <StatusPill icon="close">Stopped</StatusPill>;
-  return <StatusPill tone="good" icon="check">Active</StatusPill>;
-}
 
 export function Portfolio() {
   const { state } = useStore();
@@ -149,8 +142,9 @@ export function Portfolio() {
                                 ? `next ${dateLabel(u.date, { short: true })}`
                                 : ''}
                         </span>
+                        {s.stepUpPct && <span className="block text-sm text-ink-muted">{`Step-up +${s.stepUpPct}% yearly is on`}</span>}
                       </span>
-                      <SipStatus sip={s} />
+                      <SipStatusPill status={s.status} />
                     </Link>
                   </li>
                 );

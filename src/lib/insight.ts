@@ -1,6 +1,6 @@
 // Weekly dip insight (README 8.5 as changed by PLAN C1 and items 14–15).
 import type { Holding, Horizon, State } from '../state/types';
-import { formatSigned } from './format';
+import { formatINR, formatPct, formatSigned } from './format';
 import { HORIZON_TEXT, horizonRank, heldFunds, overallChange, weekChange, type Change } from './market';
 
 export type InsightBranch = 'big_dip' | 'calm' | 'short_term' | 'steadier';
@@ -41,6 +41,21 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
 
   // 1. Big dip: judged on the overall change, not one week (PLAN C1).
   if (overall.pct <= BIG_DIP_PCT && longTerm) {
+    // A gain this week while still well below what was put in: lead with the gain,
+    // say plainly where the total stands, and keep the review optional.
+    if (week.amount > 0) {
+      return {
+        branch: 'big_dip',
+        headline: `Up ${formatINR(week.amount)} (${formatSigned(week.pct, 'pct')}) this week. Overall: ${formatSigned(overall.amount)} (${formatSigned(
+          overall.pct,
+          'pct',
+        )}) on what you put in.`,
+        body: `Your portfolio is still ${formatINR(Math.abs(overall.amount))} (${formatPct(Math.abs(overall.pct))}) below what you put in. That's normal after a bigger fall. Your horizon is ${h}. Nothing needs doing. Reviewing your plan is optional.`,
+        actionNeeded: false,
+        action: 'review_plan',
+        tone: 'neutral',
+      };
+    }
     return {
       branch: 'big_dip',
       headline: head,

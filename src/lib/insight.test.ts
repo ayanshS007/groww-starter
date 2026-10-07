@@ -33,6 +33,58 @@ describe('buildInsight branches (PLAN item 15, first match wins)', () => {
     const i = buildInsight({ weekChange: ch(50, 1), overallChange: ch(-700, -10), horizon: '3to5', holdings: idx });
     expect(i.branch).toBe('big_dip');
   });
+  describe('1b. big dip, but this week is a gain (overall still ≤ −10%)', () => {
+    const up = () => buildInsight({ weekChange: ch(165, 2.4), overallChange: ch(-960, -12), horizon: '5plus', holdings: idx });
+    it('keeps the big-dip branch but leads the headline with this week’s gain in plain numbers', () => {
+      const i = up();
+      expect(i.branch).toBe('big_dip');
+      expect(i.headline.startsWith('Up ₹165 (+2.4%) this week.')).toBe(true);
+      expect(i.headline).toBe(`Up ₹165 (+2.4%) this week. Overall: ${MINUS}₹960 (${MINUS}12.0%) on what you put in.`);
+    });
+    it('the body calmly says the portfolio is still below what was invested, in ₹ and %', () => {
+      const i = up();
+      expect(i.body).toContain('still ₹960 (12.0%) below what you put in');
+      expect(i.body).toContain("That's normal after a bigger fall");
+      expect(i.body).toContain('Your horizon is 5+ years');
+    });
+    it('needs no action, offers the optional review link, and is not the amber caution tone', () => {
+      const i = up();
+      expect(i).toMatchObject({ actionNeeded: false, action: 'review_plan', tone: 'neutral' });
+      expect(i.body).toContain('Nothing needs doing');
+      expect(i.body).toContain('Reviewing your plan is optional');
+    });
+    it('makes no promise, says nothing about selling, and has no alarm words', () => {
+      const i = up();
+      const t = (i.headline + ' ' + i.body).toLowerCase();
+      for (const w of ['sell', 'recover', 'promise', 'guarantee', 'lock in']) expect(t).not.toContain(w);
+      noAlarm(t);
+    });
+    it('a flat week (exactly zero) and a down week keep the original big-dip wording', () => {
+      for (const w of [ch(0, 0), ch(-400, -8)]) {
+        const i = buildInsight({ weekChange: w, overallChange: ch(-960, -12), horizon: '5plus', holdings: idx });
+        expect(i.branch).toBe('big_dip');
+        expect(i.headline.startsWith('This week:')).toBe(true);
+        expect(i.body).toContain('lock in the fall');
+        expect(i.tone).toBe('caution');
+      }
+    });
+    it('only applies at the −10% line: −9.9% overall with a gain is the calm branch', () => {
+      const i = buildInsight({ weekChange: ch(165, 2.4), overallChange: ch(-99, -9.9), horizon: '5plus', holdings: idx });
+      expect(i.branch).toBe('calm');
+    });
+    it('needs a horizon of 3+ years: under that, a gain is calm', () => {
+      const i = buildInsight({ weekChange: ch(165, 2.4), overallChange: ch(-960, -12), horizon: '1to3', holdings: idx });
+      expect(i.branch).toBe('calm');
+    });
+    it('end to end: Riya after one up week (overall −10.1%) gets the new wording; once recovered it turns calm', () => {
+      const riya = buildPersona('riya', TODAY);
+      const one = insightFromState(advance(riya, 1, 'up'))!;
+      expect(one.branch).toBe('big_dip');
+      expect(one.headline).toMatch(/^Up ₹\d[\d,]* \(\+\d+\.\d%\) this week\. Overall: /);
+      expect(one.body).toContain('below what you put in');
+      expect(insightFromState(advance(riya, 3, 'up'))!.branch).toBe('calm');
+    });
+  });
   it('2. up or flat week: calm, no action', () => {
     for (const w of [ch(30, 2.4), ch(0, 0)]) {
       const i = buildInsight({ weekChange: w, overallChange: ch(10, 1), horizon: '1to3', holdings: debt });

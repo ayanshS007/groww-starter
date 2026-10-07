@@ -1,18 +1,19 @@
 // S5 Home (README 9 item 5, PLAN C6): "What should I do next?" One primary
 // action (the Next-step card). No news, indices, gainers/losers or banners.
-import { Button } from '../components/Button';
+import { Button, ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
 import { Disclaimer } from '../components/Disclaimer';
 import { Icon, type IconName } from '../components/Icon';
+import { InsightLine } from '../components/InsightCard';
 import { NextStepCard } from '../components/NextStepCard';
 import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { getFund } from '../data/funds';
-import { dateLabel, formatINR, formatSigned, keepSignsTogether } from '../lib/format';
+import { dateLabel, formatINR, formatSigned } from '../lib/format';
 import { insightFromState } from '../lib/insight';
 import { overallChange, portfolioValue, totalInvested } from '../lib/market';
-import { greeting, nextStep, statusLine, upcomingSips } from '../lib/nextStep';
+import { greeting, nextStep, quietRestart, statusLine, upcomingSips } from '../lib/nextStep';
 import { Link } from '../router';
 import { useStore } from '../state/store';
 
@@ -47,15 +48,45 @@ function Snapshot() {
           </dd>
         </div>
       </dl>
-      {insight && (
-        <p aria-live="polite" className="mt-4 flex gap-2 rounded-card-sm bg-surface2 p-4 text-sm text-ink">
-          <Icon name="info" size={18} className="mt-0.5 shrink-0 text-ink-muted" />
-          <span>{keepSignsTogether(insight.headline)}</span>
-        </p>
-      )}
+      <InsightLine insight={insight} />
       <Link to="/portfolio" className="mt-4 inline-flex min-h-tap items-center gap-1 font-semibold text-brand-text underline-offset-4 hover:underline">
         Open portfolio <Icon name="chevronRight" size={18} />
       </Link>
+    </Card>
+  );
+}
+
+/** When nothing is due because every live SIP is paused, say so and offer Resume. */
+function PausedSip() {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+  const sip = state.sips.find((x) => x.status === 'paused');
+  if (!sip) return null;
+  const fund = getFund(sip.fundId);
+  return (
+    <Card pad="lg" aria-labelledby="paused-title">
+      <h2 id="paused-title" className="flex items-center gap-2 text-lg font-semibold text-ink">
+        <Icon name="pause" size={20} className="text-caution" /> SIP paused
+      </h2>
+      <p className="mt-2 text-base text-ink">
+        {formatINR(sip.amount)} into {fund?.name}
+        {sip.pausedUntil ? ` restarts after ${dateLabel(sip.pausedUntil, { short: true })}` : ' is paused'}. Nothing to do.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button
+          variant="secondary"
+          className="w-full sm:w-auto"
+          onClick={() => {
+            dispatch({ type: 'resumeSip', sipId: sip.id });
+            toast.show('SIP resumed. It runs on its usual date.');
+          }}
+        >
+          Resume now
+        </Button>
+        <ButtonLink to={`/portfolio/sip/${sip.id}`} variant="quiet" className="w-full sm:w-auto">
+          Manage SIP
+        </ButtonLink>
+      </div>
     </Card>
   );
 }
@@ -64,7 +95,7 @@ function UpcomingSip() {
   const { state, dispatch } = useStore();
   const toast = useToast();
   const next = upcomingSips(state)[0];
-  if (!next) return null;
+  if (!next) return <PausedSip />;
   const fund = getFund(next.sip.fundId);
   const sipId = next.sip.id;
   return (
@@ -118,6 +149,7 @@ export function Home() {
   const { state } = useStore();
   const step = nextStep(state);
   const hasPlan = !!state.plan;
+  const quiet = quietRestart(state);
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
@@ -127,6 +159,14 @@ export function Home() {
           <p className="mt-1 text-base text-ink-muted">{statusLine(state)}</p>
         </header>
         <NextStepCard step={step} />
+        {quiet && (
+          <p className="-mt-2 text-sm text-ink-muted">
+            {quiet.text}{' '}
+            <Link to={quiet.to} className="inline-flex min-h-tap items-center font-semibold text-brand-text underline underline-offset-4">
+              {quiet.linkText}
+            </Link>
+          </p>
+        )}
         <Snapshot />
         {!hasPlan && (
           <div className="grid gap-4 sm:grid-cols-2">
