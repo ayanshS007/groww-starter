@@ -1,0 +1,74 @@
+// S7 Explore hub (README 9 item 7). Starter view: hub tiles, one plain
+// "Markets this week" line, collections preview. No index strip, no movers.
+import { ButtonLink } from '../components/Button';
+import { Card } from '../components/Card';
+import { Chip } from '../components/Chip';
+import { Icon } from '../components/Icon';
+import { COLLECTIONS, FUNDS } from '../data/funds';
+import { MARKETS_THIS_WEEK } from '../lib/market';
+import { buildPath } from '../lib/routes';
+import { Link, navigate } from '../router';
+import { useStore } from '../state/store';
+
+export function Explore() {
+  const { state } = useStore();
+  const saved = state.watchlist.filter((id) => FUNDS.some((f) => f.id === id)).length;
+  return (
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-3xl font-bold text-ink">Explore</h1>
+        <p className="mt-1 text-base text-ink-muted">Look around at your own pace. Nothing here is a tip.</p>
+      </header>
+
+      <Card tint="mint" pad="lg" aria-labelledby="funds-tile">
+        <div className="flex items-start gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface text-ink">
+            <Icon name="portfolio" size={24} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 id="funds-tile" className="text-xl font-bold text-ink">
+              Mutual funds
+            </h2>
+            <p className="mt-1 text-base text-ink">
+              {FUNDS.length} sample funds, each explained in plain words. Start from ₹100.
+            </p>
+            <ButtonLink to="/explore/funds" className="mt-4">
+              Browse mutual funds
+              <Icon name="chevronRight" size={20} />
+            </ButtonLink>
+          </div>
+        </div>
+      </Card>
+
+      <p aria-live="polite" className="flex items-start gap-2 rounded-card-sm bg-surface2 p-4 text-sm text-ink">
+        <Icon name="info" size={18} className="mt-0.5 shrink-0 text-ink-muted" />
+        <span>
+          {MARKETS_THIS_WEEK[state.market.scenario]} <span className="text-ink-muted">Sample data.</span>
+        </span>
+      </p>
+
+      <section aria-labelledby="collections-title">
+        <h2 id="collections-title" className="text-lg font-semibold text-ink">
+          Start from an idea
+        </h2>
+        <p className="mt-1 text-sm text-ink-muted">Filters, not advice. Tap one to see the funds that match.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {COLLECTIONS.map((c) => (
+            <Chip key={c.id} onClick={() => navigate(buildPath('/explore/funds', { collection: c.id }))}>
+              {c.label}
+            </Chip>
+          ))}
+          {saved > 0 && <Chip onClick={() => navigate(buildPath('/explore/funds', { collection: 'saved' }))}>Saved ({saved})</Chip>}
+        </div>
+      </section>
+
+      <p className="text-sm text-ink-muted">
+        Not sure what a word means?{' '}
+        <Link to="/learn/glossary" className="font-semibold text-brand-text underline-offset-4 hover:underline">
+          Open the glossary
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}

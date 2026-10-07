@@ -1,4 +1,4 @@
-// Screens scheduled for Stages 3b–3c. Keeps every tab and link working
+// Screens scheduled for Stage 3c (SIP detail, Stop coach). Keeps every tab and link working
 // (no dead ends) until the real screen lands.
 import { ButtonLink } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';

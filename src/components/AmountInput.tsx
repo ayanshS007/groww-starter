@@ -8,9 +8,10 @@ type Props = {
   error?: string;
   note?: string;
   autoFocus?: boolean;
+  onBlur?: () => void;
 };
 
-export function AmountInput({ label, value, onChange, error, note, autoFocus }: Props) {
+export function AmountInput({ label, value, onChange, error, note, autoFocus, onBlur }: Props) {
   const id = useId();
   const msgId = `${id}-msg`;
   return (
@@ -33,6 +34,7 @@ export function AmountInput({ label, value, onChange, error, note, autoFocus }: 
           autoFocus={autoFocus}
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/[^\d,]/g, ''))}
+          onBlur={onBlur}
           aria-invalid={!!error}
           aria-describedby={msgId}
           className="w-full bg-transparent text-2xl font-semibold tabular-nums text-ink outline-none"

@@ -55,6 +55,13 @@ describe('guards (PLAN section 3)', () => {
     expect(go('#/plan', planned)).toMatchObject({ kind: 'screen', screen: 'plan' });
     expect(go('#/invest/plan', planned)).toMatchObject({ kind: 'screen', screen: 'investPlan' });
   });
+  it('/invest/plan with every plan SIP already running goes to Portfolio with a toast', () => {
+    let s = planned;
+    for (const b of planned.plan!.buckets) s = startSip(s, b.fundId, b.amount);
+    expect(go('#/invest/plan', s)).toEqual({ kind: 'redirect', to: '/portfolio', toast: TOASTS.planRunning });
+    // one part running: the flow still opens for the other part
+    expect(go('#/invest/plan', startSip(planned, 'index50', 2000))).toMatchObject({ kind: 'screen', screen: 'investPlan' });
+  });
   it('/kyc needs sign-up and keeps the return path', () => {
     const r = go('#/kyc/1?next=%2Finvest%2Findex50', fresh());
     expect(r).toMatchObject({ kind: 'redirect', toast: TOASTS.signUpFirst });
