@@ -161,7 +161,9 @@ export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit 
       ? 'longer than you said you need'
       : shorter
         ? 'shorter than your time frame, so it may grow slowly for you'
-        : 'the same as your time frame';
+        : fund.horizonLabel === HORIZON_LABEL[answers.horizon]
+          ? 'the same as your time frame'
+          : `in the same group as your time frame, but at the longer end. It fits best if you won’t need this money for ${fund.horizonLabel.replace('+ yrs', ' years')} or more`;
     why = `${HOW[from]}. Your time frame is ${HORIZON_LABEL[answers.horizon]}; this fund suits ${fund.horizonLabel}, which is ${fit}. You said you’d ${DIP_PHRASE[answers.dipReaction]}; this fund is ${RISK_WORD[fund.risk]} risk.`;
   }
   return { bucket, banners, why };

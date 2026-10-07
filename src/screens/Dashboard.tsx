@@ -282,7 +282,7 @@ const HEALTH_PILL: Record<HealthStatus, { tone: PillTone; icon: IconName }> = {
 
 function HealthCard({ state }: { state: State }) {
   return (
-    <Card pad="md" aria-labelledby="health-title">
+    <Card pad="md" aria-labelledby="health-title" className="h-full">
       <h2 id="health-title" className={cardTitle}>
         Plan health
       </h2>
@@ -321,7 +321,7 @@ function SipsCard({ state }: { state: State }) {
   const rows = monthSips(state);
   const month = dateLabel(simToday(state.market)).split(' ').slice(1).join(' ');
   return (
-    <Card pad="md" aria-labelledby="month-title">
+    <Card pad="md" aria-labelledby="month-title" className="h-full">
       <h2 id="month-title" className={cardTitle}>
         This month’s <Term id="sip">SIPs</Term>
       </h2>
@@ -352,14 +352,13 @@ function SipsCard({ state }: { state: State }) {
           })}
         </ul>
       )}
-      <p className="mt-3 text-sm text-ink-muted">Skip any month, free. Nothing resets.</p>
     </Card>
   );
 }
 
 function GoalsCard({ state }: { state: State }) {
   return (
-    <Card pad="md" aria-labelledby="goals-title">
+    <Card pad="md" aria-labelledby="goals-title" className="h-full">
       <h2 id="goals-title" className={cardTitle}>
         Goals
       </h2>

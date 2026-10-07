@@ -31,6 +31,24 @@ export type ColorTokens = {
   chartGold: string;
   chartStocks: string; // neutral grey: the fourth slot can't be a fourth hue
   chartInvested: string; // invested step line
+  // Home's drifting background blobs. Decoration only, drawn at BLOB_ALPHA.
+  blobGreen: string;
+  blobMint: string;
+  blobLavender: string;
+}
+
+/**
+ * Peak opacity of each Home blob, per colour scheme. The contrast test blends
+ * every single blob and every overlapping pair at these values over the page
+ * background and re-checks the text pairs that sit directly on it.
+ */
+export const BLOB_ALPHA = {
+  light: { green: 0.13, mint: 0.17, lavender: 0.16 },
+  dark: { green: 0.14, mint: 0.16, lavender: 0.18 },
+} as const;
+
+export function blobAlphaVars(a: (typeof BLOB_ALPHA)[keyof typeof BLOB_ALPHA]): Record<string, string> {
+  return { '--blob-a-green': String(a.green), '--blob-a-mint': String(a.mint), '--blob-a-lavender': String(a.lavender) };
 }
 
 export const light: ColorTokens = {
@@ -60,6 +78,9 @@ export const light: ColorTokens = {
   chartGold: '#EDA100',
   chartStocks: '#8A94A6',
   chartInvested: '#6B7280',
+  blobGreen: '#5EEBC2',
+  blobMint: '#A9F5DC',
+  blobLavender: '#CFC3FF',
 };
 
 export const dark: ColorTokens = {
@@ -89,6 +110,9 @@ export const dark: ColorTokens = {
   chartGold: '#C98500',
   chartStocks: '#64748B',
   chartInvested: '#A3AEC2',
+  blobGreen: '#00D09C',
+  blobMint: '#2FBF9A',
+  blobLavender: '#7A6AE0',
 };
 
 /** Text-on-background pairs that must reach WCAG AA (4.5:1). */
@@ -115,6 +139,9 @@ export const TEXT_PAIRS: [keyof ColorTokens, keyof ColorTokens][] = [
   ['marketUp', 'surface'],
   ['marketDown', 'surface'],
 ];
+
+/** Text pairs that sit straight on the page background, where Home's blobs can sit behind them. */
+export const BLOB_TEXT_FG: (keyof ColorTokens)[] = ['ink', 'inkMuted', 'brandText', 'caution'];
 
 const toVarName = (k: string) => '--c-' + k.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
 

@@ -38,7 +38,8 @@ export function Term({ id, children }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline cursor-help rounded-sm text-left underline decoration-brand-text decoration-dotted decoration-2 underline-offset-4 hover:decoration-solid"
+        // 44 px hit area (22 px of text + 11 px padding each side); negative margins keep the line spacing.
+        className="-mx-hit -my-hit inline-block cursor-help rounded-sm px-hit py-hit text-left underline decoration-brand-text decoration-dotted decoration-2 underline-offset-4 hover:decoration-solid"
         aria-haspopup="dialog"
       >
         {text}

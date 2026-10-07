@@ -157,12 +157,16 @@ export function Plan() {
           </div>
         )}
 
-        <section aria-label="Funds in your plan" className="space-y-4">
+        <section aria-labelledby="plan-funds" className="space-y-4">
+          <h2 id="plan-funds" className="sr-only">
+            Funds in your plan
+          </h2>
           {plan.buckets.map((b) => (
             <BucketCard key={b.role} bucket={b} plan={plan} />
           ))}
         </section>
 
+        <h2 className="sr-only">About this plan</h2>
         <ConfidenceBlock
           compact
           what={

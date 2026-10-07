@@ -25,7 +25,6 @@ function HomeMock() {
       <div className="mt-3 rounded-card bg-mint p-4">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-text">Your next step</p>
         <p className="mt-1 text-base font-bold leading-snug text-ink">Start your first SIP</p>
-        <span className="mt-3 inline-block rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-on-brand">Start my plan</span>
       </div>
       <div className="mt-3 rounded-card border border-border bg-surface p-4">
         <div className="flex items-baseline justify-between">
@@ -62,11 +61,8 @@ export function Landing() {
 
   return (
     <div className="flex flex-1 flex-col pt-safe">
-      <header className="mx-auto flex w-full max-w-content items-center justify-between px-safe py-4 lg:px-8">
+      <header className="mx-auto flex w-full max-w-content items-center px-safe py-4 lg:px-8">
         <Wordmark />
-        <Link to="/home" className="min-h-tap content-center text-sm font-semibold text-brand-text underline-offset-4 hover:underline">
-          Just exploring
-        </Link>
       </header>
       <main id="main" tabIndex={-1} className="flex flex-1 items-center outline-none">
         <div className="mx-auto grid w-full max-w-content items-center gap-12 px-safe pb-12 pt-4 md:max-w-tablet lg:max-w-content lg:grid-cols-2 lg:px-8">
@@ -97,9 +93,9 @@ export function Landing() {
                 Just exploring
               </ButtonLink>
             </div>
-            <p className="mt-6 text-sm text-ink-muted">
+            <p className="mt-4 flex items-center gap-1 text-sm text-ink-muted">
               Reviewer?{' '}
-              <Link to="/review" className="font-semibold text-brand-text underline underline-offset-4">
+              <Link to="/review" className="inline-flex min-h-tap items-center font-semibold text-brand-text underline underline-offset-4">
                 Load a demo
               </Link>
             </p>

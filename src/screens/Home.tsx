@@ -5,6 +5,7 @@ import { Button, ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
 import { ChangeText } from '../components/ChangeText';
 import { Disclaimer } from '../components/Disclaimer';
+import { HomeBackdrop } from '../components/HomeBackdrop';
 import { Icon, type IconName } from '../components/Icon';
 import { InsightLine } from '../components/InsightCard';
 import { MilestoneCard } from '../components/MilestoneCard';
@@ -178,6 +179,7 @@ export function Home() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+      <HomeBackdrop />
       <div className="space-y-6 lg:col-span-7">
         <header>
           <h1 className="text-3xl font-bold text-ink">{greeting(state.user.name, new Date().getHours())}</h1>

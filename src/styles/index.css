@@ -79,3 +79,73 @@
   background: rgb(var(--c-surface));
   border: 3px solid rgb(var(--c-ink));
 }
+
+/* Home's backdrop: three faint blurred blobs drifting on 22–30 s loops. Opacity
+   comes from BLOB_ALPHA (tokens.ts), which contrast.test.ts checks against the
+   text that sits straight on the page background. */
+.home-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.home-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  will-change: transform;
+  animation: blob-drift var(--blob-dur) ease-in-out infinite;
+}
+.home-blobs[data-paused='true'] .home-blob {
+  animation-play-state: paused;
+}
+.home-blob-green {
+  --blob-dur: 26s;
+  --blob-x: -9vw;
+  --blob-y: 7vh;
+  top: -12%;
+  right: -14%;
+  width: max(52vw, 320px);
+  height: max(52vw, 320px);
+  background: rgb(var(--c-blob-green) / var(--blob-a-green));
+}
+.home-blob-mint {
+  --blob-dur: 30s;
+  --blob-x: 10vw;
+  --blob-y: -6vh;
+  top: 38%;
+  left: -18%;
+  width: max(46vw, 300px);
+  height: max(46vw, 300px);
+  background: rgb(var(--c-blob-mint) / var(--blob-a-mint));
+  animation-delay: -9s;
+}
+.home-blob-lavender {
+  --blob-dur: 22s;
+  --blob-x: -8vw;
+  --blob-y: -8vh;
+  bottom: -16%;
+  right: 2%;
+  width: max(48vw, 300px);
+  height: max(48vw, 300px);
+  background: rgb(var(--c-blob-lavender) / var(--blob-a-lavender));
+  animation-delay: -14s;
+}
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  35% {
+    transform: translate3d(var(--blob-x), var(--blob-y), 0) scale(1.1);
+  }
+  70% {
+    transform: translate3d(calc(var(--blob-x) * -0.5), calc(var(--blob-y) * 0.6), 0) scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-blob {
+    animation: none;
+  }
+}
