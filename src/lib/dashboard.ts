@@ -6,7 +6,6 @@ import { addDays, dayOfMonth, nextDateForDay } from './dates';
 import { cushionValue, portfolioValue, seriesWithFlow, simDate, simToday, stockValue } from './market';
 import type { HealthCheck } from './planHealth';
 import { assetName } from './portfolio';
-import { buildPath, routeExists } from './routes';
 
 // ---------- periods ----------
 export type Period = '4w' | '12w' | 'all';
@@ -245,19 +244,7 @@ export function hasDashboardData(state: Pick<State, 'holdings'>): boolean {
 }
 
 // ---------- plan health links ----------
-/**
- * Each plan-health row links to its fix. A fix screen that isn't built yet
- * (Payday Split, Stock budget) falls back to the nearest built screen.
- */
-export function healthLink(check: HealthCheck, state: Pick<State, 'plan'>): { to: string; label: string } {
-  if (routeExists(check.fixRoute)) return { to: check.fixRoute, label: check.fixLabel };
-  if (check.id === 'cushion') {
-    if (check.status === 'good') return { to: '/portfolio', label: 'See cushion' };
-    const bucket = state.plan?.buckets.find((b) => b.role === 'cushion');
-    return {
-      to: bucket ? buildPath(`/invest/${bucket.fundId}`, { amount: String(bucket.amount) }) : '/invest/liquid1',
-      label: 'Top up cushion',
-    };
-  }
-  return { to: '/portfolio', label: 'See holdings' };
+/** Each plan-health row links to the screen that fixes it (Payday Split, Stock budget, …). */
+export function healthLink(check: HealthCheck): { to: string; label: string } {
+  return { to: check.fixRoute, label: check.fixLabel };
 }
