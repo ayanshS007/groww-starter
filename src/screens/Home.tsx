@@ -13,7 +13,7 @@ import { getFund } from '../data/funds';
 import { dateLabel, formatINR, formatSigned } from '../lib/format';
 import { insightFromState } from '../lib/insight';
 import { overallChange, portfolioValue, totalInvested } from '../lib/market';
-import { greeting, nextStep, statusLine, upcomingSips } from '../lib/nextStep';
+import { greeting, nextStep, quietRestart, statusLine, upcomingSips } from '../lib/nextStep';
 import { Link } from '../router';
 import { useStore } from '../state/store';
 
@@ -149,6 +149,7 @@ export function Home() {
   const { state } = useStore();
   const step = nextStep(state);
   const hasPlan = !!state.plan;
+  const quiet = quietRestart(state);
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
@@ -158,6 +159,14 @@ export function Home() {
           <p className="mt-1 text-base text-ink-muted">{statusLine(state)}</p>
         </header>
         <NextStepCard step={step} />
+        {quiet && (
+          <p className="-mt-2 text-sm text-ink-muted">
+            {quiet.text}{' '}
+            <Link to={quiet.to} className="inline-flex min-h-tap items-center font-semibold text-brand-text underline underline-offset-4">
+              {quiet.linkText}
+            </Link>
+          </p>
+        )}
         <Snapshot />
         {!hasPlan && (
           <div className="grid gap-4 sm:grid-cols-2">

@@ -4,7 +4,7 @@ import { getFund } from '../data/funds';
 import type { ISODate, PlanBucket, Sip, State } from '../state/types';
 import { nextDueDate } from './activity';
 import { firstUnansweredStep, isCheckinStarted } from './checkin';
-import { addDays, nextDateForDay } from './dates';
+import { addDays, daysBetween, nextDateForDay } from './dates';
 import { dateLabel, formatINR } from './format';
 import { simToday } from './market';
 import { hasLiveSip } from './planStatus';
@@ -38,6 +38,41 @@ export function upcomingSips(state: Pick<State, 'sips' | 'market'>): UpcomingSip
   return out.sort((a, b) => (a.date === b.date ? a.sip.id.localeCompare(b.sip.id) : a.date < b.date ? -1 : 1));
 }
 
+/** For this many simulated days after a stop, the plan's missing part is not pushed (PLAN C6, owner decision). */
+export const QUIET_AFTER_STOP_DAYS = 30;
+
+/**
+ * Plan parts the user stopped within the last 30 simulated days and has not
+ * restarted. Home leaves these out of the Next-step card and mentions them once, quietly.
+ */
+export function recentlyStopped(state: Pick<State, 'plan' | 'sips' | 'market'>): PlanBucket[] {
+  if (!state.plan) return [];
+  const today = simToday(state.market);
+  return state.plan.buckets.filter((b) => {
+    if (hasLiveSip(state.sips, b.fundId)) return false;
+    const stops = state.sips.filter((s) => s.fundId === b.fundId && s.status === 'stopped' && s.stoppedAt).map((s) => s.stoppedAt!);
+    if (stops.length === 0) return false;
+    const last = stops.reduce((a, c) => (c > a ? c : a));
+    return daysBetween(last, today) < QUIET_AFTER_STOP_DAYS;
+  });
+}
+
+export type QuietRestart = { text: string; linkText: string; to: string };
+
+/** The one quiet line on Home while a recently stopped part is being left alone. */
+export function quietRestart(state: Pick<State, 'plan' | 'sips' | 'market'>): QuietRestart | null {
+  const parts = recentlyStopped(state);
+  if (parts.length === 0) return null;
+  return {
+    text:
+      parts.length === 1
+        ? 'One part of your plan isn’t running. Restart any time.'
+        : 'Two parts of your plan aren’t running. Restart any time.',
+    linkText: 'Restart',
+    to: parts.length === 1 ? buildPath(`/invest/${parts[0].fundId}`, { amount: String(parts[0].amount) }) : '/invest/plan',
+  };
+}
+
 const ROLE_WORD = { cushion: 'cushion', grow: 'grow' } as const;
 
 export function nextStep(state: State): NextStep {
@@ -58,9 +93,12 @@ export function nextStep(state: State): NextStep {
 
   const buckets = state.plan.buckets;
   const missing = buckets.filter((b) => !hasLiveSip(state.sips, b.fundId));
+  // A part stopped in the last 30 days is not pushed: skip it and move on to the next item.
+  const quiet = new Set(recentlyStopped(state).map((b) => b.fundId));
+  const due = missing.filter((b) => !quiet.has(b.fundId));
 
-  if (missing.length === buckets.length) {
-    // Every SIP in the plan was stopped: it's a restart, not a first SIP.
+  if (due.length === buckets.length) {
+    // Every SIP in the plan was stopped (and the quiet period is over): a restart, not a first SIP.
     const restart = state.sips.length > 0;
     return {
       kind: 'first_sip',
@@ -75,8 +113,8 @@ export function nextStep(state: State): NextStep {
     };
   }
 
-  if (missing.length > 0) {
-    const b = missing[0];
+  if (due.length > 0) {
+    const b = due[0];
     const fund = getFund(b.fundId);
     return {
       kind: 'second_bucket',
@@ -94,7 +132,9 @@ export function nextStep(state: State): NextStep {
     title: next ? `You’re set. Next SIP on ${dateLabel(next.date, { short: true })}` : 'You’re set',
     body: next
       ? `${formatINR(next.sip.amount)} into ${getFund(next.sip.fundId)?.name ?? 'your fund'}. Nothing to do today.`
-      : 'Your SIPs are paused for now. Resume any time from Portfolio.',
+      : state.sips.some((x) => x.status === 'paused')
+        ? 'Your SIPs are paused for now. Resume any time from Portfolio.'
+        : 'No SIP is scheduled right now. What you own stays invested.',
     cta: 'See my portfolio',
     to: '/portfolio',
   };
@@ -106,6 +146,7 @@ export function statusLine(state: State): string {
   if (!state.plan) return 'Answer six quick questions to get your starter shortlist.';
   const live = state.plan.buckets.filter((b) => hasLiveSip(state.sips, b.fundId)).length;
   const total = state.plan.buckets.length;
+  if (live === 0 && state.sips.length > 0) return 'No SIP is running right now. What you own stays invested.';
   if (live === 0) return `Your starter plan is ready: ${formatINR(state.plan.monthly)} a month.`;
   if (live < total) return `${live} of ${total} SIPs in your plan are running.`;
   const paused = state.sips.filter((s) => s.status === 'paused').length;
