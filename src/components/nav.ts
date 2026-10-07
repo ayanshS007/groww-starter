@@ -23,6 +23,7 @@ const ACTIVE: Partial<Record<ScreenId, NavId>> = {
   funds: 'explore',
   fund: 'explore',
   portfolio: 'portfolio',
+  success: 'portfolio',
   holding: 'portfolio',
   sip: 'portfolio',
   learn: 'learn',

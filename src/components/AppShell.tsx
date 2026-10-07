@@ -48,7 +48,7 @@ export function AppShell({ screen, flow, children }: Props) {
       <div className="min-h-full lg:flex">
         <Sidebar active={active} state={state} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar title={SCREEN_TITLE[screen]} name={state.user.name} />
+          <TopBar title={SCREEN_TITLE[screen]} name={state.user.name} search={screen === 'explore'} />
           <main
             id="main"
             tabIndex={-1}
