@@ -1,6 +1,6 @@
 // Explore and Fund detail logic (README 9 items 7–8, PLAN items 6, 29, 30).
 import { COLLECTIONS, type CollectionId } from '../data/funds';
-import type { DipReaction, Fund, FundCategory, FundId, PlanBucket, State } from '../state/types';
+import type { DipReaction, Fund, FundCategory, FundId, PlanBucket, State, Stock } from '../state/types';
 import { horizonRank } from './market';
 import { HORIZON_LABEL } from './planner';
 import { hasLiveSip } from './planStatus';
@@ -30,6 +30,12 @@ export const NO_FILTERS: FundFilters = { query: '', collection: null, category: 
 
 function haystack(f: Fund): string {
   return `${f.name} ${f.category} ${f.oneLiner} ${f.goodFor} ${f.horizonLabel}`.toLowerCase();
+}
+
+/** Sample companies whose name, ticker or sector contains the search, A–Z. */
+export function searchStocks(stocks: Stock[], query: string): Stock[] {
+  const term = query.trim().toLowerCase();
+  return stocks.filter((s) => !term || `${s.name} ${s.ticker} ${s.sector}`.toLowerCase().includes(term)).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** Keeps the data order (never sorted by returns). Every search word must match. */
@@ -123,7 +129,7 @@ export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit 
   if (longer) {
     banners.push({
       tone: 'caution',
-      text: `Your horizon is ${HORIZON_LABEL[answers.horizon]}; this fund suits ${fund.horizonLabel}. It can stay down for a while, so money you need sooner may not be ready.`,
+      text: `Your time frame is ${HORIZON_LABEL[answers.horizon]}; this fund suits ${fund.horizonLabel}. It can stay down for a while, so money you need sooner may not be ready.`,
     });
   }
   if (comfortTooLow) {
@@ -154,9 +160,9 @@ export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit 
     const fit = longer
       ? 'longer than you said you need'
       : shorter
-        ? 'shorter than your horizon, so it may grow slowly for you'
-        : 'the same as your horizon';
-    why = `${HOW[from]}. Your horizon is ${HORIZON_LABEL[answers.horizon]}; this fund suits ${fund.horizonLabel}, which is ${fit}. You said you’d ${DIP_PHRASE[answers.dipReaction]}; this fund is ${RISK_WORD[fund.risk]} risk.`;
+        ? 'shorter than your time frame, so it may grow slowly for you'
+        : 'the same as your time frame';
+    why = `${HOW[from]}. Your time frame is ${HORIZON_LABEL[answers.horizon]}; this fund suits ${fund.horizonLabel}, which is ${fit}. You said you’d ${DIP_PHRASE[answers.dipReaction]}; this fund is ${RISK_WORD[fund.risk]} risk.`;
   }
   return { bucket, banners, why };
 }

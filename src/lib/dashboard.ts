@@ -3,7 +3,7 @@
 import { getFund } from '../data/funds';
 import type { ActivityItem, FundId, ISODate, State } from '../state/types';
 import { addDays, dayOfMonth, nextDateForDay } from './dates';
-import { cushionValue, portfolioValue, seriesWithFlow, simDate, simToday, stockValue } from './market';
+import { cushionValue, goalSavingsValue, portfolioValue, seriesWithFlow, simDate, simToday, stockValue } from './market';
 import type { HealthCheck } from './planHealth';
 import { assetName } from './portfolio';
 
@@ -67,28 +67,34 @@ export function latestDip(points: ChartPoint[]): ChartPoint | undefined {
 }
 
 // ---------- where your money is ----------
-export type AllocationId = 'cushion' | 'grow' | 'stocks' | 'gold';
+export type AllocationId = 'cushion' | 'goals' | 'grow' | 'stocks' | 'gold';
 export type AllocationSlice = { id: AllocationId; label: string; value: number; pct: number };
 
 export const ALLOCATION_LABEL: Record<AllocationId, string> = {
   cushion: 'Cushion',
+  goals: 'Goal savings',
   grow: 'Grow funds',
   stocks: 'Stocks',
   gold: 'Gold',
 };
 
-/** Cushion (liquid funds), grow funds (other funds except gold), stocks and gold. Always four slices. */
-export function allocation(state: Pick<State, 'holdings' | 'market'>): { total: number; slices: AllocationSlice[] } {
+/**
+ * Cushion (liquid funds not behind a goal), grow funds (other funds except gold),
+ * stocks and gold: always these four. Goal savings (liquid funds behind a goal,
+ * QA #17) is added only when there is some.
+ */
+export function allocation(state: Pick<State, 'holdings' | 'market'> & Partial<Pick<State, 'goals' | 'sips'>>): { total: number; slices: AllocationSlice[] } {
   const total = portfolioValue(state);
   const cushion = cushionValue(state);
+  const goals = goalSavingsValue(state);
   const stocks = stockValue(state);
   const gold = portfolioValue({
     market: state.market,
     holdings: state.holdings.filter((h) => h.kind === 'fund' && getFund(h.assetId)?.category === 'Gold'),
   });
-  const grow = Math.max(0, total - cushion - stocks - gold);
-  const values: Record<AllocationId, number> = { cushion, grow, stocks, gold };
-  const ids: AllocationId[] = ['cushion', 'grow', 'stocks', 'gold'];
+  const grow = Math.max(0, total - cushion - goals - stocks - gold);
+  const values: Record<AllocationId, number> = { cushion, goals, grow, stocks, gold };
+  const ids: AllocationId[] = goals > 0.005 ? ['cushion', 'goals', 'grow', 'stocks', 'gold'] : ['cushion', 'grow', 'stocks', 'gold'];
   return {
     total,
     slices: ids.map((id) => ({ id, label: ALLOCATION_LABEL[id], value: values[id], pct: total > 0 ? (values[id] / total) * 100 : 0 })),
@@ -105,9 +111,12 @@ function split(cushionPct: number): [number, number] {
  * "Plan split: 50 / 50 · Actual: 62 / 38" (cushion / grow). The actual split is
  * liquid funds against everything else (PLAN item 37).
  */
-export function splitLine(state: Pick<State, 'plan' | 'holdings' | 'market'>): string {
+export function splitLine(state: Pick<State, 'plan' | 'holdings' | 'market'> & Partial<Pick<State, 'goals' | 'sips'>>): string {
   const total = portfolioValue(state);
-  const actual = split(total > 0 ? (cushionValue(state) / total) * 100 : 0);
+  // Compared like for like with the plan, whose cushion part is a liquid fund:
+  // all liquid money counts here, including goal savings (QA #17 follow-up).
+  const liquid = cushionValue(state) + goalSavingsValue(state);
+  const actual = split(total > 0 ? (liquid / total) * 100 : 0);
   const actualText = `Actual: ${actual[0]} / ${actual[1]}`;
   if (!state.plan) return `${actualText} (cushion / grow)`;
   const plan = split(state.plan.cushionPct);

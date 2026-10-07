@@ -7,11 +7,12 @@ import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { AmountInput } from '../components/AmountInput';
 import { BottomSheet } from '../components/BottomSheet';
-import { Button } from '../components/Button';
+import { Button, ButtonLink } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { ConfidenceBlock } from '../components/ConfidenceBlock';
 import { Disclaimer } from '../components/Disclaimer';
 import { FlowHeader } from '../components/FlowHeader';
+import { focusMain } from '../components/focusMain';
 import { HiddenTradingSheet } from '../components/HiddenTradingSheet';
 import { Icon } from '../components/Icon';
 import { LetterAvatar } from '../components/LetterAvatar';
@@ -21,7 +22,7 @@ import { PickReasonChips } from '../components/PickReasonChips';
 import { StepperInput } from '../components/StepperInput';
 import { Term } from '../components/Term';
 import { getStock } from '../data/stocks';
-import { formatINR, formatPct } from '../lib/format';
+import { formatAmount, formatINR, formatPct } from '../lib/format';
 import { currentNav, portfolioValue, stockValue } from '../lib/market';
 import { buildPath } from '../lib/routes';
 import {
@@ -53,15 +54,16 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
   const [limitText, setLimitText] = useState(String(d.limit ?? Math.round(price)));
   const [budgetSheet, setBudgetSheet] = useState(false);
   const [why, setWhy] = useState(false);
-  const [ack, setAck] = useState(false);
   const [touched, setTouched] = useState(false);
 
-  // Changing the order asks the budget question again.
+  // Changing the order asks the budget question and the risk tick again.
   const update = (patch: Partial<BuyDraft>, opts: { push?: boolean } = {}) => {
     const changesOrder = (['qty', 'mode', 'amount', 'orderType', 'limit'] as const).some((k) => k in patch && patch[k] !== d[k]);
     const budgetOk = 'budgetOk' in patch ? patch.budgetOk : changesOrder ? false : d.budgetOk;
-    navigate(buyPath(stock.id, { ...d, ...patch, budgetOk: !!budgetOk }), { replace: !opts.push });
+    const riskAck = 'riskAck' in patch ? patch.riskAck : changesOrder ? false : d.riskAck;
+    navigate(buyPath(stock.id, { ...d, ...patch, budgetOk: !!budgetOk, riskAck: !!riskAck }), { replace: !opts.push });
   };
+  const ack = d.riskAck;
 
   // Text fields keep what is typed; the URL keeps the last valid value.
   const limitCheck = validateLimit(limitText, price);
@@ -91,7 +93,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
       return;
     }
     window.scrollTo(0, 0);
-    document.getElementById('main')?.focus({ preventScroll: true });
+    focusMain();
   }, [d.step]);
 
   const toReview = (budgetOk = d.budgetOk) => update({ step: 'review', budgetOk }, { push: true });
@@ -169,7 +171,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
                 <AmountInput label="Amount you want to spend" value={amountText} onChange={setAmountText} />
                 <p className="text-lg font-semibold text-ink" aria-live="polite">
                   {formatINR(amountNum)} buys {sharesText(shares)}
-                  {shares > 0 && <span className="font-normal text-ink-muted"> ({formatINR(total, 2)})</span>}
+                  {shares > 0 && <span className="font-normal text-ink-muted"> ({formatAmount(total)})</span>}
                 </p>
                 {shares === 0 && amountNum > 0 && (
                   <div className="mt-3">
@@ -228,7 +230,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
               <p className="text-sm text-ink-muted">
                 Curious about other order types?{' '}
                 <Link to="/you/trading" className="font-semibold text-brand-text underline-offset-4 hover:underline">
-                  Take the readiness check
+                  Take the quick check
                 </Link>{' '}
                 to see them explained.
               </p>
@@ -246,7 +248,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
                 <dt className="text-ink-muted">
                   {sharesText(shares)} × {formatINR(each, 2)}
                 </dt>
-                <dd className="font-bold tabular-nums text-ink">{formatINR(total, 2)}</dd>
+                <dd className="font-bold tabular-nums text-ink">{formatAmount(total)}</dd>
               </div>
             </dl>
 
@@ -271,7 +273,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
                 ['Shares', sharesText(shares)],
                 ['Order type', d.orderType === 'limit' ? `Limit at ${formatINR(each, 2)}` : 'Market'],
                 ['Kind', 'Delivery: yours until you sell'],
-                ['Total', formatINR(total, 2)],
+                ['Total', formatAmount(total)],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-3 p-4">
                   <dt className="text-ink-muted">{k}</dt>
@@ -295,6 +297,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
             )}
 
             <PickReasonChips
+              kind="stock"
               value={d.reason}
               onChange={(reason) => update({ reason })}
               offerDone={d.tipDone}
@@ -305,7 +308,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
             <ConfidenceBlock
               compact
               what={<>Buying {sharesText(shares)} of one company, {stock.name}. Its price moves with that one business.</>}
-              why={d.reason === 'plan' ? 'You picked it yourself. Single stocks aren’t part of a starter plan.' : 'You picked this company yourself. We never suggest stocks.'}
+              why="You picked this company yourself. We never suggest stocks."
               next={<>The order fills at the sample price. The shares show in Portfolio; sell any time from the holding.</>}
             />
 
@@ -314,7 +317,7 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
                 ack ? 'border-brand bg-mint' : 'border-border bg-surface'
               }`}
             >
-              <input type="checkbox" className="sr-only" checked={ack} onChange={(e) => setAck(e.target.checked)} />
+              <input type="checkbox" className="sr-only" checked={ack} onChange={(e) => update({ riskAck: e.target.checked })} />
               <span aria-hidden className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ${ack ? 'border-brand bg-brand text-on-brand' : 'border-ink-muted'}`}>
                 {ack && <Icon name="check" size={16} strokeWidth={3} />}
               </span>
@@ -343,33 +346,40 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
           <dl className="divide-y divide-border rounded-card-sm border border-border text-sm">
             <div className="flex justify-between gap-3 p-3">
               <dt className="text-ink-muted">Stocks you hold now</dt>
-              <dd className="font-semibold tabular-nums text-ink">{formatINR(stockValue(state))}</dd>
+              <dd className="font-semibold tabular-nums text-ink">{formatAmount(stockValue(state))}</dd>
             </div>
             <div className="flex justify-between gap-3 p-3">
               <dt className="text-ink-muted">This buy</dt>
-              <dd className="font-semibold tabular-nums text-ink">{formatINR(total)}</dd>
+              <dd className="font-semibold tabular-nums text-ink">{formatAmount(total)}</dd>
             </div>
             <div className="flex justify-between gap-3 p-3">
               <dt className="text-ink-muted">Whole portfolio after</dt>
-              <dd className="font-semibold tabular-nums text-ink">{formatINR(portfolioValue(state) + total)}</dd>
+              <dd className="font-semibold tabular-nums text-ink">{formatAmount(portfolioValue(state) + total)}</dd>
             </div>
           </dl>
           <p className="text-base text-ink">
             {within >= 1
-              ? `To stay within it, buy up to ${sharesText(within)} (${formatINR(within * each)}).`
+              ? `To stay within it, buy up to ${sharesText(within)} (${formatAmount(within * each)}).`
               : 'Any share of this company would go over it right now. That’s fine if you choose it.'}
           </p>
           <p className="text-sm text-ink-muted">Sample values. This is your own limit, not a rule. It never blocks a buy.</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              block
-              onClick={() => {
-                setBudgetSheet(false);
-                if (within >= 1) update({ mode: 'shares', qty: Math.min(within, MAX_SHARES) });
-              }}
-            >
-              Adjust
-            </Button>
+            {/* Adjust only when at least one share fits; otherwise it would change nothing (QA #14). */}
+            {within >= 1 ? (
+              <Button
+                block
+                onClick={() => {
+                  setBudgetSheet(false);
+                  update({ mode: 'shares', qty: Math.min(within, MAX_SHARES) });
+                }}
+              >
+                Adjust to {sharesText(Math.min(within, MAX_SHARES))}
+              </Button>
+            ) : (
+              <ButtonLink to="/you/trading" block>
+                Change my limit
+              </ButtonLink>
+            )}
             <Button
               variant="secondary"
               block
@@ -381,9 +391,11 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
               Buy anyway
             </Button>
           </div>
-          <Link to="/you/trading" className="inline-flex min-h-tap items-center text-sm font-semibold text-brand-text underline-offset-4 hover:underline">
-            Change my limit
-          </Link>
+          {within >= 1 && (
+            <Link to="/you/trading" className="inline-flex min-h-tap items-center text-sm font-semibold text-brand-text underline-offset-4 hover:underline">
+              Change my limit
+            </Link>
+          )}
         </div>
       </BottomSheet>
       <HiddenTradingSheet open={why} onClose={() => setWhy(false)} />

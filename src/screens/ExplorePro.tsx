@@ -9,6 +9,7 @@ import { BottomSheet } from '../components/BottomSheet';
 import { Button, ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
 import { ChangeText } from '../components/ChangeText';
+import { PROCESSING_NOTE } from '../lib/market';
 import { Chip } from '../components/Chip';
 import { Disclaimer } from '../components/Disclaimer';
 import { EmptyState } from '../components/EmptyState';
@@ -24,7 +25,7 @@ import { UnderlineTabs } from '../components/UnderlineTabs';
 import { FUNDS, getFund } from '../data/funds';
 import { STOCKS } from '../data/stocks';
 import { planFundIds } from '../lib/explore';
-import { dateLabel, formatINR } from '../lib/format';
+import { dateLabel, formatAmount, formatINR } from '../lib/format';
 import { holdingRows } from '../lib/portfolio';
 import { indexQuotes, orderRows, parseProTab, PRO_TABS, stockCards, watchlistStocks, type ProTab, type StockQuote } from '../lib/proView';
 import { buildPath } from '../lib/routes';
@@ -135,12 +136,13 @@ function HoldingsTab() {
             <span className="min-w-0 flex-1">
               <span className="block truncate font-semibold text-ink">{r.name}</span>
               <span className="block text-xs text-ink-muted">
-                {r.sub} · you put in {formatINR(r.invested)}
+                {r.sub} · invested {formatINR(r.invested)}
               </span>
+              {r.processing && <span className="block text-xs text-ink-muted">{PROCESSING_NOTE}</span>}
             </span>
             <span className="text-right">
               <span className="block font-bold tabular-nums text-ink">{formatINR(r.value)}</span>
-              <ChangeText change={r.change} className="text-xs" />
+              {!r.processing && <ChangeText change={r.change} className="text-xs" />}
             </span>
             <Icon name="chevronRight" className="shrink-0 text-ink-muted" />
           </Link>
@@ -169,7 +171,7 @@ function OrdersTab() {
               </span>
             </span>
             <span className="text-right">
-              <span className="block font-semibold tabular-nums text-ink">{formatINR(o.amount)}</span>
+              <span className="block font-semibold tabular-nums text-ink">{formatAmount(o.amount)}</span>
               <span className="block text-xs text-ink-muted">{o.status}</span>
             </span>
           </li>
@@ -191,7 +193,7 @@ function OrdersTab() {
               <td className="whitespace-nowrap px-2 py-3 text-ink-muted">{dateLabel(o.date)}</td>
               <td className="px-2 py-3 font-medium text-ink">{o.asset}</td>
               <td className="px-2 py-3 text-ink">{o.type}</td>
-              <td className="px-2 py-3 text-right font-semibold tabular-nums text-ink">{formatINR(o.amount)}</td>
+              <td className="px-2 py-3 text-right font-semibold tabular-nums text-ink">{formatAmount(o.amount)}</td>
               <td className="px-2 py-3 text-ink">{o.status}</td>
             </tr>
           ))}

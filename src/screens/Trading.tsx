@@ -15,7 +15,7 @@ import { useToast } from '../components/Toast';
 import { READINESS_QUESTIONS } from '../data/learn';
 import { formatINR, formatPct } from '../lib/format';
 import { portfolioValue, stockValue } from '../lib/market';
-import { READINESS_PASS, scoreReadiness, type ReadinessResult } from '../lib/readiness';
+import { scoreReadiness, type ReadinessResult } from '../lib/readiness';
 import { DEFAULT_STOCK_BUDGET_PCT } from '../lib/stockBudget';
 import { useStore } from '../state/store';
 
@@ -51,7 +51,7 @@ export function Trading() {
     <div className="mx-auto max-w-3xl space-y-6">
       <BackLink fallback="/you">You</BackLink>
       <header>
-        <h1 className="text-3xl font-bold text-ink">Stocks: budget and readiness</h1>
+        <h1 className="text-3xl font-bold text-ink">Stocks: budget and quick check</h1>
         <p className="mt-1 text-base text-ink-muted">Your own limits for single stocks. Change them any time.</p>
       </header>
 
@@ -82,21 +82,24 @@ export function Trading() {
 
       <Card pad="lg" aria-labelledby="ready-title">
         <h2 id="ready-title" className="text-lg font-semibold text-ink">
-          Readiness check
+          Quick check: 5 questions
         </h2>
         <p className="mt-1 text-base text-ink">
-          Five questions about how single stocks behave. Get {READINESS_PASS} of 5 right to see more order types explained in the buy screen.
+          How single stocks behave, in five questions. It isn’t a test of you. When most answers match, the buy screen also explains more order types.
+          Any you miss come with the answer and why.
         </p>
         {state.prefs.readinessPassed && !result && (
           <p className="mt-3 flex items-center gap-2 text-base font-semibold text-brand-text">
-            <Icon name="check" size={20} /> You’ve passed. More order types are explained when you buy.
+            <Icon name="check" size={20} /> Done. More order types are explained when you buy.
           </p>
         )}
 
         {result ? (
           <div className="mt-4 space-y-4" aria-live="polite">
             <p className="text-xl font-bold text-ink">
-              {result.score} of {result.total} right. {result.passed ? 'You’ve passed.' : `You need ${READINESS_PASS} to pass. Try again any time.`}
+              {result.passed
+                ? 'Done. More order types are now explained when you buy.'
+                : 'Have a look at the notes below. You can go through it again any time.'}
             </p>
             {result.wrongIds.length > 0 && (
               <ul className="space-y-3">
@@ -147,7 +150,7 @@ export function Trading() {
               {unanswered && 'Answer all five to see your result.'}
             </p>
             <Button type="submit" variant={dirty ? 'secondary' : 'primary'}>
-              See my result
+              Check my answers
             </Button>
           </form>
         )}

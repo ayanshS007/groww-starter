@@ -11,8 +11,18 @@ export const INSIGHT_TONE: Record<Insight['tone'], { bg: string; icon: IconName;
   caution: { bg: 'bg-caution-fill', icon: 'caution', label: 'Worth a look' },
 };
 
+/**
+ * Label and icon for an insight. A caution that needs nothing (the big dip) is
+ * named for what happened, with an info icon, so it doesn't read as a warning
+ * next to "optional" (QA #6). "Worth a look" stays for a real mismatch.
+ */
+export function insightTone(insight: Insight): { bg: string; icon: IconName; label: string } {
+  const t = INSIGHT_TONE[insight.tone];
+  return insight.tone === 'caution' && !insight.actionNeeded ? { ...t, icon: 'info', label: 'A bigger dip' } : t;
+}
+
 export function InsightCard({ insight }: { insight: Insight | null }) {
-  const tone = insight ? INSIGHT_TONE[insight.tone] : INSIGHT_TONE.neutral;
+  const tone = insight ? insightTone(insight) : INSIGHT_TONE.neutral;
   return (
     <section aria-label="This week" aria-live="polite" className={`rounded-card p-5 lg:p-6 ${tone.bg}`}>
       {insight && (
@@ -24,7 +34,7 @@ export function InsightCard({ insight }: { insight: Insight | null }) {
             <p className="mt-2 text-base text-ink">{insight.body}</p>
             {insight.action === 'review_plan' && (
               <ButtonLink to="/plan" variant="secondary" className="mt-4">
-                Review my plan (optional)
+                Review my plan
               </ButtonLink>
             )}
           </div>
@@ -39,7 +49,7 @@ export function InsightCard({ insight }: { insight: Insight | null }) {
  * The live region is always in the page so a new week is announced.
  */
 export function InsightLine({ insight }: { insight: Insight | null }) {
-  const tone = insight ? INSIGHT_TONE[insight.tone] : undefined;
+  const tone = insight ? insightTone(insight) : undefined;
   return (
     <div aria-live="polite" className="mt-4">
       {insight && tone && (
@@ -47,7 +57,8 @@ export function InsightLine({ insight }: { insight: Insight | null }) {
           <Icon name={tone.icon} size={18} className={`mt-0.5 shrink-0 ${insight.tone === 'caution' ? 'text-caution' : 'text-ink-muted'}`} />
           <span>
             <span className="sr-only">{tone.label}. </span>
-            {keepSignsTogether(insight.headline)}
+            {keepSignsTogether(insight.headline)}{' '}
+            <span className="font-semibold">{insight.actionNeeded ? 'Worth a look in Portfolio.' : 'Nothing needs doing.'}</span>
           </span>
         </p>
       )}

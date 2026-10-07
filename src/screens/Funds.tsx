@@ -9,16 +9,20 @@ import { FundRow } from '../components/FundRow';
 import { Icon } from '../components/Icon';
 import { Disclaimer } from '../components/Disclaimer';
 import { COLLECTIONS, FUNDS, type CollectionId } from '../data/funds';
+import { STOCKS } from '../data/stocks';
 import {
   filterFunds,
   FUND_CATEGORIES,
   hasAnyFilter,
   NO_FILTERS,
   planFundIds,
+  searchStocks,
   sheetFilterCount,
   type From,
   type FundFilters,
 } from '../lib/explore';
+import { buildPath } from '../lib/routes';
+import { Link } from '../router';
 import { useStore } from '../state/store';
 
 function initialFilters(query: Record<string, string>): FundFilters {
@@ -38,6 +42,8 @@ export function Funds({ query }: { query: Record<string, string> }) {
   }, [query.q, query.collection]);
 
   const results = useMemo(() => filterFunds(FUNDS, filters, state.watchlist), [filters, state.watchlist]);
+  // The top-bar search covers stocks too: point to matching sample companies (QA #27).
+  const stockMatches = filters.query.trim() ? searchStocks(STOCKS, filters.query).length : 0;
   const inPlan = planFundIds(state);
   const from: From = filters.query.trim() ? 'search' : filters.collection ? 'collection' : 'link';
   const extra = sheetFilterCount(filters);
@@ -113,6 +119,14 @@ export function Funds({ query }: { query: Record<string, string> }) {
       <p aria-live="polite" className="text-sm text-ink-muted">
         {results.length} fund{results.length === 1 ? '' : 's'}
         {hasAnyFilter(filters) ? ' match' : ''}
+        {stockMatches > 0 && (
+          <>
+            {' · '}
+            <Link to={buildPath('/explore/stocks', { q: filters.query.trim() })} className="font-semibold text-brand-text underline-offset-4 hover:underline">
+              {stockMatches} sample compan{stockMatches === 1 ? 'y' : 'ies'} match too
+            </Link>
+          </>
+        )}
       </p>
 
       {results.length > 0 ? (

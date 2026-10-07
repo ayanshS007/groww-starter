@@ -65,6 +65,19 @@ export function ceilingNote(state: Pick<State, 'checkin' | 'sips'>, add: number,
   return `With this, your monthly SIPs add up to ${formatINR(total)}. That is above the ${formatINR(ceiling)} that usually feels easy at your income. It’s a note, not a rule.`;
 }
 
+/**
+ * One plain line when a SIP amount the app suggests (a goal's "Increase SIP to
+ * ₹X") would take monthly SIPs over the comfort ceiling (QA #18). Never blocks.
+ * `sipId` is the SIP being raised, so its old amount isn't counted twice.
+ */
+export function suggestedOverCeiling(state: Pick<State, 'checkin' | 'sips'>, sipId: string, newAmount: number): string | undefined {
+  if (!state.checkin) return undefined;
+  const ceiling = comfortCeiling(state.checkin.incomeBand);
+  const others = state.sips.filter((s) => s.status !== 'stopped' && s.id !== sipId).reduce((sum, s) => sum + s.amount, 0);
+  if (others + newAmount <= ceiling) return undefined;
+  return `That’s more than the ${formatINR(ceiling)} a month that usually feels easy at your income. Your call.`;
+}
+
 /** README 8.2: salary → payday + 3 (default payday 1st); anything else → the 10th. */
 export function suggestedDay(state: Pick<State, 'checkin' | 'user'>): number {
   return defaultSipDay(state.checkin?.incomeType ?? 'none', state.user.payday ?? 1);
@@ -242,7 +255,7 @@ export function successInfo(state: State, orderId: string): SuccessInfo | null {
       headline,
       rows,
       steps: [
-        `Today’s payment of ${formatINR(total)} is processing. Your units show in Portfolio.`,
+        `Today’s payment of ${formatINR(total)} is processing. Units arrive in 1–2 working days.`,
         next
           ? `Your next payment is on ${dateLabel(next, { short: true })}, then on the same day each month.`
           : 'Your next payment follows on your SIP date each month.',
@@ -261,7 +274,7 @@ export function successInfo(state: State, orderId: string): SuccessInfo | null {
       rows: [{ fundId: order.assetId, name: name(order.assetId), amount: order.amount }],
       steps: fund?.whatHappensNext ?? [
         'Your money buys units at the next price.',
-        'Units show in your portfolio within a working day.',
+        'Units arrive in your portfolio in 1–2 working days.',
         'Withdraw any time.',
       ],
       processing: order.status === 'processing',
@@ -276,7 +289,7 @@ export function successInfo(state: State, orderId: string): SuccessInfo | null {
     rows: [{ fundId: order.assetId, name: assetName(order.assetId), amount: order.amount, units: order.units }],
     steps: isBuy
       ? ['Your order is filled at the sample price (simulated).', 'The shares show in your portfolio, held for delivery.', 'Buy more or sell any time from the holding.']
-      : ['Your units are removed right away.', 'The money reaches your bank in 1–3 working days.', 'Nothing else changes.'],
+      : ['Your units are removed right away.', 'Money reaches your bank in 1–3 working days.', 'Nothing else changes.'],
     processing: order.status === 'processing',
     single: true,
   };

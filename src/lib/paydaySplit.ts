@@ -62,12 +62,15 @@ export function paydayCushionTarget(state: Pick<State, 'checkin' | 'goals'>): nu
 
 /** Everything Payday Split needs from state, for a given pay and target. */
 export function paydayFromState(
-  state: Pick<State, 'sips' | 'holdings' | 'market'>,
+  state: Pick<State, 'sips' | 'holdings' | 'market'> & Partial<Pick<State, 'goals' | 'checkin'>>,
   pay: number,
   target: number,
-): PaydaySplit & { cushionValue: number; cushionTarget: number } {
+): PaydaySplit & { cushionValue: number; cushionTarget: number; saidHasCushion: boolean } {
   const value = cushionValue(state);
-  return { ...splitPay({ pay, activeSipTotal: activeSipTotal(state.sips), cushionValue: value, cushionTarget: target }), cushionValue: value, cushionTarget: target };
+  // QA #16: someone who said they have a cushion gets no top-up suggestion.
+  const saidHasCushion = state.checkin?.cushion === 'yes';
+  const split = splitPay({ pay, activeSipTotal: activeSipTotal(state.sips), cushionValue: value, cushionTarget: saidHasCushion ? 0 : target });
+  return { ...split, cushionValue: value, cushionTarget: target, saidHasCushion };
 }
 
 /** Pay amounts accepted on the Payday screen and in Reviewer tools. */

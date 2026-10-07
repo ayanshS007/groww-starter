@@ -3,6 +3,7 @@
 // card. No news, indices, gainers/losers or banners.
 import { Button, ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
+import { ChangeText } from '../components/ChangeText';
 import { Disclaimer } from '../components/Disclaimer';
 import { Icon, type IconName } from '../components/Icon';
 import { InsightLine } from '../components/InsightCard';
@@ -12,11 +13,12 @@ import { PlanSummaryCard } from '../components/PlanSummaryCard';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { getFund } from '../data/funds';
-import { dateLabel, formatINR, formatSigned } from '../lib/format';
+import { dateLabel, formatINR } from '../lib/format';
 import { insightFromState } from '../lib/insight';
 import { overallChange, portfolioValue, totalInvested } from '../lib/market';
 import { nextUnseen } from '../lib/milestones';
-import { greeting, nextStep, quietRestart, statusLine, upcomingSips } from '../lib/nextStep';
+import { hasRunningPlanSip } from '../lib/planStatus';
+import { greeting, nextSipGroup, nextStep, quietRestart, statusLine } from '../lib/nextStep';
 import { Link } from '../router';
 import { useStore } from '../state/store';
 
@@ -26,7 +28,6 @@ function Snapshot() {
   const value = portfolioValue(state);
   const invested = totalInvested(state);
   const change = overallChange(state);
-  const down = change.amount < 0;
   const insight = insightFromState(state);
   return (
     <Card pad="lg" aria-labelledby="snapshot-title">
@@ -39,15 +40,13 @@ function Snapshot() {
       <p className="mt-3 text-4xl font-extrabold tabular-nums text-ink">{formatINR(value)}</p>
       <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <div>
-          <dt className="text-ink-muted">You put in</dt>
+          <dt className="text-ink-muted">Invested</dt>
           <dd className="font-semibold tabular-nums text-ink">{formatINR(invested)}</dd>
         </div>
         <div>
-          <dt className="text-ink-muted">Change so far</dt>
-          <dd className={`flex items-center gap-1 font-semibold tabular-nums ${down ? 'text-caution' : 'text-brand-text'}`}>
-            <Icon name={down ? 'arrowDown' : 'arrowUp'} size={16} />
-            {formatSigned(change.amount)} ({formatSigned(change.pct, 'pct')})
-            <span className="sr-only">{down ? ', down' : ', up'}</span>
+          <dt className="text-ink-muted">Overall change</dt>
+          <dd>
+            <ChangeText change={change} />
           </dd>
         </div>
       </dl>
@@ -97,47 +96,54 @@ function PausedSip() {
 function UpcomingSip() {
   const { state, dispatch } = useStore();
   const toast = useToast();
-  const next = upcomingSips(state)[0];
-  if (!next) return <PausedSip />;
-  const fund = getFund(next.sip.fundId);
-  const sipId = next.sip.id;
+  // Every SIP due on the next date, not just the first (QA #29).
+  const group = nextSipGroup(state);
+  if (group.length === 0) return <PausedSip />;
+  const skipped = group.find((u) => u.skippedDate)?.skippedDate;
   return (
     <Card pad="lg" aria-labelledby="upcoming-title">
       <h2 id="upcoming-title" className="text-lg font-semibold text-ink">
         Upcoming <Term id="sip">SIP</Term>
+        {group.length > 1 ? 's' : ''}
       </h2>
-      <div className="mt-3 flex flex-wrap items-center gap-4">
-        <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-card-sm bg-peach text-ink">
-          <span className="text-lg font-bold leading-none">{dateLabel(next.date, { short: true }).split(' ')[0]}</span>
-          <span className="text-xs">{dateLabel(next.date, { short: true }).split(' ')[1]}</span>
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold tabular-nums text-ink">{formatINR(next.sip.amount)}</p>
-          <p className="text-sm text-ink-muted">{fund?.name}</p>
-        </div>
-        {next.skippedDate ? (
-          <Button variant="quiet" className="w-full sm:w-auto" onClick={() => dispatch({ type: 'undoSkip', sipId })}>
-            Undo skip
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            className="w-full sm:w-auto"
-            onClick={() => {
-              dispatch({ type: 'skipNext', sipId });
-              toast.show(`Skipped ${dateLabel(next.date, { short: true })}. Your plan stays alive.`, {
-                undo: () => dispatch({ type: 'undoSkip', sipId }),
-              });
-            }}
-          >
-            Skip this one
-          </Button>
-        )}
-      </div>
+      <ul className="mt-3 space-y-3">
+        {group.map((next) => {
+          const fund = getFund(next.sip.fundId);
+          const sipId = next.sip.id;
+          return (
+            <li key={sipId} className="flex flex-wrap items-center gap-4">
+              <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-card-sm bg-peach text-ink">
+                <span className="text-lg font-bold leading-none">{dateLabel(next.date, { short: true }).split(' ')[0]}</span>
+                <span className="text-xs">{dateLabel(next.date, { short: true }).split(' ')[1]}</span>
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold tabular-nums text-ink">{formatINR(next.sip.amount)}</p>
+                <p className="text-sm text-ink-muted">{fund?.name}</p>
+              </div>
+              {next.skippedDate ? (
+                <Button variant="quiet" className="w-full sm:w-auto lg:w-full" onClick={() => dispatch({ type: 'undoSkip', sipId })}>
+                  Undo skip<span className="sr-only">, {fund?.name}</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  className="w-full sm:w-auto lg:w-full"
+                  onClick={() => {
+                    dispatch({ type: 'skipNext', sipId });
+                    toast.show(`Skipped ${dateLabel(next.date, { short: true })}. Your plan stays alive.`, {
+                      undo: () => dispatch({ type: 'undoSkip', sipId }),
+                    });
+                  }}
+                >
+                  Skip next instalment<span className="sr-only">, {fund?.name}</span>
+                </Button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
       <p className="mt-3 text-sm text-ink-muted">
-        {next.skippedDate
-          ? `${dateLabel(next.skippedDate, { short: true })} is skipped. Skipping is free.`
-          : 'Skip any month, free. Nothing resets.'}
+        {skipped ? `${dateLabel(skipped, { short: true })} is skipped. Skipping is free.` : 'Skip any month, free. Nothing resets.'}
       </p>
     </Card>
   );
@@ -205,7 +211,7 @@ export function Home() {
       </div>
       <div className="space-y-6 lg:col-span-5">
         {hasPlan && <PlanSummaryCard state={state} />}
-        {hasPlan && <PaydayCard />}
+        {hasRunningPlanSip(state) && <PaydayCard />}
         {milestone && <MilestoneCard id={milestone} />}
         <UpcomingSip />
       </div>

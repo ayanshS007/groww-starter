@@ -69,6 +69,18 @@ export function cushionTarget(band: IncomeBand): number {
   return 3 * INCOME_MIDPOINT[band];
 }
 
+/** A first, reachable cushion step shown before the full target (QA #20). */
+export const CUSHION_FIRST_STEP = 10000;
+
+/**
+ * What the cushion is measured against on screen: the first ₹10,000 until it is
+ * reached (or when the full target is smaller), then the full target.
+ */
+export function cushionStep(value: number, target: number): { main: number; full: number; first: boolean } {
+  const first = target > CUSHION_FIRST_STEP && value < CUSHION_FIRST_STEP;
+  return { main: first ? CUSHION_FIRST_STEP : target, full: target, first };
+}
+
 /** README 8.2: salary → payday + 3 (default payday 1st); irregular income → 10th. Range 1–28. */
 export function defaultSipDay(incomeType: IncomeType, payday = 1): number {
   if (incomeType !== 'salary') return 10;

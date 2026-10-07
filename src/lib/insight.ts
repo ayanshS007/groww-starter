@@ -1,9 +1,9 @@
 // Weekly dip insight (README 8.5 as changed by PLAN C1 and items 14–15).
 import type { Holding, Horizon, State } from '../state/types';
 import { formatINR, formatPct, formatSigned } from './format';
-import { HORIZON_TEXT, horizonRank, heldFunds, overallChange, weekChange, type Change } from './market';
+import { HORIZON_TEXT, horizonRank, heldFunds, isProcessing, overallChange, weekChange, type Change } from './market';
 
-export type InsightBranch = 'big_dip' | 'calm' | 'short_term' | 'steadier';
+export type InsightBranch = 'big_dip' | 'calm' | 'short_term' | 'steadier' | 'first_week';
 export type InsightTone = 'calm' | 'neutral' | 'caution'; // never red
 
 export type Insight = {
@@ -29,9 +29,9 @@ export const BIG_DIP_PCT = -10;
 export const ALARM_WORDS = ['crash', 'alert', 'sell now', 'panic', 'plunge', 'danger', 'urgent', 'warning', 'collapse', 'tank'];
 
 function headline(week: Change, overall: Change): string {
-  return `This week: ${formatSigned(week.amount)} (${formatSigned(week.pct, 'pct')}). Overall: ${formatSigned(
+  return `This week: ${formatSigned(week.amount)} (${formatSigned(week.pct, 'pct')}). Overall change: ${formatSigned(
     overall.amount,
-  )} (${formatSigned(overall.pct, 'pct')}) on what you put in.`;
+  )} (${formatSigned(overall.pct, 'pct')}) on what you invested.`;
 }
 
 export function buildInsight({ weekChange: week, overallChange: overall, horizon, holdings }: InsightInput): Insight {
@@ -46,11 +46,11 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
     if (week.amount > 0) {
       return {
         branch: 'big_dip',
-        headline: `Up ${formatINR(week.amount)} (${formatSigned(week.pct, 'pct')}) this week. Overall: ${formatSigned(overall.amount)} (${formatSigned(
+        headline: `Up ${formatINR(week.amount)} (${formatSigned(week.pct, 'pct')}) this week. Overall change: ${formatSigned(overall.amount)} (${formatSigned(
           overall.pct,
           'pct',
-        )}) on what you put in.`,
-        body: `Your portfolio is still ${formatINR(Math.abs(overall.amount))} (${formatPct(Math.abs(overall.pct))}) below what you put in. That's normal after a bigger fall. Your horizon is ${h}. Nothing needs doing. Reviewing your plan is optional.`,
+        )}) on what you invested.`,
+        body: `Your portfolio is still ${formatINR(Math.abs(overall.amount))} (${formatPct(Math.abs(overall.pct))}) below what you invested. That's normal after a bigger fall. Your time frame is ${h}. Nothing needs doing. Reviewing your plan is optional.`,
         actionNeeded: false,
         action: 'review_plan',
         tone: 'neutral',
@@ -59,7 +59,7 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
     return {
       branch: 'big_dip',
       headline: head,
-      body: `That's a bigger fall than usual. Past falls like this have recovered, but there's no promise this one will. Selling now would lock in the fall. Your horizon is ${h}. Reviewing your plan is optional.`,
+      body: `That's a bigger fall than usual. Past falls like this have recovered, but there's no promise this one will. Selling now would lock in the fall. Your time frame is ${h}. Reviewing your plan is optional.`,
       actionNeeded: false,
       action: 'review_plan',
       tone: 'caution',
@@ -82,7 +82,7 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
     return {
       branch: 'short_term',
       headline: head,
-      body: `A short-term move. Your horizon is ${h}, so this alone doesn't mean you need to act.`,
+      body: `A short-term move. Your time frame is ${h}, so this alone doesn't mean you need to act.`,
       actionNeeded: false,
       tone: 'neutral',
     };
@@ -96,7 +96,7 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
     return {
       branch: 'steadier',
       headline: head,
-      body: `${mismatch.name} is meant for ${mismatch.horizonLabel}, longer than your ${h}. Funds like it can stay down for a while. You may want to review your plan.`,
+      body: `${mismatch.name} is meant for ${mismatch.horizonLabel}, longer than your time frame of ${h}. Funds like it can stay down for a while. You may want to review your plan.`,
       actionNeeded: true,
       action: 'review_plan',
       tone: 'caution',
@@ -120,9 +120,20 @@ export function insightHorizon(state: Pick<State, 'checkin' | 'holdings'>): Hori
   return funds.reduce((best, f) => (horizonRank(f.horizon) > horizonRank(best) ? f.horizon : best), funds[0].horizon);
 }
 
+/** Before the first week has passed there is no move to describe yet (QA #15). */
+export const FIRST_WEEK_INSIGHT: Insight = {
+  branch: 'first_week',
+  headline: 'Your money is on its way in.',
+  body: 'Units arrive in 1–2 working days. A note on how it moved comes after your first week.',
+  actionNeeded: false,
+  tone: 'neutral',
+};
+
 /** Insight for the current state, or null when nothing is held. */
 export function insightFromState(state: State): Insight | null {
-  if (!state.holdings.some((h) => h.units > 0)) return null;
+  const held = state.holdings.filter((h) => h.units > 0);
+  if (held.length === 0) return null;
+  if (held.every((h) => isProcessing(h, state.market))) return FIRST_WEEK_INSIGHT;
   return buildInsight({
     weekChange: weekChange(state),
     overallChange: overallChange(state),

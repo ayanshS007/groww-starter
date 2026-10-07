@@ -3,7 +3,7 @@ import { getFund } from '../data/funds';
 import { getStock } from '../data/stocks';
 import type { Holding, State } from '../state/types';
 import { formatINR } from './format';
-import { cushionValue, currentNav, holdingValue, portfolioValue, stockValue, type Change } from './market';
+import { cushionValue, currentNav, goalSavingsValue, holdingValue, isProcessing, portfolioValue, stockValue, type Change } from './market';
 
 export type HoldingRow = {
   holding: Holding;
@@ -14,6 +14,8 @@ export type HoldingRow = {
   change: Change;
   nav: number;
   avgNav: number;
+  /** First bought this simulated week: value = invested, units on the way (QA #15). */
+  processing: boolean;
 };
 
 export function assetName(assetId: string): string {
@@ -38,6 +40,7 @@ export function holdingRow(h: Holding, market: State['market']): HoldingRow {
     change: { amount, pct: h.invested > 0 ? (amount / h.invested) * 100 : 0 },
     nav: currentNav(h.assetId, market),
     avgNav: h.units > 0 ? h.invested / h.units : 0,
+    processing: isProcessing(h, market),
   };
 }
 
@@ -49,18 +52,20 @@ export function holdingRows(state: Pick<State, 'holdings' | 'market'>): HoldingR
     .sort((a, b) => b.value - a.value);
 }
 
-export type SliceId = 'cushion' | 'grow' | 'stocks';
+export type SliceId = 'cushion' | 'goals' | 'grow' | 'stocks';
 export type AssetSlice = { id: SliceId; label: string; value: number; pct: number };
 
-/** Cushion (liquid funds), grow (other funds) and stocks. Empty slices are left out. */
-export function assetSplit(state: Pick<State, 'holdings' | 'market'>): AssetSlice[] {
+/** Cushion (liquid funds not behind a goal), goal savings, grow (other funds) and stocks. Empty slices are left out. */
+export function assetSplit(state: Pick<State, 'holdings' | 'market'> & Partial<Pick<State, 'goals' | 'sips'>>): AssetSlice[] {
   const total = portfolioValue(state);
   if (total <= 0) return [];
   const cushion = cushionValue(state);
+  const goals = goalSavingsValue(state);
   const stocks = stockValue(state);
-  const grow = Math.max(0, total - cushion - stocks);
+  const grow = Math.max(0, total - cushion - goals - stocks);
   const raw: [SliceId, string, number][] = [
     ['cushion', 'Cushion', cushion],
+    ['goals', 'Goal savings', goals],
     ['grow', 'Grow funds', grow],
     ['stocks', 'Stocks', stocks],
   ];

@@ -7,36 +7,26 @@ import { Card } from '../components/Card';
 import { Disclaimer } from '../components/Disclaimer';
 import { Icon } from '../components/Icon';
 import { LetterAvatar } from '../components/LetterAvatar';
-import { formatINR, ordinal } from '../lib/format';
+import { formatAmount, ordinal } from '../lib/format';
 import { successInfo } from '../lib/invest';
 import { nextStep } from '../lib/nextStep';
-import { navigate } from '../router';
 import { useStore } from '../state/store';
 
 const ROLE = { cushion: 'Cushion', grow: 'Grow' } as const;
 
-/** Back from here (not a click on this page) goes to Portfolio, whatever came before payment. */
+/**
+ * Back from here goes to Portfolio, never into payment or the buy flow.
+ * On arrival this entry becomes Portfolio and Success is pushed on top of it,
+ * so the browser's own Back lands on Portfolio. A hashchange listener can't do
+ * this: the router re-renders and unmounts Success before such a listener runs.
+ * The marker stops a refresh from adding a second Portfolio entry.
+ */
 function useBackGoesToPortfolio() {
   useEffect(() => {
-    let own = false;
-    let timer: number | undefined;
-    const onClick = (e: MouseEvent) => {
-      if (!(e.target as Element | null)?.closest?.('a[href], button')) return;
-      own = true;
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => (own = false), 800);
-    };
-    const onHash = () => {
-      if (own || window.location.hash.startsWith('#/invest/success')) return;
-      navigate('/portfolio', { replace: true });
-    };
-    document.addEventListener('click', onClick, true);
-    window.addEventListener('hashchange', onHash);
-    return () => {
-      document.removeEventListener('click', onClick, true);
-      window.removeEventListener('hashchange', onHash);
-      window.clearTimeout(timer);
-    };
+    const here = window.location.hash;
+    if ((window.history.state as { successGuard?: boolean } | null)?.successGuard) return;
+    window.history.replaceState(null, '', '#/portfolio');
+    window.history.pushState({ successGuard: true }, '', here);
   }, []);
 }
 
@@ -79,7 +69,7 @@ export function Success({ orderId }: { orderId: string }) {
                 </p>
               </div>
               <p className="text-right font-bold tabular-nums text-ink">
-                {formatINR(r.amount)}
+                {formatAmount(r.amount)}
                 {monthly && <span className="block text-xs font-medium text-ink-muted">a month</span>}
               </p>
             </li>

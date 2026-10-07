@@ -8,7 +8,6 @@ import {
   advanceWeek,
   applyBuy,
   applyRedeem,
-  hasInvested,
   nextId,
   postInstalment,
 } from '../lib/activity';
@@ -90,12 +89,6 @@ function pushActivity(state: State, item: Omit<ActivityItem, 'id'>): State {
 
 function patchSip(state: State, sipId: string, patch: Partial<Sip>): State {
   return { ...state, sips: state.sips.map((s) => (s.id === sipId ? { ...s, ...patch } : s)) };
-}
-
-/** PLAN item 13: the first investment switches to dip_small and applies one week. */
-function afterFirstInvestment(before: State, after: State): State {
-  if (hasInvested(before)) return after;
-  return advanceWeek({ ...after, market: { ...after.market, scenario: 'dip_small' } });
 }
 
 /** Creates a SIP and posts its first payment (instalment 1) at this week's NAV. */
@@ -192,7 +185,8 @@ function placeInvestOrder(state: State): State {
     }
   }
   s = { ...s, investDraft: undefined };
-  return afterFirstInvestment(state, s);
+  // No automatic market week after a first investment (QA #15, owner decision).
+  return s;
 }
 
 /** Id of the order the next placeInvestOrder will create (for the Success route). */
@@ -251,7 +245,8 @@ function buyStock(state: State, a: Extract<Action, { type: 'buyStock' }>): State
   if (a.pickReason) order.pickReason = a.pickReason;
   s = { ...s, orders: [...s.orders, order] };
   s = pushActivity(s, { at: today, week, kind: 'buy', assetId: stock.id, amount, units: shares });
-  return afterFirstInvestment(state, s);
+  // No automatic market week after a first investment (QA #15, owner decision).
+  return s;
 }
 
 function linkSipToGoal(state: State, sipId: string, goalId: string | null): State {

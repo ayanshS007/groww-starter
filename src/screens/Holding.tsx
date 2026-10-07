@@ -15,7 +15,7 @@ import { getFund } from '../data/funds';
 import { getStock } from '../data/stocks';
 import { formatINR, formatUnits, ordinal } from '../lib/format';
 import { singleDraft } from '../lib/invest';
-import { navSeries } from '../lib/market';
+import { navSeries, PROCESSING_NOTE } from '../lib/market';
 import { holdingRow } from '../lib/portfolio';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
@@ -76,7 +76,7 @@ export function HoldingDetail({ id, query = {} }: { id: string; query?: Record<s
           </div>
           <p className="mt-3 text-4xl font-extrabold tabular-nums text-ink">{formatINR(row.value)}</p>
           <p className="mt-1">
-            <ChangeText change={row.change} />
+            {row.processing ? <span className="text-base text-ink-muted">{PROCESSING_NOTE}.</span> : <ChangeText change={row.change} />}
           </p>
           <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -84,7 +84,7 @@ export function HoldingDetail({ id, query = {} }: { id: string; query?: Record<s
               <dd className="font-semibold tabular-nums text-ink">{formatUnits(h.units)}</dd>
             </div>
             <div>
-              <dt className="text-ink-muted">You put in</dt>
+              <dt className="text-ink-muted">Invested</dt>
               <dd className="font-semibold tabular-nums text-ink">{formatINR(row.invested)}</dd>
             </div>
             <div>

@@ -2,7 +2,7 @@
 import { formatINR } from '../lib/format';
 import type { AssetSlice, SliceId } from '../lib/portfolio';
 
-const FILL: Record<SliceId, string> = { cushion: 'bg-brand/35', grow: 'bg-brand', stocks: 'bg-ink/45' };
+const FILL: Record<SliceId, string> = { cushion: 'bg-brand/35', goals: 'bg-chart-cushion/45', grow: 'bg-brand', stocks: 'bg-ink/45' };
 
 export function AssetBar({ slices }: { slices: AssetSlice[] }) {
   if (slices.length === 0) return null;

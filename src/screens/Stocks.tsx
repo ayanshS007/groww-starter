@@ -17,6 +17,7 @@ import { Sparkline } from '../components/Sparkline';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { getStock, STOCKS } from '../data/stocks';
+import { searchStocks } from '../lib/explore';
 import { formatINR, formatPct, formatUnits } from '../lib/format';
 import { currentNav, portfolioValue, stockValue } from '../lib/market';
 import { buildPath } from '../lib/routes';
@@ -37,10 +38,7 @@ export function StocksList({ query = {} }: { query?: Record<string, string> }) {
   const { state } = useStore();
   const [size, setSize] = useState<StockSize | null>(null);
   const [q, setQ] = useState(query.q ?? '');
-  const term = q.trim().toLowerCase();
-  const list = STOCKS.filter((s) => (!size || s.sizeLabel === size) && (!term || `${s.name} ${s.ticker} ${s.sector}`.toLowerCase().includes(term))).sort(
-    (a, b) => a.name.localeCompare(b.name),
-  );
+  const list = searchStocks(STOCKS, q).filter((s) => !size || s.sizeLabel === size);
   const starter = state.prefs.view === 'starter';
 
   return (
@@ -113,7 +111,7 @@ export function StocksList({ query = {} }: { query?: Record<string, string> }) {
           </Button>
         </div>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid gap-3 lg:grid-cols-2">
           {list.map((s) => {
             const price = currentNav(s.id, state.market);
             return (
