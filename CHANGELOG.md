@@ -119,3 +119,5 @@ Format: YYYY-MM-DD | stage | what | why
 2026-10-07 | 3c | Safe-area: flow screens get bottom inset padding, tab bar and toast use side insets, sheets use px-sheet | Checked with a CDP safe-area override: top 47 / bottom 34 portrait, left/right 47 landscape
 2026-10-07 | 3c | "Skip to content" moves focus to <main> instead of changing the hash | In a hash router href="#main" became the route /main and redirected to Home
 2026-10-07 | 3c | Removed screens/NotYetBuilt.tsx; renderScreen is now exhaustive | No placeholder routes remain
+2026-10-07 | 3c | Stop coach carries the standard illustrative disclaimer | It quotes this week's sample move (PLAN item 42). Found by the screen-by-screen disclaimer matrix
+2026-10-07 | 3c | README 17 P0 pass in Chromium on the single-file build: 659 (390 px) and 750 (1280 px) controls clicked across 51 screen/state combinations, none dead; 306 renders (3 widths × light/dark) with no overflow, banned words, red, or console errors; 28 direct URLs, refresh on 13 screens and a throwing localStorage never crash | CLAUDE.md verify-before-claiming; scripts live outside the repo

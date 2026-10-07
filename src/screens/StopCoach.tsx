@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ConfidenceBlock } from '../components/ConfidenceBlock';
+import { Disclaimer } from '../components/Disclaimer';
 import { EditSipSheet } from '../components/EditSipSheet';
 import { FlowHeader } from '../components/FlowHeader';
 import { OptionTiles } from '../components/OptionTile';
@@ -193,6 +194,7 @@ export function StopCoach({ id }: { id: string }) {
           why="You tapped Stop SIP. We offer these options because many people only need a lighter one. The choice stays yours."
           next={<>Pick one and you’re back on your SIP page with the new status. Your units stay invested either way.</>}
         />
+        <Disclaimer className="mt-6" />
       </main>
 
       <PauseSheet sip={sip} open={sheet === 'pause'} onClose={() => setSheet(null)} onPaused={backToDetail} />

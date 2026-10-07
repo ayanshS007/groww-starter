@@ -403,6 +403,9 @@ describe('Stop coach (README 8.6, PLAN item 23)', () => {
     for (const q of ['What is this?', 'Why am I seeing this?', 'What happens next?']) expect(out).toContain(q);
     for (const w of ['are you sure', 'you’ll regret', 'last chance', 'only today', 'countdown', 'confetti']) expect(out.toLowerCase()).not.toContain(w);
   });
+  it('carries the illustrative disclaimer, since it quotes this week’s sample move', () => {
+    expect(out).toContain('Illustrative prototype. All prices and returns are sample data.');
+  });
   it('has a back and a close path to SIP detail', () => {
     expect(html).toContain('href="#/portfolio/sip/sip_1"');
     expect(html).toContain('aria-label="Back"');
