@@ -76,6 +76,14 @@ export const PICK_REASONS: { id: PickReason; label: string }[] = [
   { id: 'not_sure', label: 'Not sure' },
 ];
 
+/**
+ * Reasons offered for an asset kind. A starter plan never holds single stocks,
+ * so stock buys don't offer "My starter plan" (QA #9).
+ */
+export function pickReasonsFor(kind: 'fund' | 'stock'): { id: PickReason; label: string }[] {
+  return kind === 'stock' ? PICK_REASONS.filter((r) => r.id !== 'plan') : PICK_REASONS;
+}
+
 /** "A friend or social media" and "Not sure" bring the inline Tip Check offer. */
 export function offersTipCheck(reason: PickReason | undefined): boolean {
   return reason === 'social' || reason === 'not_sure';

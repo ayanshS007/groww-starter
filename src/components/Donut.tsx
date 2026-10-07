@@ -6,6 +6,7 @@ import { formatINR } from '../lib/format';
 
 const STROKE: Record<AllocationId, string> = {
   cushion: 'stroke-chart-cushion',
+  goals: 'stroke-chart-cushion/45',
   grow: 'stroke-chart-grow',
   stocks: 'stroke-chart-stocks',
   gold: 'stroke-chart-gold',
@@ -13,6 +14,7 @@ const STROKE: Record<AllocationId, string> = {
 
 export const SWATCH: Record<AllocationId, string> = {
   cushion: 'bg-chart-cushion',
+  goals: 'bg-chart-cushion/45',
   grow: 'bg-chart-grow',
   stocks: 'bg-chart-stocks',
   gold: 'bg-chart-gold',

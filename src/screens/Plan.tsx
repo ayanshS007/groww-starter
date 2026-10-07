@@ -13,6 +13,7 @@ import { Term } from '../components/Term';
 import { WhyDrawer } from '../components/WhyDrawer';
 import { FUNDS, getFund } from '../data/funds';
 import { formatINR } from '../lib/format';
+import { planAction } from '../lib/planStatus';
 import { Link } from '../router';
 import { useStore } from '../state/store';
 import type { Fund, FundCategory, PlanBucket, StarterPlan } from '../state/types';
@@ -67,7 +68,7 @@ function BucketCard({ bucket, plan }: { bucket: PlanBucket; plan: StarterPlan })
           </dd>
         </div>
         <div>
-          <dt className="text-ink-muted">Suits money you need in</dt>
+          <dt className="text-ink-muted">Time frame</dt>
           <dd className="font-medium text-ink">{fund.horizonLabel}</dd>
         </div>
         <div className="sm:col-span-2">
@@ -120,6 +121,7 @@ export function Plan() {
   const [others, setOthers] = useState(false);
   const plan = state.plan!;
   const sipCount = plan.buckets.length;
+  const action = planAction(state)!;
   const cited = plan.factors.filter((f) => f.answer === 'horizon' || f.answer === 'dipReaction' || f.answer === 'cushion');
 
   return (
@@ -185,13 +187,11 @@ export function Plan() {
 
       <aside className="lg:col-span-4 lg:col-start-9 lg:row-start-1">
         <Card pad="lg" className="lg:sticky lg:top-24">
-          <h2 className="text-lg font-semibold text-ink">Ready when you are</h2>
-          <p className="mt-1 text-sm text-ink-muted">
-            {sipCount === 1 ? 'One SIP' : `${sipCount} SIPs`}, {formatINR(plan.monthly)} a month, one autopay. Change or skip later.
-          </p>
+          <h2 className="text-lg font-semibold text-ink">{action.title}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{action.body}</p>
           <div className="mt-5 flex flex-col gap-3">
-            <ButtonLink to="/invest/plan" block>
-              Start this plan
+            <ButtonLink to={action.to} block>
+              {action.cta}
             </ButtonLink>
             <ButtonLink to="/checkin/1" variant="secondary" block>
               Edit answers

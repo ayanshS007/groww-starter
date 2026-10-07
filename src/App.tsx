@@ -1,5 +1,6 @@
 // Root: hash routing with guards, the responsive shell and every P0/P1 screen (Stages 3a–3d).
 import { useEffect, useRef } from 'react';
+import { focusMain } from './components/focusMain';
 import { AppShell } from './components/AppShell';
 import { SCREEN_TITLE } from './components/nav';
 import { TermScope } from './components/Term';
@@ -123,7 +124,7 @@ function Routed() {
       return;
     }
     window.scrollTo(0, 0);
-    document.getElementById('main')?.focus({ preventScroll: true });
+    focusMain();
   }, [loc.path, screen]);
 
   if (resolved.kind === 'redirect') return null;

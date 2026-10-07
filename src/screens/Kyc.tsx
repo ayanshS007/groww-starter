@@ -9,7 +9,7 @@ import { Icon } from '../components/Icon';
 import { Term } from '../components/Term';
 import { buildPath, safeNext } from '../lib/routes';
 import { checkAadhaarLast4, checkOtp, checkPan } from '../lib/validate';
-import { navigate } from '../router';
+import { goBack, navigate } from '../router';
 import { useStore } from '../state/store';
 import type { KycProgress } from '../state/types';
 
@@ -121,7 +121,10 @@ export function Kyc({ step: stepParam, query }: { step: string; query: Record<st
   if (step === 'done') return <Verified next={next} />;
 
   const closeTo = next ?? '/you';
-  const onBack = () => (step > 1 ? navigate(to(step - 1)) : navigate(closeTo));
+  // KYC (with any sign-up before it) is one history entry: steps replace each
+  // other, and leaving goes back to where it started, so Back never reopens it.
+  const leave = () => goBack(closeTo);
+  const onBack = () => (step > 1 ? navigate(to(step - 1), { replace: true }) : leave());
   const err = (field: string) => (error?.field === field ? error.msg : undefined);
 
   const submit = (e: FormEvent) => {
@@ -131,7 +134,7 @@ export function Kyc({ step: stepParam, query }: { step: string; query: Record<st
       const c = checkPan(pan);
       if (!c.ok) return setError({ field: 'pan', msg: c.error });
       dispatch({ type: 'kycAdvance', progress: { panOk: true, step: 2 } });
-      return navigate(to(2));
+      return navigate(to(2), { replace: true });
     }
     if (step === 2) {
       const a = checkAadhaarLast4(aadhaar);
@@ -140,12 +143,12 @@ export function Kyc({ step: stepParam, query }: { step: string; query: Record<st
       const o = checkOtp(otp);
       if (!o.ok) return setError({ field: 'otp', msg: o.error });
       dispatch({ type: 'kycAdvance', progress: { aadhaarOk: true, step: 3 } });
-      return navigate(to(3));
+      return navigate(to(3), { replace: true });
     }
     if (step === 3) {
       if (!selfie) return setError({ field: 'selfie', msg: 'Tap the tile to take your selfie first.' });
       dispatch({ type: 'kycAdvance', progress: { selfieOk: true, step: 4 } });
-      return navigate(to(4));
+      return navigate(to(4), { replace: true });
     }
     setChecking(true);
     window.setTimeout(() => {
@@ -241,7 +244,7 @@ export function Kyc({ step: stepParam, query }: { step: string; query: Record<st
 
   return (
     <>
-      <FlowHeader onBack={onBack} closeTo={closeTo} closeLabel="Close, your progress is saved" step={step} steps={4} />
+      <FlowHeader onBack={onBack} closeTo={closeTo} onClose={leave} closeLabel="Close, your progress is saved" step={step} steps={4} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-tablet px-safe pb-10 pt-6 outline-none">
         <form onSubmit={submit} noValidate className="space-y-6">
           {body}

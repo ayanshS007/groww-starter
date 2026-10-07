@@ -72,6 +72,15 @@ describe('Payday Split from state (PLAN item 33)', () => {
     expect(paydayFromState(r, 1500, 112500)).toMatchObject({ toSips: 2000, topUp: 0, toSpend: 0 });
     expect(paydayFromState(r, 1500, 112500).note).toMatch(/skip a month/);
   });
+  it('QA #16: Arjun said he has a cushion, so the top-up is ₹0', () => {
+    const a = buildPersona('arjun', TODAY);
+    expect(paydayFromState(a, 50000, paydayCushionTarget(a))).toMatchObject({ topUp: 0, saidHasCushion: true, toSpend: 45000 });
+  });
+  it('QA #17: Meera’s laptop-goal money is not her cushion', () => {
+    const m = buildPersona('meera', TODAY);
+    expect(paydayFromState(m, 17500, paydayCushionTarget(m)).cushionValue).toBe(0);
+    expect(paydayFromState({ ...m, goals: [] }, 17500, paydayCushionTarget(m)).cushionValue).toBeGreaterThan(2900);
+  });
   it('validates the pay amount', () => {
     expect(validatePay('28,000')).toEqual({ ok: true, value: 28000 });
     expect(validatePay('')).toMatchObject({ ok: false });

@@ -12,7 +12,7 @@ import { Disclaimer } from '../components/Disclaimer';
 import { GoalRow } from '../components/GoalRow';
 import { Donut } from '../components/Donut';
 import { Icon, type IconName } from '../components/Icon';
-import { INSIGHT_TONE } from '../components/InsightCard';
+import { insightTone } from '../components/InsightCard';
 import { KpiTile } from '../components/KpiTile';
 import { ProgressBar } from '../components/ProgressBar';
 import { StatusPill, type PillTone } from '../components/StatusPill';
@@ -36,10 +36,10 @@ import {
   type MonthSipStatus,
   type Period,
 } from '../lib/dashboard';
-import { dateLabel, formatINR, formatSigned, keepSignsTogether } from '../lib/format';
+import { dateLabel, formatAmount, formatINR, formatSigned, keepSignsTogether } from '../lib/format';
 import { insightFromState } from '../lib/insight';
-import { overallChange, portfolioValue, simToday, totalInvested, weekChange } from '../lib/market';
-import { nextStep, upcomingSips } from '../lib/nextStep';
+import { changeDirection, overallChange, portfolioValue, simToday, totalInvested, weekChange } from '../lib/market';
+import { nextSipGroup, nextStep, upcomingSips } from '../lib/nextStep';
 import { planHealth, STATUS_TEXT, type HealthStatus } from '../lib/planHealth';
 import { Link } from '../router';
 import { useStore } from '../state/store';
@@ -92,19 +92,31 @@ function NextSipTile({ state }: { state: State }) {
   }
   const sipId = next.sip.id;
   const fund = getFund(next.sip.fundId);
+  // Several SIPs on the same date: show them together, manage them in Portfolio (QA #29).
+  const group = nextSipGroup(state);
   return (
     <KpiTile
       tint="sky"
       icon="calendar"
-      label="Next SIP"
+      label={group.length > 1 ? 'Next SIPs' : 'Next SIP'}
       value={dateLabel(next.date, { short: true })}
       sub={
-        <>
-          <span className="font-semibold tabular-nums">{formatINR(next.sip.amount)}</span> · {fund?.name}
-        </>
+        group.length > 1 ? (
+          <>
+            <span className="font-semibold tabular-nums">{formatINR(group.reduce((sum, u) => sum + u.sip.amount, 0))}</span> · {group.length} SIPs
+          </>
+        ) : (
+          <>
+            <span className="font-semibold tabular-nums">{formatINR(next.sip.amount)}</span> · {fund?.name}
+          </>
+        )
       }
     >
-      {next.skippedDate ? (
+      {group.length > 1 ? (
+        <Link to="/portfolio" className={`${textLink} self-start`}>
+          Skip or manage in Portfolio <Icon name="chevronRight" size={16} />
+        </Link>
+      ) : next.skippedDate ? (
         <p className="mt-1 text-sm text-ink">
           {dateLabel(next.skippedDate, { short: true })} skipped.{' '}
           <button type="button" className={textLink} onClick={() => dispatch({ type: 'undoSkip', sipId })}>
@@ -122,7 +134,7 @@ function NextSipTile({ state }: { state: State }) {
             });
           }}
         >
-          Skip this one, free
+          Skip next instalment
         </button>
       )}
       {due > 0 && (
@@ -141,7 +153,8 @@ function Tiles({ state, period }: { state: State; period: Period }) {
   const points = periodPoints(chartPoints(state), period);
   const value = portfolioValue(state);
   const week = weekChange(state);
-  const down = week.amount <= -1;
+  const dir = changeDirection(week); // QA #31: no arrow or "down" on a 0.0% week
+  const down = dir === 'down';
   const sipTotal = activeSipTotal(state.sips);
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
@@ -153,7 +166,7 @@ function Tiles({ state, period }: { state: State; period: Period }) {
         value={formatINR(value)}
         sub={
           <>
-            <ChangeText change={overallChange(state)} className="text-sm" /> <span className="text-ink-muted">since start</span>
+            <ChangeText change={overallChange(state)} className="text-sm" /> <span className="text-ink-muted">overall change</span>
           </>
         }
         spark={{ points: points.map((p) => p.value), label: 'Value each week (illustrative)' }}
@@ -161,21 +174,21 @@ function Tiles({ state, period }: { state: State; period: Period }) {
       <KpiTile
         tint="lavender"
         icon="portfolio"
-        label="Invested so far"
+        label="Invested"
         value={formatINR(totalInvested(state))}
         sub={sipTotal > 0 ? `${formatINR(sipTotal)} a month in SIPs` : 'No SIP running'}
         spark={{ points: points.map((p) => p.invested), label: 'Amount invested each week' }}
       />
       <KpiTile
         tint="peach"
-        icon={down ? 'arrowDown' : 'arrowUp'}
+        icon={dir === 'flat' ? 'minus' : down ? 'arrowDown' : 'arrowUp'}
         iconTone={down ? 'caution' : 'brand'}
         label="This week"
         value={keepSignsTogether(formatSigned(week.amount))}
         sub={
-          <span className={down ? 'font-semibold text-caution' : 'font-semibold text-brand-text'}>
+          <span className={`font-semibold ${dir === 'flat' ? 'text-ink' : down ? 'text-caution' : 'text-brand-text'}`}>
             {keepSignsTogether(formatSigned(week.pct, 'pct'))}
-            <span className="sr-only">{down ? ', down' : ', up or flat'}</span>
+            <span className="sr-only">{dir === 'flat' ? ', no change' : down ? ', down' : ', up'}</span>
             <span className="font-normal text-ink-muted"> market move</span>
           </span>
         }
@@ -189,7 +202,7 @@ function Tiles({ state, period }: { state: State; period: Period }) {
 // ---------- insight banner ----------
 function InsightBanner({ state }: { state: State }) {
   const insight = insightFromState(state);
-  const tone = insight ? INSIGHT_TONE[insight.tone] : undefined;
+  const tone = insight ? insightTone(insight) : undefined;
   return (
     <section aria-label="This week" aria-live="polite" className="rounded-card-lg bg-gradient-to-r from-mint to-sky p-5 lg:p-6">
       {insight && tone && (
@@ -202,9 +215,12 @@ function InsightBanner({ state }: { state: State }) {
             <p className="mt-1 text-base font-semibold text-ink">{keepSignsTogether(insight.headline)}</p>
             <p className="mt-1 text-base text-ink">{insight.body}</p>
           </div>
-          <ButtonLink to="/plan" className="shrink-0 self-start lg:self-center">
-            Review my plan
-          </ButtonLink>
+          {/* Only when the insight offers it: a calm week that says "Nothing to do" gets no button (QA #7). */}
+          {insight.action === 'review_plan' && (
+            <ButtonLink to="/plan" className="shrink-0 self-start lg:self-center">
+              Review my plan
+            </ButtonLink>
+          )}
         </div>
       )}
     </section>
@@ -251,7 +267,7 @@ function MoneyCard({ state }: { state: State }) {
       </div>
       <p className="mt-4 rounded-card-sm bg-surface2 px-4 py-3 text-sm text-ink">
         {splitLine(state)}
-        <span className="block text-xs text-ink-muted">Cushion / grow, in %. Cushion means liquid funds.</span>
+        <span className="block text-xs text-ink-muted">Cushion / grow, in %. As in your plan, liquid funds count as cushion here.</span>
       </p>
     </Card>
   );
@@ -324,7 +340,7 @@ function SipsCard({ state }: { state: State }) {
                     <span className="text-xs">{dateLabel(r.date, { short: true }).split(' ')[1]}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold tabular-nums text-ink">{formatINR(r.amount)}</span>
+                    <span className="block font-semibold tabular-nums text-ink">{formatAmount(r.amount)}</span>
                     <span className="block truncate text-sm text-ink-muted">{getFund(r.fundId)?.name}</span>
                   </span>
                   <StatusPill tone={pill.tone} icon={pill.icon}>
@@ -414,7 +430,7 @@ function ActivityCard({ state }: { state: State }) {
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
-                {r.amount !== undefined && <span className="font-semibold tabular-nums text-ink">{formatINR(r.amount)}</span>}
+                {r.amount !== undefined && <span className="font-semibold tabular-nums text-ink">{formatAmount(r.amount)}</span>}
                 <ActivityPill row={r} />
               </div>
             </li>
@@ -437,7 +453,7 @@ function ActivityCard({ state }: { state: State }) {
                 <td className="whitespace-nowrap py-3 pr-4 text-ink-muted">{dateLabel(r.date)}</td>
                 <td className="py-3 pr-4 font-medium text-ink">{r.what}</td>
                 <td className="py-3 pr-4 text-ink">{r.asset ?? '—'}</td>
-                <td className="py-3 pr-4 text-right font-semibold tabular-nums text-ink">{r.amount !== undefined ? formatINR(r.amount) : '—'}</td>
+                <td className="py-3 pr-4 text-right font-semibold tabular-nums text-ink">{r.amount !== undefined ? formatAmount(r.amount) : '—'}</td>
                 <td className="py-3">
                   <ActivityPill row={r} />
                 </td>

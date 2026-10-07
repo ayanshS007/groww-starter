@@ -160,8 +160,8 @@ export function You() {
         </h2>
         <ul className="mt-1 divide-y divide-border">
           <Row
-            title="Stock budget and readiness"
-            detail={`Limit: ${state.prefs.stockBudgetPct}% of your portfolio. Readiness check: ${state.prefs.readinessPassed ? 'passed' : 'not taken yet'}.`}
+            title="Stock budget and quick check"
+            detail={`Limit: ${state.prefs.stockBudgetPct}% of your portfolio. Quick check: ${state.prefs.readinessPassed ? 'done' : 'not taken yet'}.`}
             action={
               <Link to="/you/trading" className={rowLink}>
                 Open <Icon name="chevronRight" size={16} />

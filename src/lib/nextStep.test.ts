@@ -3,7 +3,7 @@ import { buildPersona } from '../data/personas';
 import { advance, fresh, run, startSip, TODAY, withCheckin } from '../test/fixtures';
 import { addDays } from './dates';
 import { simToday } from './market';
-import { greeting, nextStep, QUIET_AFTER_STOP_DAYS, quietRestart, recentlyStopped, statusLine, upcomingSips } from './nextStep';
+import { greeting, nextSipGroup, nextStep, QUIET_AFTER_STOP_DAYS, quietRestart, recentlyStopped, statusLine, upcomingSips } from './nextStep';
 
 describe('Next-step card (PLAN C6)', () => {
   it('no account → check-in via sign-up', () => {
@@ -36,7 +36,10 @@ describe('Next-step card (PLAN C6)', () => {
     s = startSip(s, 'index50', 2000);
     const n = nextStep(s);
     expect(n.kind).toBe('set');
-    expect(n.title).toMatch(/^You’re set\. Next SIP on \d+ \w{3}$/);
+    // Both SIPs fall on the same date, so both are named (QA #29).
+    expect(n.title).toMatch(/^You’re set\. Next SIPs on \d+ \w{3}$/);
+    expect(n.body).toBe('₹2,000 into Liquid Fund – A and ₹2,000 into Nifty 50 Index Fund. Nothing to do today.');
+    expect(nextSipGroup(s).map((u) => u.sip.fundId)).toEqual(['liquid1', 'index50']);
   });
   it('a stopped SIP does not count as running: after the quiet period its part is offered again', () => {
     let s = withCheckin(fresh());

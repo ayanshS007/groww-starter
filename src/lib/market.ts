@@ -77,6 +77,15 @@ export function totalInvested(state: Pick<State, 'holdings'>): number {
 
 export type Change = { amount: number; pct: number };
 
+/**
+ * Direction as the user will read it (QA #31): flat when the shown rupees are
+ * ₹0 or the shown percent is 0.0%, so a ₹1 wobble isn't "down" with an arrow.
+ */
+export function changeDirection(c: Change): 'up' | 'down' | 'flat' {
+  if (Math.round(Math.abs(c.amount)) === 0 || Math.round(Math.abs(c.pct) * 10) === 0) return 'flat';
+  return c.amount < 0 ? 'down' : 'up';
+}
+
 /** Value against total invested. */
 export function overallChange(state: MoneyState): Change {
   const invested = totalInvested(state);
@@ -177,10 +186,54 @@ export function heldFunds(holdings: Holding[]): Fund[] {
   return out;
 }
 
-/** Value of liquid-category holdings: the "cushion" (PLAN item 33). */
-export function cushionValue(state: MoneyState): number {
-  return state.holdings
-    .filter((h) => h.kind === 'fund' && getFund(h.assetId)?.category === 'Liquid')
+/**
+ * A fund holding first bought this simulated week is still processing (QA #15):
+ * its value equals what was invested until the next week is applied.
+ */
+export const PROCESSING_NOTE = 'Processing, units arrive in 1–2 working days';
+
+export function isProcessing(h: Holding, market: Pick<State['market'], 'week'>): boolean {
+  return h.kind === 'fund' && h.createdWeek === market.week;
+}
+
+type GoalLinks = Partial<Pick<State, 'goals' | 'sips'>>;
+
+/**
+ * Funds behind a goal other than an Emergency cushion goal: that money is
+ * saved for something, so it isn't the emergency cushion (QA #17).
+ */
+export function goalFundIds(state: GoalLinks): Set<string> {
+  const ids = new Set<string>();
+  for (const g of state.goals ?? []) {
+    if (g.isCushion) continue;
+    for (const sipId of g.sipIds) {
+      const sip = state.sips?.find((s) => s.id === sipId);
+      if (sip) ids.add(sip.fundId);
+    }
+  }
+  return ids;
+}
+
+function liquidHoldings(state: MoneyState) {
+  return state.holdings.filter((h) => h.kind === 'fund' && getFund(h.assetId)?.category === 'Liquid');
+}
+
+/**
+ * The "cushion" (PLAN item 33, QA #17): liquid-category holdings that aren't
+ * behind a goal. An Emergency cushion goal's money still counts.
+ */
+export function cushionValue(state: MoneyState & GoalLinks): number {
+  const forGoals = goalFundIds(state);
+  return liquidHoldings(state)
+    .filter((h) => !forGoals.has(h.assetId))
+    .reduce((sum, h) => sum + holdingValue(h, state.market), 0);
+}
+
+/** Liquid holdings saved for a goal: shown as "Goal savings", not cushion. */
+export function goalSavingsValue(state: MoneyState & GoalLinks): number {
+  const forGoals = goalFundIds(state);
+  return liquidHoldings(state)
+    .filter((h) => forGoals.has(h.assetId))
     .reduce((sum, h) => sum + holdingValue(h, state.market), 0);
 }
 

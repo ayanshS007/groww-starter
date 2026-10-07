@@ -25,7 +25,7 @@ export const HELP_FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'How do I get my money back?',
-    a: 'Open the holding and tap Withdraw. Money usually reaches your bank in 1–3 working days.',
+    a: 'Open the holding and tap Withdraw. Money reaches your bank in 1–3 working days.',
   },
   {
     q: 'Why does the app ask about my income and savings?',

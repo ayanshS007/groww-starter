@@ -19,6 +19,7 @@ import { useToast } from '../components/Toast';
 import { getFund } from '../data/funds';
 import { dateLabel, formatINR, ordinal } from '../lib/format';
 import { goalSummary, linkableSips, STEADIER_FUNDS_ROUTE, WITHOUT_RETURNS } from '../lib/goals';
+import { suggestedOverCeiling } from '../lib/invest';
 import { simToday } from '../lib/market';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
@@ -90,6 +91,7 @@ export function GoalDetail({ id }: { id: string }) {
   const bump = activeLinked[0];
   const bumpTo = bump ? bump.amount + s.shortfall : 0;
   const canBump = !!bump && s.shortfall > 0 && bumpTo <= 100_000;
+  const overCeiling = bump ? suggestedOverCeiling(state, bump.id, bumpTo) : undefined;
   const linkable = linkableSips(state, goal);
 
   const increase = () => {
@@ -199,6 +201,7 @@ export function GoalDetail({ id }: { id: string }) {
                   : `Your linked SIPs put in ${formatINR(s.linkedTotal)} a month. That covers it.`}
             </p>
           )}
+          {canBump && !keep && overCeiling && <p className="mt-2 text-sm text-ink-muted">{overCeiling}</p>}
           {s.shortfall > 0 && s.linkedSips.length > 0 && !keep && (
             <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Ways to close the gap">
               {!canBump && <p className="w-full text-sm text-ink-muted">Start or resume a linked SIP to raise the monthly amount.</p>}

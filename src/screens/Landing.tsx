@@ -65,7 +65,7 @@ export function Landing() {
       <header className="mx-auto flex w-full max-w-content items-center justify-between px-safe py-4 lg:px-8">
         <Wordmark />
         <Link to="/home" className="min-h-tap content-center text-sm font-semibold text-brand-text underline-offset-4 hover:underline">
-          Look around
+          Just exploring
         </Link>
       </header>
       <main id="main" tabIndex={-1} className="flex flex-1 items-center outline-none">

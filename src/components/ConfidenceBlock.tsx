@@ -6,7 +6,11 @@ type Props = {
   what: ReactNode;
   why: ReactNode;
   next: ReactNode;
-  /** Shortened version for screens other than Fund detail (PLAN item 28). */
+  /**
+   * Shortened version for screens other than Fund detail (PLAN item 28). The
+   * shortening is in the text callers pass; the layout is the same stacked list
+   * everywhere, since three side-by-side columns were too narrow (QA #36).
+   */
   compact?: boolean;
   className?: string;
 };
@@ -17,10 +21,10 @@ const ROWS: { key: 'what' | 'why' | 'next'; title: string; icon: IconName }[] = 
   { key: 'next', title: 'What happens next?', icon: 'calendar' },
 ];
 
-export function ConfidenceBlock({ what, why, next, compact, className = '' }: Props) {
+export function ConfidenceBlock({ what, why, next, className = '' }: Props) {
   const body = { what, why, next };
   return (
-    <section aria-label="About this decision" className={`grid gap-3 ${compact ? '' : 'md:grid-cols-3'} ${className}`}>
+    <section aria-label="About this decision" className={`grid gap-3 ${className}`}>
       {ROWS.map((r) => (
         <div key={r.key} className="rounded-card-sm border border-border bg-surface p-4">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">

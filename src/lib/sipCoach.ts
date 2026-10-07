@@ -20,6 +20,7 @@ export type CoachOptionId =
   | 'keep_going'
   | 'pause'
   | 'keep_paused'
+  | 'resume'
   | 'skip_next'
   | 'lower_amount'
   | 'withdraw'
@@ -77,20 +78,33 @@ export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachCon
       const keepGoing = upWeek
         ? `If you keep going, the same ${formatINR(sip.amount)} buys more units when prices dip and fewer when they rise.`
         : `If you keep going, the same ${formatINR(sip.amount)} buys more units while prices are lower.`;
+      // Paused: nothing is being bought, so "keep going" and "skip" don't apply (QA #10).
+      if (paused) {
+        return {
+          response: `${move}Your SIP is paused, so nothing is bought right now. Keeping it paused is fine. If you resume, the same ${formatINR(sip.amount)} buys more units while prices are lower.`,
+          options: withPrimary([pause, { id: 'resume', label: 'Resume now' }]),
+        };
+      }
       return {
         response: `${move}${keepGoing}`,
         options: withPrimary([
           { id: 'keep_going', label: 'Keep going' },
-          paused ? pause : { id: 'pause', label: 'Pause 1–3 months' },
+          { id: 'pause', label: 'Pause 1–3 months' },
         ]),
       };
     }
 
     case 'money_tight':
+      if (paused) {
+        return {
+          response: 'Your SIP is already paused, so nothing goes out until it restarts. That costs nothing. You can also lower the amount for when it does.',
+          options: withPrimary([pause, { id: 'lower_amount', label: 'Lower amount' }]),
+        };
+      }
       return {
         response: 'Skipping is free and keeps your plan alive.',
         options: withPrimary([
-          { id: 'skip_next', label: 'Skip next' },
+          { id: 'skip_next', label: 'Skip next instalment' },
           { id: 'lower_amount', label: 'Lower amount' },
           pause,
         ]),
@@ -99,7 +113,7 @@ export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachCon
     case 'need_money':
       return {
         response:
-          'Stopping a SIP doesn’t return any money. Withdraw does: it usually reaches your bank in 1–3 working days.',
+          'Stopping a SIP doesn’t return any money. Withdraw does: money reaches your bank in 1–3 working days.',
         options: withPrimary([{ id: 'withdraw', label: 'Go to Withdraw' }]),
       };
 

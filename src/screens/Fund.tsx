@@ -102,7 +102,7 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
           <RiskMeter risk={fund.risk} />
           <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
             <div>
-              <dt className="text-ink-muted">Suits money you need in</dt>
+              <dt className="text-ink-muted">Time frame</dt>
               <dd className="font-semibold text-ink">{fund.horizonLabel}</dd>
             </div>
             <div>

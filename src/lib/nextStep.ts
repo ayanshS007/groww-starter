@@ -38,6 +38,20 @@ export function upcomingSips(state: Pick<State, 'sips' | 'market'>): UpcomingSip
   return out.sort((a, b) => (a.date === b.date ? a.sip.id.localeCompare(b.sip.id) : a.date < b.date ? -1 : 1));
 }
 
+/**
+ * Every active SIP due on the earliest upcoming date (QA #29): a new plan puts
+ * both SIPs on the same day, and showing only one hid the other.
+ */
+export function nextSipGroup(state: Pick<State, 'sips' | 'market'>): UpcomingSip[] {
+  const all = upcomingSips(state);
+  return all.filter((u) => u.date === all[0]?.date);
+}
+
+/** "₹2,000 into Liquid Fund – A" or "₹2,000 into Liquid Fund – A and ₹2,000 into Nifty 50 Index Fund". */
+export function sipGroupText(group: UpcomingSip[]): string {
+  return group.map((u) => `${formatINR(u.sip.amount)} into ${getFund(u.sip.fundId)?.name ?? 'your fund'}`).join(' and ');
+}
+
 /** For this many simulated days after a stop, the plan's missing part is not pushed (PLAN C6, owner decision). */
 export const QUIET_AFTER_STOP_DAYS = 30;
 
@@ -126,12 +140,13 @@ export function nextStep(state: State): NextStep {
     };
   }
 
-  const next = upcomingSips(state)[0];
+  const group = nextSipGroup(state);
+  const next = group[0];
   return {
     kind: 'set',
-    title: next ? `You’re set. Next SIP on ${dateLabel(next.date, { short: true })}` : 'You’re set',
+    title: next ? `You’re set. Next SIP${group.length > 1 ? 's' : ''} on ${dateLabel(next.date, { short: true })}` : 'You’re set',
     body: next
-      ? `${formatINR(next.sip.amount)} into ${getFund(next.sip.fundId)?.name ?? 'your fund'}. Nothing to do today.`
+      ? `${sipGroupText(group)}. Nothing to do today.`
       : state.sips.some((x) => x.status === 'paused')
         ? 'Your SIPs are paused for now. Resume any time from Portfolio.'
         : 'No SIP is scheduled right now. What you own stays invested.',

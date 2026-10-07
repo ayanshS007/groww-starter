@@ -44,7 +44,7 @@ describe('coachFor', () => {
   });
   it('labels match README 8.6', () => {
     expect(coachFor('market_fell', sip()).options.map((o) => o.label)).toEqual(['Keep going', 'Pause 1–3 months', 'Stop anyway']);
-    expect(coachFor('money_tight', sip()).options.map((o) => o.label)).toEqual(['Skip next', 'Lower amount', 'Pause', 'Stop anyway']);
+    expect(coachFor('money_tight', sip()).options.map((o) => o.label)).toEqual(['Skip next instalment', 'Lower amount', 'Pause', 'Stop anyway']);
     expect(coachFor('need_money', sip()).options.map((o) => o.label)).toEqual(['Go to Withdraw', 'Stop anyway']);
   });
   it('"Stop anyway" is always present, last and never the primary', () => {
@@ -66,6 +66,13 @@ describe('coachFor', () => {
       expect(labels).not.toContain('Pause');
       expect(labels).not.toContain('Pause 1–3 months');
     }
+  });
+  it('on a paused SIP, no "Skip next" or "Keep going" (QA #10)', () => {
+    const paused = sip({ status: 'paused', pausedUntil: '2026-11-01' });
+    expect(coachFor('market_fell', paused).options.map((o) => o.id)).toEqual(['keep_paused', 'resume', 'stop_anyway']);
+    expect(coachFor('money_tight', paused).options.map((o) => o.id)).toEqual(['keep_paused', 'lower_amount', 'stop_anyway']);
+    expect(coachFor('money_tight', paused).response).toContain('already paused');
+    expect(coachFor('market_fell', paused).response).toContain('paused, so nothing is bought');
   });
   it('responses follow README 8.6', () => {
     const fell = coachFor('market_fell', sip(), { weekChange: { amount: -458, pct: -8 } }).response!;

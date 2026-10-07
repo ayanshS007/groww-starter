@@ -55,6 +55,8 @@ export type BuyDraft = {
   tipDone: boolean;
   /** The user already chose "Buy anyway" on the budget sheet. */
   budgetOk: boolean;
+  /** The risk box is ticked. Kept in the URL so it survives KYC, as fund buys do. */
+  riskAck: boolean;
 };
 
 const REASONS: PickReason[] = ['plan', 'researched', 'social', 'not_sure'];
@@ -79,6 +81,7 @@ export function parseBuyQuery(q: Record<string, string>): BuyDraft {
     reason: REASONS.includes(q.reason as PickReason) ? (q.reason as PickReason) : undefined,
     tipDone: q.tc === '1',
     budgetOk: q.ok === '1',
+    riskAck: q.ack === '1',
   };
 }
 
@@ -93,6 +96,7 @@ export function buyPath(stockId: string, d: BuyDraft): string {
     reason: d.reason,
     tc: d.tipDone ? '1' : undefined,
     ok: d.budgetOk ? '1' : undefined,
+    ack: d.riskAck ? '1' : undefined,
   });
 }
 

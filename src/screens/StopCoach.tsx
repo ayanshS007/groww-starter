@@ -61,6 +61,10 @@ export function StopCoach({ id }: { id: string }) {
         return backToDetail();
       case 'pause':
         return setSheet('pause');
+      case 'resume':
+        dispatch({ type: 'resumeSip', sipId: sip.id });
+        toast.show('SIP resumed. It runs on its usual date.');
+        return backToDetail();
       case 'lower_amount':
         return setSheet('edit');
       case 'skip_next': {

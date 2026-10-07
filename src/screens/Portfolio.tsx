@@ -16,7 +16,7 @@ import { Term } from '../components/Term';
 import { getFund } from '../data/funds';
 import { dateLabel, formatINR, ordinal } from '../lib/format';
 import { insightFromState } from '../lib/insight';
-import { overallChange, portfolioValue, totalInvested } from '../lib/market';
+import { overallChange, portfolioValue, PROCESSING_NOTE, totalInvested } from '../lib/market';
 import { nextStep, upcomingSips } from '../lib/nextStep';
 import { assetSplit, holdingRows } from '../lib/portfolio';
 import { Link } from '../router';
@@ -69,11 +69,11 @@ export function Portfolio() {
           <p className="mt-3 text-4xl font-extrabold tabular-nums text-ink">{formatINR(value)}</p>
           <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-sm">
             <div>
-              <dt className="text-ink-muted">You put in</dt>
+              <dt className="text-ink-muted">Invested</dt>
               <dd className="font-semibold tabular-nums text-ink">{formatINR(invested)}</dd>
             </div>
             <div>
-              <dt className="text-ink-muted">Change so far</dt>
+              <dt className="text-ink-muted">Overall change</dt>
               <dd>
                 <ChangeText change={change} />
               </dd>
@@ -101,10 +101,11 @@ export function Portfolio() {
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold text-ink">{r.name}</span>
                     <span className="block text-sm text-ink-muted">{r.sub}</span>
+                    {r.processing && <span className="block text-sm text-ink-muted">{PROCESSING_NOTE}</span>}
                   </span>
                   <span className="text-right">
                     <span className="block font-bold tabular-nums text-ink">{formatINR(r.value)}</span>
-                    <ChangeText change={r.change} className="text-xs" />
+                    {!r.processing && <ChangeText change={r.change} className="text-xs" />}
                   </span>
                   <Icon name="chevronRight" className="shrink-0 text-ink-muted" />
                 </Link>

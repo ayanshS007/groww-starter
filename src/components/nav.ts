@@ -80,5 +80,5 @@ export const SCREEN_TITLE: Record<ScreenId, string> = {
   stock: 'Stock',
   stockBuy: 'Buy shares',
   tipCheck: 'Tip Check',
-  trading: 'Stocks: budget and readiness',
+  trading: 'Stocks: budget and quick check',
 };

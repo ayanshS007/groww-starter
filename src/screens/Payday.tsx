@@ -17,7 +17,7 @@ import { getFund } from '../data/funds';
 import { formatINR, formatPct } from '../lib/format';
 import { singleDraft } from '../lib/invest';
 import { defaultPay, PAYDAY_COPY, paydayCushionTarget, paydayFromState, validatePay } from '../lib/paydaySplit';
-import { CUSHION_FUND } from '../lib/planner';
+import { CUSHION_FUND, cushionStep } from '../lib/planner';
 import { goBack, navigate } from '../router';
 import { useStore } from '../state/store';
 
@@ -51,7 +51,9 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
             : undefined;
   const topUp = typedTopUp !== null && !topUpError ? typedTopUp : split.topUp;
   const toSpend = Math.max(0, (pay.ok ? pay.value : 0) - split.toSips - topUp);
-  const cushionPct = split.cushionTarget > 0 ? Math.min(100, (split.cushionValue / split.cushionTarget) * 100) : 100;
+  // QA #20: a first ₹10,000 leads; the full target is a small second line.
+  const step = cushionStep(split.cushionValue, split.cushionTarget);
+  const cushionPct = step.main > 0 ? Math.min(100, (split.cushionValue / step.main) * 100) : 100;
   const fund = getFund(CUSHION_FUND)!;
   const canTopUp = pay.ok && topUp >= fund.minOneTime && !topUpError;
 
@@ -101,7 +103,11 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
                   <Term id="cushion">Cushion</Term> top-up
                 </span>
                 <span className="block text-sm text-ink-muted">
-                  {split.cushionGap > 0 ? '10% of pay, up to what your cushion still needs.' : 'Your cushion is at its target, so nothing extra.'}
+                  {split.saidHasCushion
+                    ? 'You said you have a cushion, so nothing extra.'
+                    : split.cushionGap > 0
+                      ? '10% of pay, up to what your cushion still needs.'
+                      : 'Your cushion is at its target, so nothing extra.'}
                 </span>
               </dt>
               <dd className="text-xl font-bold tabular-nums text-ink">{formatINR(topUp)}</dd>
@@ -151,12 +157,20 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
           </h2>
           <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-ink-muted">Illustrative values</span>
         </div>
-        <p className="mt-2 text-base tabular-nums text-ink">
-          {formatINR(split.cushionValue)} of {formatINR(split.cushionTarget)} ({formatPct(cushionPct, 0)})
-        </p>
-        <ProgressBar className="mt-2" value={Math.round(cushionPct)} label={`Cushion: ${Math.round(cushionPct)}% of target`} />
-        <p className="mt-2 text-sm text-ink-muted">Cushion means money in liquid funds, for surprise bills.</p>
-        {editTarget ? (
+        {split.saidHasCushion ? (
+          <p className="mt-2 text-base text-ink">You said you have a cushion. No top-up is suggested.</p>
+        ) : (
+          <>
+            <p className="mt-2 text-base tabular-nums text-ink">
+              {formatINR(split.cushionValue)} of {step.first ? 'a first ' : ''}
+              {formatINR(step.main)} ({formatPct(cushionPct, 0)})
+            </p>
+            <ProgressBar className="mt-2" value={Math.round(cushionPct)} label={`Cushion: ${Math.round(cushionPct)}% of ${step.first ? 'the first step' : 'target'}`} />
+            {step.first && <p className="mt-2 text-sm tabular-nums text-ink-muted">Full target: {formatINR(step.full)}</p>}
+          </>
+        )}
+        <p className="mt-2 text-sm text-ink-muted">Cushion means money in liquid funds not saved for a goal, for surprise bills.</p>
+        {split.saidHasCushion ? null : editTarget ? (
           <div className="mt-3">
             <AmountInput
               label="Cushion target"
@@ -179,12 +193,15 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
         )}
       </Card>
 
-      <ConfidenceBlock
-        compact
-        what={<>A one-time top-up into {fund.name}, a steady fund for money you may need soon.</>}
-        why="You told us pay came in. A cushion means a surprise bill doesn’t force you to sell your grow funds."
-        next={<>You review the amount, then pay. It shows as cushion in Portfolio. Withdraw any time; it usually reaches your bank in 1–3 working days.</>}
-      />
+      {/* Explains the top-up, so only when there is one (QA #12). */}
+      {topUp > 0 && (
+        <ConfidenceBlock
+          compact
+          what={<>A one-time top-up into {fund.name}, a steady fund for money you may need soon.</>}
+          why="You told us pay came in. A cushion means a surprise bill doesn’t force you to sell your grow funds."
+          next={<>You review the amount, then pay. Units arrive in 1–2 working days and show as cushion in Portfolio. Withdraw any time; money reaches your bank in 1–3 working days.</>}
+        />
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         {canTopUp ? (

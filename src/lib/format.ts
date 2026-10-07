@@ -25,6 +25,14 @@ export function formatINR(n: number, decimals = 0): string {
   return n < 0 && abs !== 0 ? MINUS + body : body;
 }
 
+/**
+ * An order or activity amount, shown the same way everywhere (QA #28): whole
+ * rupees when there are no paise (fund amounts), else 2 decimals (stock totals).
+ */
+export function formatAmount(n: number): string {
+  return formatINR(n, Math.round(Math.abs(n) * 100) % 100 === 0 ? 0 : 2);
+}
+
 /** Percentage, one decimal by default. formatPct(-4.25) → "−4.3%". */
 export function formatPct(n: number, decimals = 1): string {
   const abs = roundAbs(n, decimals);

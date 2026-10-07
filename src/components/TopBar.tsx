@@ -12,7 +12,7 @@ import { useViewName, Wordmark } from './Wordmark';
 
 const iconBtn = 'flex min-h-tap min-w-tap items-center justify-center rounded-full text-ink hover:bg-surface2';
 
-/** Desktop-only fund search (README 4.1: search on Explore). */
+/** Desktop-only search (README 4.1). Opens fund results, which link to matching sample companies (QA #27). */
 function TopSearch() {
   const [q, setQ] = useState('');
   const submit = (e: FormEvent) => {
@@ -22,7 +22,7 @@ function TopSearch() {
   return (
     <form role="search" onSubmit={submit} className="relative mx-6 hidden max-w-md flex-1 lg:block">
       <label htmlFor="top-search" className="sr-only">
-        Search funds
+        Search funds and stocks
       </label>
       <Icon name="search" size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" />
       <input
@@ -30,7 +30,7 @@ function TopSearch() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search funds"
+        placeholder="Search funds and stocks"
         autoComplete="off"
         className="min-h-tap w-full rounded-full border border-border bg-surface pl-10 pr-4 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand"
       />

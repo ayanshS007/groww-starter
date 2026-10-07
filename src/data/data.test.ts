@@ -106,3 +106,16 @@ describe('copy rules', () => {
     for (const w of ADVICE) expect(text).not.toContain(w);
   });
 });
+
+describe('settlement timings are the same everywhere (QA #13)', () => {
+  it('buying: units in 1–2 working days; withdrawing: bank in 1–3 working days', () => {
+    const texts = FUNDS.flatMap((f) => [f.whatItIs, ...f.whatHappensNext]);
+    for (const t of texts.filter((x) => /working day/.test(x))) {
+      expect(t).toMatch(/(Units arrive in your portfolio in 1–2 working days\.|reaches your bank in 1–3 working days\.)/);
+    }
+    for (const f of FUNDS) {
+      expect(f.whatHappensNext).toContain('Units arrive in your portfolio in 1–2 working days.');
+      expect(f.whatHappensNext).toContain('Withdraw any time; money reaches your bank in 1–3 working days.');
+    }
+  });
+});

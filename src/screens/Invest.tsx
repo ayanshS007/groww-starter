@@ -12,6 +12,7 @@ import { Chip } from '../components/Chip';
 import { ConfidenceBlock } from '../components/ConfidenceBlock';
 import { Disclaimer } from '../components/Disclaimer';
 import { FlowHeader } from '../components/FlowHeader';
+import { focusMain } from '../components/focusMain';
 import { Icon } from '../components/Icon';
 import { LetterAvatar } from '../components/LetterAvatar';
 import { Note } from '../components/Note';
@@ -152,7 +153,7 @@ function AmountStep({ d, ctx, patch }: StepProps) {
             setText(v);
             setTouched(true);
           }}
-          onBlur={() => setTouched(true)}
+          onBlur={() => text !== '' && setTouched(true)}
           error={error}
           note={note}
           autoFocus
@@ -315,7 +316,7 @@ function ReviewStep({ d, mode, patch, back }: StepProps & { mode: 'single' | 'pl
               You pay {formatINR(total)} today. Then on the {ordinal(day)}, starting {dateLabel(firstAutoDebit(today, day), { short: true })}. Skip any month, free.
             </>
           ) : (
-            <>You pay {formatINR(total)} today. Units show in Portfolio within a working day. Withdraw any time.</>
+            <>You pay {formatINR(total)} today. Units arrive in 1–2 working days. Withdraw any time.</>
           )
         }
       />
@@ -489,7 +490,7 @@ function InvestFlow(props: FlowProps) {
       return;
     }
     window.scrollTo(0, 0);
-    document.getElementById('main')?.focus({ preventScroll: true });
+    focusMain();
   }, [step]);
 
   // Processing: about a second, then place the order and replace this entry with Success.
