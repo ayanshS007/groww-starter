@@ -5,14 +5,14 @@ import { keepSignsTogether } from '../lib/format';
 import { ButtonLink } from './Button';
 import { Icon, type IconName } from './Icon';
 
-const TONE: Record<Insight['tone'], { bg: string; icon: IconName; label: string }> = {
+export const INSIGHT_TONE: Record<Insight['tone'], { bg: string; icon: IconName; label: string }> = {
   calm: { bg: 'bg-mint', icon: 'check', label: 'Steady week' },
   neutral: { bg: 'bg-surface2', icon: 'info', label: 'This week' },
   caution: { bg: 'bg-caution-fill', icon: 'caution', label: 'Worth a look' },
 };
 
 export function InsightCard({ insight }: { insight: Insight | null }) {
-  const tone = insight ? TONE[insight.tone] : TONE.neutral;
+  const tone = insight ? INSIGHT_TONE[insight.tone] : INSIGHT_TONE.neutral;
   return (
     <section aria-label="This week" aria-live="polite" className={`rounded-card p-5 lg:p-6 ${tone.bg}`}>
       {insight && (
@@ -31,5 +31,26 @@ export function InsightCard({ insight }: { insight: Insight | null }) {
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * The insight headline for Home's snapshot: same tone, icon + words, never red.
+ * The live region is always in the page so a new week is announced.
+ */
+export function InsightLine({ insight }: { insight: Insight | null }) {
+  const tone = insight ? INSIGHT_TONE[insight.tone] : undefined;
+  return (
+    <div aria-live="polite" className="mt-4">
+      {insight && tone && (
+        <p className={`flex gap-2 rounded-card-sm p-4 text-sm text-ink ${tone.bg}`}>
+          <Icon name={tone.icon} size={18} className={`mt-0.5 shrink-0 ${insight.tone === 'caution' ? 'text-caution' : 'text-ink-muted'}`} />
+          <span>
+            <span className="sr-only">{tone.label}. </span>
+            {keepSignsTogether(insight.headline)}
+          </span>
+        </p>
+      )}
+    </div>
   );
 }

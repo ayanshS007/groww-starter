@@ -1,10 +1,10 @@
-// Root: hash routing with guards, the responsive shell and every Stage 3a and 3b screen.
-// SIP detail and Stop coach (Stage 3c) still render a "next build" placeholder so no link dead-ends.
+// Root: hash routing with guards, the responsive shell and every P0 screen (Stages 3a–3c).
 import { useEffect, useRef } from 'react';
 import { AppShell } from './components/AppShell';
 import { SCREEN_TITLE } from './components/nav';
 import { TermScope } from './components/Term';
 import { ToastProvider, useToast } from './components/Toast';
+import { useKeyboardAvoidance } from './components/useKeyboardAvoidance';
 import { FLOW_SCREENS, type Resolved } from './lib/routes';
 import { useLocation, useRoute } from './router';
 import { Checkin } from './screens/Checkin';
@@ -18,11 +18,12 @@ import { Invest, InvestPlan } from './screens/Invest';
 import { Kyc } from './screens/Kyc';
 import { Landing } from './screens/Landing';
 import { Learn } from './screens/Learn';
-import { NotYetBuilt } from './screens/NotYetBuilt';
 import { Plan } from './screens/Plan';
 import { Portfolio } from './screens/Portfolio';
 import { Review } from './screens/Review';
 import { Signup } from './screens/Signup';
+import { SipDetail } from './screens/Sip';
+import { StopCoach } from './screens/StopCoach';
 import { Success } from './screens/Success';
 import { You } from './screens/You';
 import { useStore } from './state/store';
@@ -31,7 +32,6 @@ import type { FundId } from './state/types';
 type ScreenRoute = Extract<Resolved, { kind: 'screen' }>;
 
 export function renderScreen(r: ScreenRoute) {
-  const flow = FLOW_SCREENS.includes(r.screen);
   switch (r.screen) {
     case 'landing':
       return <Landing />;
@@ -60,7 +60,11 @@ export function renderScreen(r: ScreenRoute) {
     case 'portfolio':
       return <Portfolio />;
     case 'holding':
-      return <HoldingDetail id={r.params.id} />;
+      return <HoldingDetail id={r.params.id} query={r.query} />;
+    case 'sip':
+      return <SipDetail id={r.params.id} />;
+    case 'stopCoach':
+      return <StopCoach id={r.params.id} />;
     case 'learn':
       return <Learn />;
     case 'glossary':
@@ -69,8 +73,6 @@ export function renderScreen(r: ScreenRoute) {
       return <You />;
     case 'review':
       return <Review />;
-    default:
-      return <NotYetBuilt title={SCREEN_TITLE[r.screen]} flow={flow} />;
   }
 }
 
@@ -80,6 +82,7 @@ function Routed() {
   const resolved = useRoute(state, toast.show);
   const loc = useLocation();
   const first = useRef(true);
+  useKeyboardAvoidance();
   const screen = resolved.kind === 'screen' ? resolved.screen : undefined;
 
   // New screen: update the tab title, scroll to top and move focus to the

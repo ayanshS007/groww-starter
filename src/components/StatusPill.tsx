@@ -13,3 +13,10 @@ export function StatusPill({ tone = 'neutral', icon, children }: { tone?: PillTo
     </span>
   );
 }
+
+/** SIP status as icon + word: Active, Paused or Stopped. */
+export function SipStatusPill({ status }: { status: 'active' | 'paused' | 'stopped' }) {
+  if (status === 'paused') return <StatusPill tone="watch" icon="pause">Paused</StatusPill>;
+  if (status === 'stopped') return <StatusPill icon="close">Stopped</StatusPill>;
+  return <StatusPill tone="good" icon="check">Active</StatusPill>;
+}

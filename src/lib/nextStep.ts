@@ -60,14 +60,17 @@ export function nextStep(state: State): NextStep {
   const missing = buckets.filter((b) => !hasLiveSip(state.sips, b.fundId));
 
   if (missing.length === buckets.length) {
+    // Every SIP in the plan was stopped: it's a restart, not a first SIP.
+    const restart = state.sips.length > 0;
     return {
       kind: 'first_sip',
-      title: 'Start your first SIP (quick verification included)',
-      body:
-        buckets.length > 1
+      title: restart ? 'Restart your plan whenever you like' : 'Start your first SIP (quick verification included)',
+      body: restart
+        ? `What you already own stays invested. Set up ${formatINR(state.plan.monthly)} a month again, in one go.`
+        : buckets.length > 1
           ? `Both parts of your plan, ${formatINR(state.plan.monthly)} a month, set up in one go.`
           : `${formatINR(state.plan.monthly)} a month into ${getFund(buckets[0].fundId)?.name ?? 'your fund'}.`,
-      cta: 'Start my plan',
+      cta: restart ? 'Restart my plan' : 'Start my plan',
       to: '/invest/plan',
     };
   }

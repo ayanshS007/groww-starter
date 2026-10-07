@@ -8,7 +8,7 @@ import { ChangeText } from '../components/ChangeText';
 import { Disclaimer } from '../components/Disclaimer';
 import { LetterAvatar } from '../components/LetterAvatar';
 import { Sparkline } from '../components/Sparkline';
-import { StatusPill } from '../components/StatusPill';
+import { SipStatusPill } from '../components/StatusPill';
 import { Term } from '../components/Term';
 import { WithdrawSheet } from '../components/WithdrawSheet';
 import { getFund } from '../data/funds';
@@ -20,9 +20,10 @@ import { holdingRow } from '../lib/portfolio';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
 
-export function HoldingDetail({ id }: { id: string }) {
+export function HoldingDetail({ id, query = {} }: { id: string; query?: Record<string, string> }) {
   const { state, dispatch } = useStore();
-  const [sheet, setSheet] = useState(false);
+  // "Go to Withdraw" in the Stop coach lands here with the sheet already open.
+  const [sheet, setSheet] = useState(query.withdraw === '1');
   const h = state.holdings.find((x) => x.id === id);
   if (!h) return null;
   const row = holdingRow(h, state.market);
@@ -116,11 +117,7 @@ export function HoldingDetail({ id }: { id: string }) {
                     <span className="text-base text-ink">
                       <span className="font-semibold tabular-nums">{formatINR(s.amount)}</span> on the {ordinal(s.dayOfMonth)}
                     </span>
-                    {s.status === 'paused' ? (
-                      <StatusPill tone="watch" icon="pause">Paused</StatusPill>
-                    ) : (
-                      <StatusPill tone="good" icon="check">Active</StatusPill>
-                    )}
+                    <SipStatusPill status={s.status} />
                   </Link>
                 </li>
               ))}
