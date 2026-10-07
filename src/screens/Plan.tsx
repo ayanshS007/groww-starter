@@ -5,6 +5,7 @@ import { Button, ButtonLink } from '../components/Button';
 import { Card, type Tint } from '../components/Card';
 import { ConfidenceBlock } from '../components/ConfidenceBlock';
 import { Icon, type IconName } from '../components/Icon';
+import { Note } from '../components/Note';
 import { RiskMeter } from '../components/RiskMeter';
 import { SplitBar } from '../components/SplitBar';
 import { SplitSlider } from '../components/SplitSlider';
@@ -78,15 +79,6 @@ function BucketCard({ bucket, plan }: { bucket: PlanBucket; plan: StarterPlan })
       </dl>
       <WhyDrawer bucket={bucket} factors={plan.factors} />
     </Card>
-  );
-}
-
-function Note({ tone, children }: { tone: 'info' | 'caution'; children: ReactNode }) {
-  return (
-    <div className={`flex gap-3 rounded-card-sm p-4 text-sm ${tone === 'caution' ? 'bg-caution-fill text-ink' : 'bg-info-fill text-ink'}`}>
-      <Icon name={tone === 'caution' ? 'caution' : 'info'} size={20} className={`mt-0.5 shrink-0 ${tone === 'caution' ? 'text-caution' : 'text-info'}`} />
-      <p>{children}</p>
-    </div>
   );
 }
 
