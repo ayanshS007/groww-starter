@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PICK_REASONS, TIP_QUESTIONS, offersTipCheck, scoreTipCheck, tipCheckOutcome, type TipAnswers } from './tipCheck';
+import { PICK_REASONS, pickReasonsFor, TIP_QUESTIONS, offersTipCheck, scoreTipCheck, tipCheckOutcome, type TipAnswers } from './tipCheck';
 
 const safe: TipAnswers = {
   guaranteed: false,
@@ -48,6 +48,9 @@ describe('scoreTipCheck', () => {
 describe('pick reason in buy flows (README 8.7)', () => {
   it('the four chips, in order', () => {
     expect(PICK_REASONS.map((r) => r.label)).toEqual(['My starter plan', 'I researched it', 'A friend or social media', 'Not sure']);
+    expect(pickReasonsFor('fund')).toEqual(PICK_REASONS);
+    // QA #9: a starter plan never holds stocks.
+    expect(pickReasonsFor('stock').map((r) => r.label)).toEqual(['I researched it', 'A friend or social media', 'Not sure']);
   });
   it('only "friend or social media" and "not sure" bring the Tip Check offer', () => {
     expect(offersTipCheck('social')).toBe(true);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getFund } from '../data/funds';
-import { currentNav, simToday, totalInvested } from '../lib/market';
+import { FIRST_WEEK_INSIGHT, insightFromState } from '../lib/insight';
+import { currentNav, isProcessing, portfolioValue, simToday, totalInvested } from '../lib/market';
 import { advance, fresh, oneTime, RIYA_ANSWERS, run, startSip, TODAY, withCheckin } from '../test/fixtures';
 import { createInitialState } from './initialState';
 import { nextOrderId, reducer } from './reducer';
@@ -51,16 +52,30 @@ describe('KYC', () => {
 });
 
 describe('placeInvestOrder', () => {
-  it('single SIP: first payment, order, autopay, and the first-investment week (PLAN item 13)', () => {
+  it('single SIP: first payment, order, autopay; no automatic market week (QA #15)', () => {
     const before = fresh();
     expect(nextOrderId(before)).toBe('ord_1');
-    const s = startSip(before, 'index50', 1000, 10);
+    // Straight through the reducer: the fixtures add a week for older tests.
+    const s = run(
+      before,
+      { type: 'startInvestDraft', draft: { mode: 'single', fundId: 'index50', type: 'sip', amount: 1000, dayOfMonth: 10, step: 'review', riskAck: true } },
+      { type: 'placeInvestOrder' },
+    );
     expect(s.investDraft).toBeUndefined();
     expect(s.sips).toMatchObject([{ id: 'sip_1', fundId: 'index50', amount: 1000, dayOfMonth: 10, instalments: 1, status: 'active' }]);
-    expect(s.orders).toMatchObject([{ id: 'ord_1', type: 'sip_first', amount: 1000, status: 'done' }]);
+    expect(s.orders).toMatchObject([{ id: 'ord_1', type: 'sip_first', amount: 1000, status: 'processing' }]);
     expect(s.user.autopay).toBe(true);
-    expect(s.market).toMatchObject({ scenario: 'dip_small', week: 1, history: ['dip_small'] });
+    // A fresh account sees no market move: same week, same scenario, value = invested.
+    expect(s.market).toMatchObject({ scenario: 'normal', week: 0, history: [] });
     expect(s.holdings[0].units).toBeCloseTo(1000 / 150, 9);
+    expect(isProcessing(s.holdings[0], s.market)).toBe(true);
+    expect(portfolioValue(s)).toBeCloseTo(1000, 6);
+    expect(insightFromState(s)).toBe(FIRST_WEEK_INSIGHT);
+    // The next simulated week settles it and the usual insight takes over.
+    const later = run(s, { type: 'advanceWeek' });
+    expect(isProcessing(later.holdings[0], later.market)).toBe(false);
+    expect(later.orders[0].status).toBe('done');
+    expect(insightFromState(later)?.branch).not.toBe('first_week');
   });
   it('later investments do not change the scenario or advance a week', () => {
     let s = startSip(fresh(), 'index50', 1000);
@@ -96,7 +111,7 @@ describe('placeInvestOrder', () => {
       ['batch_1', 'plan'],
     ]);
     expect(totalInvested(s)).toBe(4000);
-    expect(s.market.week).toBe(1); // first investment week applied once, not per SIP
+    expect(s.market.week).toBe(0); // QA #15: no automatic week after a first investment
   });
   it('rejects amounts under the fund minimum (₹99) and keeps the draft', () => {
     const s = run(

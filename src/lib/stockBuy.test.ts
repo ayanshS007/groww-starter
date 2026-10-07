@@ -41,16 +41,22 @@ describe('₹1,000 buys n shares (README 9 item 16)', () => {
 
 describe('the order in the URL', () => {
   it('round-trips through buyPath and parseBuyQuery', () => {
-    const d = { step: 'review', mode: 'amount', qty: 0, amount: 1000, orderType: 'limit', limit: 2400, reason: 'social', tipDone: true, budgetOk: true } as const;
+    const d = { step: 'review', mode: 'amount', qty: 0, amount: 1000, orderType: 'limit', limit: 2400, reason: 'social', tipDone: true, budgetOk: true, riskAck: true } as const;
     const path = buyPath('stk_voltara', d);
     expect(path.startsWith('/stock/stk_voltara/buy?')).toBe(true);
     const q = Object.fromEntries(new URLSearchParams(path.split('?')[1]));
     expect(parseBuyQuery(q)).toEqual(d);
   });
   it('defaults to 1 share, market, order step; ignores junk', () => {
-    expect(parseBuyQuery({})).toEqual({ step: 'order', mode: 'shares', qty: 1, amount: undefined, orderType: 'market', limit: undefined, reason: undefined, tipDone: false, budgetOk: false });
+    expect(parseBuyQuery({})).toEqual({ step: 'order', mode: 'shares', qty: 1, amount: undefined, orderType: 'market', limit: undefined, reason: undefined, tipDone: false, budgetOk: false, riskAck: false });
     expect(parseBuyQuery({ qty: '-4', reason: 'tip', type: 'fno' })).toMatchObject({ qty: 1, reason: undefined, orderType: 'market' });
     expect(parseBuyQuery({ qty: '5000' }).qty).toBe(999);
+  });
+  it('keeps the risk tick in the URL so it survives KYC (QA #1)', () => {
+    const d = parseBuyQuery({ step: 'review', qty: '2', ack: '1' });
+    expect(d.riskAck).toBe(true);
+    expect(buyPath('stk_voltara', d)).toContain('ack=1');
+    expect(buyPath('stk_voltara', { ...d, riskAck: false })).not.toContain('ack=');
   });
 });
 

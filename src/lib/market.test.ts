@@ -1,20 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { buildPersona } from '../data/personas';
 import { advance, fresh, oneTime, run, startSip, TODAY } from '../test/fixtures';
-import {
-  cushionValue,
-  navAt,
-  navSeries,
-  overallChange,
-  portfolioValue,
-  SCENARIO_MOVE,
-  scenarioMove,
-  simDate,
-  simToday,
-  totalInvested,
-  valueSeries,
-  weekChange,
-} from './market';
+import { changeDirection, cushionValue, navAt, navSeries, overallChange, portfolioValue, SCENARIO_MOVE, scenarioMove, simDate, simToday, totalInvested, valueSeries, weekChange } from './market';
+
+describe('changeDirection (QA #31)', () => {
+  it('is flat when the rupees or the percent round to zero', () => {
+    expect(changeDirection({ amount: 0.36, pct: 0.01 })).toBe('flat');
+    expect(changeDirection({ amount: -1, pct: -0.02 })).toBe('flat'); // "−₹1 (0.0%)" is not a dip
+    expect(changeDirection({ amount: -37, pct: -0.9 })).toBe('down');
+    expect(changeDirection({ amount: 363, pct: 2.4 })).toBe('up');
+  });
+});
 
 describe('scenarios and NAV', () => {
   it('uses the README weekly moves', () => {
@@ -46,7 +42,7 @@ describe('scenarios and NAV', () => {
 
 describe('portfolio maths', () => {
   it('values holdings and overall change', () => {
-    // ₹1,000 one-time: first investment → dip_small and one week applied (PLAN item 13).
+    // ₹1,000 one-time, then the first week (dip_small) applied by the fixture; the app no longer does this (QA #15).
     const s = oneTime(fresh(), 'index50', 1000);
     expect(s.market.week).toBe(1);
     expect(s.market.history).toEqual(['dip_small']);

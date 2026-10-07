@@ -181,7 +181,7 @@ describe('screen acceptance checks (README 9, Stage 3b)', () => {
     const t = text(renderAt('#/fund/midcap1?from=collection', planned));
     expect(t).toContain('isn’t part of your starter plan');
     expect(t).toContain('You opened this fund from a collection');
-    expect(t).toContain('Your horizon is 5+ yrs');
+    expect(t).toContain('Your time frame is 5+ yrs');
   });
   it('fund list has search, filters, collections, type chips, risk labels and no ranking words', () => {
     const t = text(renderAt('#/explore/funds', planned));
@@ -280,7 +280,7 @@ describe('screen acceptance checks (README 9, Stage 3b)', () => {
   });
   it('Holding detail shows value, units, average NAV, invested, Invest more and Withdraw', () => {
     const t = text(renderAt(`#/portfolio/holding/${riya.holdings[0].id}`, riya));
-    for (const w of ['What you hold', 'Units', 'Average NAV', 'You put in', 'Invest more', 'Withdraw', 'Your SIP in this fund']) expect(t).toContain(w);
+    for (const w of ['What you hold', 'Units', 'Average NAV', 'Invested', 'Invest more', 'Withdraw', 'Your SIP in this fund']) expect(t).toContain(w);
   });
 });
 
@@ -426,7 +426,8 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
 
   it('Riya starts on the big-dip branch on both Portfolio and Home', () => {
     expect(portfolioIn(riya)).toContain('bigger fall than usual');
-    expect(portfolioIn(riya)).toContain('Review my plan (optional)');
+    expect(portfolioIn(riya)).toContain('Review my plan');
+    expect(portfolioIn(riya)).toContain('A bigger dip'); // QA #6: named for what happened, not a warning
     expect(homeIn(riya)).toContain('This week: −');
   });
 
@@ -448,9 +449,10 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
       expect(text(html), name).toMatch(/Up ₹[\d,]+ \(\+2\.4%\) this week\./);
     }
     const t = portfolioIn(oneUp);
-    expect(t).toContain('below what you put in');
+    expect(t).toContain('below what you invested');
     expect(t).toContain('Nothing needs doing');
-    expect(t).toContain('Review my plan (optional)');
+    expect(t).toContain('Review my plan');
+    expect(t).toContain('Reviewing your plan is optional.');
     expect(t).not.toContain('lock in the fall');
     expect(t).not.toContain('Worth a look'); // not the amber caution card
     const lower = t.toLowerCase();
@@ -557,10 +559,10 @@ describe('Stage 3d-1: Dashboard (README 9 item 21)', () => {
       'Last 12 weeks',
       'Since start',
       'Current value',
-      'Invested so far',
+      'Invested',
       'This week',
       'Next SIP',
-      'Skip this one, free',
+      'Skip next instalment',
       'Value vs invested',
       'You stayed invested',
       'Where your money is',
@@ -738,7 +740,7 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
 
   it('Stock buy: stepper, Market/Limit explained, delivery only; review has pick reason chips and the Tip Check offer', () => {
     const order = text(renderAt('#/stock/stk_voltara/buy', riya));
-    for (const s of ['How many shares?', 'Market', 'Limit', 'Buys only at your price or lower', 'Delivery only', 'Take the readiness check']) expect(order).toContain(s);
+    for (const s of ['How many shares?', 'Market', 'Limit', 'Buys only at your price or lower', 'Delivery only', 'Take the quick check']) expect(order).toContain(s);
     const zero = text(renderAt('#/stock/stk_voltara/buy?mode=amount&amt=1000', riya));
     expect(zero).toContain('buys 0 shares');
     const review = text(renderAt('#/stock/stk_voltara/buy?step=review&qty=1&reason=social', riya));
@@ -768,10 +770,10 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
     expect(tc).toContain('Skip, back to my order');
     const tr = text(renderAt('#/you/trading', riya));
     expect(tr).toContain('Stock budget');
-    expect(tr).toContain('Readiness check');
+    expect(tr).toContain('Quick check: 5 questions'); // QA #21
     expect(tr).toContain('Not available in this prototype');
     expect(text(renderAt('#/learn', fresh()))).toContain('Tip Check');
-    expect(text(renderAt('#/you', riya))).toContain('Stock budget and readiness');
+    expect(text(renderAt('#/you', riya))).toContain('Stock budget and quick check');
     expect(text(renderAt('#/explore', fresh()))).toContain('Browse stocks');
   });
 

@@ -39,13 +39,13 @@ describe('buildInsight branches (PLAN item 15, first match wins)', () => {
       const i = up();
       expect(i.branch).toBe('big_dip');
       expect(i.headline.startsWith('Up ₹165 (+2.4%) this week.')).toBe(true);
-      expect(i.headline).toBe(`Up ₹165 (+2.4%) this week. Overall: ${MINUS}₹960 (${MINUS}12.0%) on what you put in.`);
+      expect(i.headline).toBe(`Up ₹165 (+2.4%) this week. Overall change: ${MINUS}₹960 (${MINUS}12.0%) on what you invested.`);
     });
     it('the body calmly says the portfolio is still below what was invested, in ₹ and %', () => {
       const i = up();
-      expect(i.body).toContain('still ₹960 (12.0%) below what you put in');
+      expect(i.body).toContain('still ₹960 (12.0%) below what you invested');
       expect(i.body).toContain("That's normal after a bigger fall");
-      expect(i.body).toContain('Your horizon is 5+ years');
+      expect(i.body).toContain('Your time frame is 5+ years');
     });
     it('needs no action, offers the optional review link, and is not the amber caution tone', () => {
       const i = up();
@@ -80,8 +80,8 @@ describe('buildInsight branches (PLAN item 15, first match wins)', () => {
       const riya = buildPersona('riya', TODAY);
       const one = insightFromState(advance(riya, 1, 'up'))!;
       expect(one.branch).toBe('big_dip');
-      expect(one.headline).toMatch(/^Up ₹\d[\d,]* \(\+\d+\.\d%\) this week\. Overall: /);
-      expect(one.body).toContain('below what you put in');
+      expect(one.headline).toMatch(/^Up ₹\d[\d,]* \(\+\d+\.\d%\) this week\. Overall change: /);
+      expect(one.body).toContain('below what you invested');
       expect(insightFromState(advance(riya, 3, 'up'))!.branch).toBe('calm');
     });
   });
@@ -95,7 +95,7 @@ describe('buildInsight branches (PLAN item 15, first match wins)', () => {
   it('3. down week, horizon ≥ 3 yrs: short-term move', () => {
     const i = buildInsight({ weekChange: ch(-27, -1.8), overallChange: ch(-27, -1.8), horizon: '5plus', holdings: idx });
     expect(i.branch).toBe('short_term');
-    expect(i.body).toBe("A short-term move. Your horizon is 5+ years, so this alone doesn't mean you need to act.");
+    expect(i.body).toBe("A short-term move. Your time frame is 5+ years, so this alone doesn't mean you need to act.");
     expect(i.actionNeeded).toBe(false);
   });
   it('4. down week, horizon < 3 yrs: explains the steadier fund', () => {
@@ -113,7 +113,7 @@ describe('buildInsight branches (PLAN item 15, first match wins)', () => {
   });
   it('the headline states this week’s change and the overall change in ₹ and %', () => {
     const i = buildInsight({ weekChange: ch(-458, -8), overallChange: ch(-732, -12.2), horizon: '5plus', holdings: idx });
-    expect(i.headline).toBe(`This week: ${MINUS}₹458 (${MINUS}8.0%). Overall: ${MINUS}₹732 (${MINUS}12.2%) on what you put in.`);
+    expect(i.headline).toBe(`This week: ${MINUS}₹458 (${MINUS}8.0%). Overall change: ${MINUS}₹732 (${MINUS}12.2%) on what you invested.`);
   });
   it('tone is never red or alarming', () => {
     const cases: [number, number, Horizon][] = [

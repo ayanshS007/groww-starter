@@ -47,11 +47,11 @@ describe('fundFit (PLAN items 6, 30)', () => {
   it('a longer-horizon fund names both horizons and a risk mismatch', () => {
     const fit = fundFit(getFund('index50')!, kabir, 'search');
     const text = fit.banners.map((b) => b.text).join(' ');
-    expect(text).toContain('Your horizon is 1–3 yrs; this fund suits 5+ yrs');
+    expect(text).toContain('Your time frame is 1–3 yrs; this fund suits 5+ yrs');
     expect(text).toContain('probably sell');
     expect(fit.banners.some((b) => b.text.includes('isn’t part of your starter plan'))).toBe(true);
     expect(fit.why).toContain('found this fund by searching');
-    expect(fit.why).toMatch(/horizon/);
+    expect(fit.why).toMatch(/time frame/);
     expect(fit.why).toMatch(/probably sell/);
   });
   it('a shorter-horizon fund is not a caution, but the text says it may grow slowly', () => {

@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { compactINR, dateLabel, formatINR, formatPct, formatSigned, formatUnits, keepSignsTogether, maskMobile, MINUS, ordinal } from './format';
+import { compactINR, dateLabel, formatAmount, formatINR, formatPct, formatSigned, formatUnits, keepSignsTogether, maskMobile, MINUS, ordinal } from './format';
+
+describe('formatAmount (QA #28: one format for an order everywhere)', () => {
+  it('shows paise only when there are any', () => {
+    expect(formatAmount(2466.37)).toBe('₹2,466.37');
+    expect(formatAmount(2000)).toBe('₹2,000');
+    expect(formatAmount(1000.0000001)).toBe('₹1,000');
+    expect(formatAmount(204.5)).toBe('₹204.50');
+  });
+});
 
 describe('formatINR', () => {
   it('uses Indian grouping', () => {

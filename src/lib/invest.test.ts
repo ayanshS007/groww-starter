@@ -6,6 +6,7 @@ import { fresh, run, startSip, TODAY, withCheckin } from '../test/fixtures';
 import {
   amountPresets,
   ceilingNote,
+  suggestedOverCeiling,
   checkUpiId,
   planDraft,
   planParts,
@@ -194,5 +195,16 @@ describe('persona state still works with the flow', () => {
   it('Riya already has a live index SIP, so only the cushion part is left', () => {
     const riya: State = buildPersona('riya', TODAY);
     expect(planParts(riya).map((p) => p.fundId)).toEqual(['liquid1']);
+  });
+});
+
+describe('suggestedOverCeiling (QA #18)', () => {
+  it('Meera: raising her ₹1,500 SIP to ₹4,200 for the laptop goes over ₹4,000, said in one line', () => {
+    const m = buildPersona('meera', TODAY);
+    expect(suggestedOverCeiling(m, m.sips[0].id, 4200)).toBe('That’s more than the ₹4,000 a month that usually feels easy at your income. Your call.');
+    expect(suggestedOverCeiling(m, m.sips[0].id, 4000)).toBeUndefined();
+  });
+  it('no check-in, no line', () => {
+    expect(suggestedOverCeiling(fresh(), 'sip_1', 99999)).toBeUndefined();
   });
 });

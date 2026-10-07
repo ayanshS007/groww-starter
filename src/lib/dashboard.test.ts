@@ -85,6 +85,14 @@ describe('allocation and plan split', () => {
     expect(c + g).toBe(100);
     expect(c).toBe(Math.round((slices[0].value / total) * 100));
   });
+  it('QA #17: Meera’s goal money is "Goal savings" in the donut, but liquid like her plan in the split line', () => {
+    const m = buildPersona('meera', '2026-10-07');
+    const { slices } = allocation(m);
+    expect(slices.map((x) => x.id)).toEqual(['cushion', 'goals', 'grow', 'stocks', 'gold']);
+    expect(slices.find((x) => x.id === 'cushion')!.value).toBe(0);
+    expect(slices.find((x) => x.id === 'goals')!.pct).toBeCloseTo(100, 6);
+    expect(splitLine(m)).toBe('Plan split: 100 / 0 · Actual: 100 / 0');
+  });
   it('without a plan it shows only the actual split', () => {
     const s = oneTime(fresh(), 'liquid1', 500);
     expect(splitLine(s)).toBe('Actual: 100 / 0 (cushion / grow)');
@@ -141,7 +149,8 @@ describe('plan health links go to the screen that fixes each check', () => {
     expect(healthLink(cushion)).toEqual({ to: '/payday', label: 'Top up cushion' });
     expect(healthLink(stocks)).toEqual({ to: '/you/trading', label: 'Stock budget' });
     expect(healthLink(horizon)).toEqual({ to: '/plan', label: 'See my plan' });
-    expect(healthLink(sips)).toEqual({ to: '/portfolio', label: 'See my SIPs' });
+    // QA #30: Riya's cushion SIP was never set up, so the SIPs row points to it.
+    expect(healthLink(sips)).toEqual({ to: '/invest/liquid1?amount=2000', label: 'Set it up' });
     for (const c of planHealth(s)) expect(resolveRoute(parseHash('#' + healthLink(c).to), s).kind).toBe('screen');
   });
 });

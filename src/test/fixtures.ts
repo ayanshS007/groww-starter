@@ -1,4 +1,5 @@
 // Shared builders for tests. Uses the real reducer so flows match the app.
+import { hasInvested } from '../lib/activity';
 import { createInitialState } from '../state/initialState';
 import { reducer, type Action } from '../state/reducer';
 import type { CheckinAnswers, FundId, Holding, State } from '../state/types';
@@ -33,19 +34,36 @@ export function withCheckin(state: State, patch: Partial<CheckinAnswers> = {}): 
   );
 }
 
+/**
+ * The app used to apply one dip_small week straight after a first investment
+ * (PLAN item 13). It no longer does (QA #15). Tests built on these helpers were
+ * written around that week (dates, a settled order, a market move), so the
+ * helpers apply it explicitly, as a reviewer pressing "Advance one week" would.
+ */
+function withFirstWeek(before: State, after: State): State {
+  if (hasInvested(before)) return after;
+  return advance(after, 1, 'dip_small');
+}
+
 export function startSip(state: State, fundId: FundId, amount: number, dayOfMonth = 10): State {
-  return run(
+  return withFirstWeek(
     state,
-    { type: 'startInvestDraft', draft: { mode: 'single', fundId, type: 'sip', amount, dayOfMonth, step: 'review', riskAck: true } },
-    { type: 'placeInvestOrder' },
+    run(
+      state,
+      { type: 'startInvestDraft', draft: { mode: 'single', fundId, type: 'sip', amount, dayOfMonth, step: 'review', riskAck: true } },
+      { type: 'placeInvestOrder' },
+    ),
   );
 }
 
 export function oneTime(state: State, fundId: FundId, amount: number): State {
-  return run(
+  return withFirstWeek(
     state,
-    { type: 'startInvestDraft', draft: { mode: 'single', fundId, type: 'one_time', amount, step: 'review', riskAck: true } },
-    { type: 'placeInvestOrder' },
+    run(
+      state,
+      { type: 'startInvestDraft', draft: { mode: 'single', fundId, type: 'one_time', amount, step: 'review', riskAck: true } },
+      { type: 'placeInvestOrder' },
+    ),
   );
 }
 
