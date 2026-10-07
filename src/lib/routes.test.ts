@@ -64,6 +64,11 @@ describe('guards (PLAN section 3)', () => {
     expect(go('#/kyc/1?next=%2Finvest%2Findex50', done)).toEqual({ kind: 'redirect', to: '/invest/index50' });
     expect(go('#/kyc/1', done)).toEqual({ kind: 'redirect', to: '/you' });
   });
+  it('/kyc/done shows "You’re verified" only once KYC is done', () => {
+    expect(go('#/kyc/done?next=%2Fhome', signedUp)).toEqual({ kind: 'redirect', to: '/kyc/1?next=%2Fhome' });
+    const done = run(signedUp, { type: 'kycComplete' });
+    expect(go('#/kyc/done?next=%2Fhome', done)).toMatchObject({ kind: 'screen', screen: 'kyc', params: { step: 'done' } });
+  });
   it('/fund and /invest need a valid fund id; invest does not need KYC (PLAN C5)', () => {
     expect(go('#/fund/x', fresh())).toEqual({ kind: 'redirect', to: '/explore/funds', toast: TOASTS.noFund });
     expect(go('#/invest/x', fresh())).toEqual({ kind: 'redirect', to: '/explore/funds', toast: TOASTS.noFund });

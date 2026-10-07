@@ -1,6 +1,6 @@
 // Small hash router: reads location.hash, resolves it with lib/routes, and
 // applies redirects with replace so Back never lands on a blocked route.
-import { useEffect, useState, type AnchorHTMLAttributes, type MouseEvent } from 'react';
+import { useEffect, useSyncExternalStore, type AnchorHTMLAttributes, type MouseEvent } from 'react';
 import { parseHash, resolveRoute, type Location, type Resolved } from './lib/routes';
 import type { State } from './state/types';
 
@@ -15,13 +15,17 @@ export function navigate(to: string, opts: { replace?: boolean } = {}): void {
   else window.location.hash = hash;
 }
 
+function subscribe(onChange: () => void): () => void {
+  window.addEventListener('hashchange', onChange);
+  return () => window.removeEventListener('hashchange', onChange);
+}
+
+/**
+ * Reads the hash on every render (not only on hashchange), so a screen can
+ * navigate and then dispatch in one handler without a guard seeing the old path.
+ */
 export function useLocation(): Location {
-  const [hash, setHash] = useState(currentHash);
-  useEffect(() => {
-    const onChange = () => setHash(currentHash());
-    window.addEventListener('hashchange', onChange);
-    return () => window.removeEventListener('hashchange', onChange);
-  }, []);
+  const hash = useSyncExternalStore(subscribe, currentHash, () => '#/');
   return parseHash(hash);
 }
 
@@ -52,4 +56,11 @@ export function Link({ to, replace, onClick, ...rest }: LinkProps) {
     navigate(to, { replace: true });
   };
   return <a href={'#' + to} onClick={handle} {...rest} />;
+}
+
+/** Browser back when there is history to go back to, else `fallback`. */
+export function goBack(fallback: string): void {
+  if (typeof window === 'undefined') return;
+  if (window.history.length > 1) window.history.back();
+  else navigate(fallback, { replace: true });
 }
