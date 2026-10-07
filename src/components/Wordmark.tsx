@@ -1,19 +1,19 @@
-// Text wordmark only (CLAUDE.md: no logos). The badge names the current view.
+// Text wordmark only (CLAUDE.md: no logos). A small "Pro" badge shows only while Pro view is on.
+import { proViewOn } from '../lib/pro';
 import { useStore } from '../state/store';
+import { ProChip } from './ProGate';
 
-/** "Starter" or "Pro": the badge text, also used in the Home link's accessible name. */
-export function useViewName(): 'Starter' | 'Pro' {
-  return useStore().state.prefs.view === 'pro' ? 'Pro' : 'Starter';
+/** Used in the Home link's accessible name: "Groww" or "Groww Pro". */
+export function useBrandName(): string {
+  return proViewOn(useStore().state) ? 'Groww Pro' : 'Groww';
 }
 
 export function Wordmark({ className = '' }: { className?: string }) {
-  const pro = useViewName() === 'Pro';
+  const pro = proViewOn(useStore().state);
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <span className="text-xl font-extrabold tracking-tight text-ink">Groww</span>
-      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${pro ? 'bg-lavender text-ink' : 'bg-mint text-brand-text'}`}>
-        {pro ? 'Pro' : 'Starter'}
-      </span>
+      {pro && <ProChip />}
     </span>
   );
 }

@@ -101,3 +101,22 @@ describe('parseSavedState rejects bad data', () => {
     expect(parsed.market.startDate).toBe('2026-01-01');
   });
 });
+
+describe('Stage 6b: Pro is earned (saved state)', () => {
+  const save = (prefs: Record<string, unknown>) => {
+    const base = createInitialState(TODAY);
+    return JSON.stringify({ ...base, prefs: { ...base.prefs, ...prefs, proUnlocked: undefined, ...('proUnlocked' in prefs ? { proUnlocked: prefs.proUnlocked } : {}) } });
+  };
+  it('a saved Pro view without the quick check goes back to Starter', () => {
+    const s = parseSavedState(save({ view: 'pro', readinessPassed: false }), TODAY)!;
+    expect(s.prefs).toMatchObject({ proUnlocked: false, view: 'starter' });
+  });
+  it('someone who already passed the quick check keeps Pro', () => {
+    const s = parseSavedState(save({ view: 'pro', readinessPassed: true }), TODAY)!;
+    expect(s.prefs).toMatchObject({ proUnlocked: true, view: 'pro' });
+  });
+  it('an explicit lock is respected', () => {
+    const s = parseSavedState(save({ view: 'pro', readinessPassed: true, proUnlocked: false }), TODAY)!;
+    expect(s.prefs).toMatchObject({ proUnlocked: false, view: 'starter' });
+  });
+});

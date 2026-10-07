@@ -638,8 +638,8 @@ describe('Stage 3d-1: notifications inbox (README 8.12, 9 item 19)', () => {
   });
 });
 
-describe('Stage 3d-1: Starter / Pro view (README 9 item 22)', () => {
-  const pro = (s: State) => run(s, { type: 'setView', view: 'pro' });
+describe('Stage 3d-1: Pro view (README 9 item 22; earned since Stage 6b)', () => {
+  const pro = (s: State) => run(s, { type: 'unlockPro' });
   const riya = buildPersona('riya', TODAY);
 
   it('Starter Explore keeps the plain markets line and no index strip', () => {
@@ -678,11 +678,14 @@ describe('Stage 3d-1: Starter / Pro view (README 9 item 22)', () => {
     expect(fund).toContain('Why this?');
     expect(text(renderAt('#/fund/index50', riya))).not.toContain('Why this? What it is');
   });
-  it('the You screen has the view toggle', () => {
-    const t = text(renderAt('#/you', riya));
-    expect(t).toContain('App view');
-    expect(t).toContain('Starter');
-    expect(t).toContain('Pro');
+  it('You shows the Pro view switch only after Pro is unlocked; there is no Starter/Pro toggle', () => {
+    const locked = text(renderAt('#/you', riya));
+    expect(locked).not.toContain('Pro view');
+    expect(locked).not.toContain('App view');
+    const unlocked = renderAt('#/you', pro(riya));
+    expect(text(unlocked)).toContain('Pro view');
+    expect(unlocked).toContain('role="switch"');
+    expect(unlocked).toContain('aria-label="Pro view"');
   });
 });
 
@@ -734,7 +737,7 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
     const list = text(renderAt('#/explore/stocks', fresh()));
     expect(list).toContain('New to stocks? ‘Stocks vs funds’ in 60 seconds');
     expect(list).toContain('Sample data');
-    const pro = text(renderAt('#/explore/stocks', run(fresh(), { type: 'setView', view: 'pro' })));
+    const pro = text(renderAt('#/explore/stocks', run(fresh(), { type: 'unlockPro' })));
     expect(pro).not.toContain('New to stocks?');
     const d = text(renderAt('#/stock/stk_voltara', fresh()));
     expect(d).toContain('₹1,000 buys 0 shares');
@@ -746,7 +749,10 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
 
   it('Stock buy: stepper, Market/Limit explained, delivery only; review has pick reason chips and the Tip Check offer', () => {
     const order = text(renderAt('#/stock/stk_voltara/buy', riya));
-    for (const s of ['How many shares?', 'Market', 'Limit', 'Buys only at your price or lower', 'Delivery only', 'Take the quick check']) expect(order).toContain(s);
+    for (const s of ['How many shares?', 'Market', 'Limit', 'Buys only at your price or lower', 'Delivery only']) expect(order).toContain(s);
+    // No upsell inside a flow (Stage 6b): no quick-check link, no locked chip.
+    expect(order).not.toContain('Take the quick check');
+    expect(order).not.toContain('data-pro-locked');
     const zero = text(renderAt('#/stock/stk_voltara/buy?mode=amount&amt=1000', riya));
     expect(zero).toContain('buys 0 shares');
     const review = text(renderAt('#/stock/stk_voltara/buy?step=review&qty=1&reason=social', riya));
@@ -754,7 +760,7 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
     expect(review).toContain('Run a 30-second Tip Check?');
     expect(review).toContain('Over your stock budget');
     expect(text(renderAt('#/stock/stk_voltara/buy?step=review&qty=1&reason=social&tc=1', riya))).not.toContain('Run a 30-second Tip Check?');
-    const passed = text(renderAt('#/stock/stk_voltara/buy', run(riya, { type: 'passReadiness', passed: true })));
+    const passed = text(renderAt('#/stock/stk_voltara/buy', run(riya, { type: 'unlockPro' })));
     expect(passed).toContain('More order types, explained');
   });
 
@@ -795,7 +801,7 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
     expect(ok).toContain('2 shares · delivery');
   });
 
-  it('the badge next to the wordmark shows the current view', () => {
+  it('the Pro badge next to the wordmark shows only while Pro view is on', () => {
     const badge = (s: State) =>
       text(
         renderToString(
@@ -804,8 +810,9 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
           </StoreProvider>,
         ),
       ).trim();
-    expect(badge(riya)).toBe('Groww Starter');
-    expect(badge(run(riya, { type: 'setView', view: 'pro' }))).toBe('Groww Pro');
+    expect(badge(riya)).toBe('Groww');
+    expect(badge(run(riya, { type: 'unlockPro' }))).toBe('Groww Pro');
+    expect(badge(run(riya, { type: 'unlockPro' }, { type: 'setView', view: 'starter' }))).toBe('Groww');
   });
 });
 
@@ -937,5 +944,130 @@ describe('Stage 6a: visual upgrade and market mood', () => {
   it('Reviewer tools has a Mood control with every mood, plus time of day and day', () => {
     const t = text(renderAt('#/review', fresh()));
     for (const s of ['Mood', 'Auto', 'Up week', 'Flat', 'Small dip', 'Big dip', 'Time of day', 'Morning', 'Night', 'Weekend']) expect(t).toContain(s);
+  });
+});
+
+describe('Stage 6b: earned Pro', () => {
+  const riya = buildPersona('riya', TODAY);
+  // Riya's real mood is a big dip (Steady mode), so the "calm" cases preview a flat week.
+  const calm = run(riya, { type: 'setPreview', patch: { mood: 'flat' } });
+  const steady = run(riya, { type: 'setPreview', patch: { mood: 'big_dip' } });
+  const unlocked = (s: State) => run(s, { type: 'unlockPro' });
+  const lockedCount = (html: string) => (html.match(/data-pro-locked/g) ?? []).length;
+
+  it('locked: the Explore hub has the one banner and the locked strip and watchlist, no pricing', () => {
+    const html = renderAt('#/explore', calm);
+    const t = text(html);
+    expect(t).toContain('Upgrade to Pro');
+    expect(t).toContain('See what Pro adds');
+    expect(lockedCount(html)).toBe(2);
+    expect(html).toContain('Sample index strip: a locked Pro feature');
+    expect(html).toContain('Watchlist table with 52-week range: a locked Pro feature');
+    expect(t).not.toMatch(/₹\s?\d+\s*(a|per|\/)\s*(month|year)|subscribe|pay now/i);
+    expect(t).toContain('Mutual funds'); // existing Starter features stay
+    expect(t).toContain('Browse stocks');
+  });
+  it('locked: fund and company charts, fund numbers and compare stay visible in place, dimmed and inert', () => {
+    const html = renderAt('#/fund/index50', calm);
+    expect(lockedCount(html)).toBe(3);
+    for (const s of ['Fund numbers', 'Compare two funds', '3-year return']) expect(text(html)).toContain(s);
+    expect(html).toContain('aria-label="Chart range"');
+    expect(html).toContain('opacity-40');
+    expect(html).toContain('blur-sm');
+    expect(html).toContain('inert=""');
+    expect(html).toContain('aria-haspopup="dialog"');
+    expect(html).not.toContain('Upgrade to Pro'); // the banner lives only in Explore
+    const stock = renderAt('#/stock/stk_voltara', calm);
+    expect(lockedCount(stock)).toBe(2); // chart ranges and order types
+    expect(text(stock)).toContain('More order types, explained');
+    expect(text(stock)).not.toContain('Upgrade to Pro');
+  });
+  it('locked: Dashboard analytics are in place; no banner on Home, Dashboard or You', () => {
+    const dash = renderAt('#/dashboard', calm);
+    expect(lockedCount(dash)).toBe(1);
+    expect(text(dash)).toContain('Portfolio analytics');
+    expect(text(dash)).toContain('Illustrative, sample data');
+    for (const route of ['#/home', '#/dashboard', '#/you', '#/portfolio']) expect(text(renderAt(route, calm))).not.toContain('Upgrade to Pro');
+  });
+  it('Starter features are never locked', () => {
+    const t = text(renderAt('#/fund/index50', calm));
+    for (const s of ['Start SIP', 'One-time', 'Save to watchlist', 'How it moved (sample)', 'Expense ratio', 'Exit load']) expect(t).toContain(s);
+    expect(text(renderAt('#/explore/funds', calm))).toContain('Search');
+  });
+
+  it('Steady mode hides the Upgrade banner and every locked chip', () => {
+    for (const route of ['#/explore', '#/fund/index50', '#/stock/stk_voltara', '#/dashboard', '#/home', '#/you', '#/explore/funds']) {
+      const html = renderAt(route, steady);
+      expect(html, route).not.toContain('data-pro-locked');
+      expect(html, route).not.toContain('a locked Pro feature');
+      expect(text(html), route).not.toContain('Upgrade to Pro');
+      expect(text(html), route).not.toContain('What Pro adds');
+    }
+    // Riya's own big dip is Steady mode without any preview.
+    expect(text(renderAt('#/explore', riya))).not.toContain('Upgrade to Pro');
+    expect(renderAt('#/explore', riya)).not.toContain('data-pro-locked');
+    // The Explore page itself still works.
+    expect(text(renderAt('#/explore', steady))).toContain('Mutual funds');
+  });
+  it('the invest flow, KYC, check-in and the Stop coach never show locked Pro or the banner', () => {
+    const planned = withCheckin(fresh());
+    const start = run(calm, { type: 'startInvestDraft', draft: { mode: 'single', fundId: 'liquid1', type: 'one_time', amount: 500, step: 'review', riskAck: false } });
+    const routes: [string, State][] = [
+      ['#/invest/liquid1', start],
+      ['#/invest/plan', calm],
+      ['#/kyc/1', planned],
+      ['#/checkin/1', planned],
+      ['#/stock/stk_voltara/buy', calm],
+      ['#/portfolio/sip/sip_1/stop', calm],
+    ];
+    for (const [route, state] of routes) {
+      const html = renderAt(route, state);
+      expect(html, route).not.toContain('data-pro-locked');
+      expect(text(html), route).not.toContain('Upgrade to Pro');
+      expect(text(html), route).not.toContain('What Pro adds');
+    }
+  });
+
+  it('unlocked with Pro view on: features are live, nothing is locked, no banner', () => {
+    const s = unlocked(calm);
+    const fund = renderAt('#/fund/index50', s);
+    expect(lockedCount(fund)).toBe(0);
+    for (const t of ['Fund numbers', 'Compare with', '1-year return', '5-year return']) expect(text(fund)).toContain(t);
+    expect(fund).toContain('aria-pressed');
+    expect(text(renderAt('#/explore', s))).not.toContain('Upgrade to Pro');
+    const dash = text(renderAt('#/dashboard', s));
+    expect(dash).toContain('Category mix');
+    expect(dash).toContain('not your own return and not a forecast');
+    expect(text(renderAt('#/stock/stk_voltara/buy', s))).toContain('More order types, explained');
+  });
+  it('unlocked with Pro view off: the Starter look, no locks and no banner', () => {
+    const s = run(calm, { type: 'unlockPro' }, { type: 'setView', view: 'starter' });
+    for (const route of ['#/explore', '#/fund/index50', '#/dashboard', '#/stock/stk_voltara']) {
+      const html = renderAt(route, s);
+      expect(html, route).not.toContain('data-pro-locked');
+      expect(text(html), route).not.toContain('Upgrade to Pro');
+    }
+    expect(text(renderAt('#/fund/index50', s))).not.toContain('Fund numbers');
+    expect(text(renderAt('#/dashboard', s))).not.toContain('Portfolio analytics');
+  });
+
+  it('the quick check page puts the check first when arriving from "Unlock Pro"', () => {
+    const from = text(renderAt('#/you/trading?focus=check', calm));
+    expect(from.indexOf('Quick check: 5 questions')).toBeLessThan(from.indexOf('Stock budget'));
+    expect(from).toContain('Get 4 of 5 and Pro unlocks');
+    const plain = text(renderAt('#/you/trading', calm));
+    expect(plain.indexOf('Stock budget')).toBeLessThan(plain.indexOf('Quick check: 5 questions'));
+  });
+  it('there is no Starter/Pro badge or toggle anywhere in the shell', () => {
+    for (const route of ['#/home', '#/explore', '#/you']) {
+      const t = text(renderAt(route, calm));
+      expect(t, route).not.toContain('Starter Pro');
+      expect(t, route).not.toContain('App view');
+    }
+  });
+  it('Reviewer tools has Unlock Pro and Lock Pro', () => {
+    const t = text(renderAt('#/review', calm));
+    expect(t).toContain('Unlock Pro');
+    expect(t).toContain('Lock Pro');
   });
 });

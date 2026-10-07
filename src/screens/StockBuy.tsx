@@ -3,6 +3,8 @@
 // gentle budget sheet that never blocks) → review (key risk + checkbox, pick
 // reason + Tip Check offer, KYC at payment) → "Order placed (simulated)".
 // The order lives in the URL, so KYC and Tip Check return to it.
+import { MoreOrderTypes } from '../components/MoreOrderTypes';
+import { ProGate } from '../components/ProGate';
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { AmountInput } from '../components/AmountInput';
@@ -31,7 +33,6 @@ import {
   draftShares,
   fillPrice,
   MAX_SHARES,
-  MORE_ORDER_TYPES,
   ORDER_TYPES,
   parseBuyQuery,
   sharesWithinBudget,
@@ -210,31 +211,10 @@ export function StockBuy({ id, query }: { id: string; query: Record<string, stri
               </div>
             )}
 
-            {state.prefs.readinessPassed ? (
-              <details className="group rounded-card border border-border bg-surface">
-                <summary className="flex min-h-tap cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold text-ink">
-                  More order types, explained
-                  <Icon name="chevronDown" size={20} className="shrink-0 transition group-open:rotate-180" />
-                </summary>
-                <ul className="space-y-3 px-4 pb-4">
-                  {MORE_ORDER_TYPES.map((o) => (
-                    <li key={o.label} className="text-sm">
-                      <span className="font-semibold text-ink">{o.label}: </span>
-                      <span className="text-ink-muted">{o.text}</span>
-                    </li>
-                  ))}
-                  <li className="text-sm text-ink-muted">Explained only. You can’t place these here. F&amp;O is not available in this prototype.</li>
-                </ul>
-              </details>
-            ) : (
-              <p className="text-sm text-ink-muted">
-                Curious about other order types?{' '}
-                <Link to="/you/trading" className="font-semibold text-brand-text underline-offset-4 hover:underline">
-                  Take the quick check
-                </Link>{' '}
-                to see them explained.
-              </p>
-            )}
+            {/* Locked Pro never shows in the buy flow; the explained list is live here once Pro view is on. */}
+            <ProGate label="More order types">
+              <MoreOrderTypes />
+            </ProGate>
 
             <Note tone="info">
               <p>Delivery only: you own the shares until you sell. Intraday and F&amp;O are hidden.</p>

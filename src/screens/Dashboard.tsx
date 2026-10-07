@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { AreaChart, AreaLegend } from '../components/AreaChart';
 import { Button, ButtonLink } from '../components/Button';
+import { PortfolioAnalytics } from '../components/PortfolioAnalytics';
 import { Card } from '../components/Card';
 import { ChangeText, OWN_CHANGE_MARK, OWN_CHANGE_TONE } from '../components/ChangeText';
 import { Chip } from '../components/Chip';
@@ -509,7 +510,7 @@ export function Dashboard() {
   if (!hasDashboardData(state)) return <EmptyDashboard state={state} />;
   // Steady mode (big dip): the insight goes to the very top, on every width.
   const banner = (
-    <div className={steady ? 'lg:order-first lg:col-span-12' : 'lg:order-8 lg:col-span-12'}>
+    <div className={steady ? 'lg:order-first lg:col-span-12' : 'lg:order-9 lg:col-span-12'}>
       <InsightBanner state={state} />
     </div>
   );
@@ -537,10 +538,11 @@ export function Dashboard() {
         <div className="lg:order-5 lg:col-span-4">
           <GoalsCard state={state} />
         </div>
-        <div className="lg:order-7 lg:col-span-12">
+        <PortfolioAnalytics state={state} />
+        <div className="lg:order-8 lg:col-span-12">
           <ActivityCard state={state} />
         </div>
-        <Disclaimer className="lg:order-9 lg:col-span-12" />
+        <Disclaimer className="lg:order-10 lg:col-span-12" />
       </div>
     </div>
   );

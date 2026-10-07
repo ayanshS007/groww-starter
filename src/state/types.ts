@@ -237,7 +237,10 @@ export type State = {
   goals: Goal[];
   watchlist: AssetId[];
   prefs: {
+    /** 'pro' = "Pro view" is on. Only possible once `proUnlocked` (Stage 6b). */
     view: 'starter' | 'pro';
+    /** Earned by passing the quick check (4 of 5), never bought. */
+    proUnlocked: boolean;
     stockBudgetPct: number;
     readinessPassed: boolean;
     notif: Record<NotifKind, boolean>;

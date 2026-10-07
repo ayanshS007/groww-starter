@@ -146,6 +146,10 @@ PLAN.md overrides `README.md` at each point below. Everything not listed follows
 | C20 | 8.5, 10, 11 "no red for normal dips"; S13/S14 "neutral/amber" | The user's own dips are neutral or amber | The user's own losses use a **soft rose** with ▼ and a sign (≥ 4.5:1), gains green with ▲. Never alarm red, red buttons, red backgrounds or warning icons (owner rule, Stage 6a). |
 | C21 | 9 item 1 Landing | Headline, sub, CTAs | Same copy and CTAs, plus drifting blobs and a 3-card value bento ("A plan in 2 minutes", "Skip any month, free", "Always see why"). No stats. |
 | C22 | 9 item 5 Home order | Greeting → Next-step card → snapshot with insight → … | In **Steady mode** (big dip) the full insight card comes first and the "Got paid? Split it" card is hidden. Same on Dashboard: the insight banner moves to the top. |
+| C23 | 9 item 22, S31; 8.9 Readiness; S7 "Must NOT appear: index strip" | The Starter/Pro toggle is free (C13); Starter Explore never shows the index strip; readiness unlocks order-type explanations | **Pro is earned** (Stage 6b). Passing the quick check (4 of 5) unlocks Pro and turns Pro view on. There is no Starter/Pro toggle or Starter badge; "Pro view" on/off lives in You after unlock, and a small "Pro" badge sits next to the wordmark only while it is on. While locked, each Pro feature stays visible and dimmed, and the Explore hub shows a locked index strip and watchlist table. |
+| C24 | 9 item 22 "Pro puts Confidence blocks behind Why this?" | In Pro view | Unchanged, but Pro view now needs unlock. |
+| C25 | 9 item 6, S9, S24 | Pro features listed in 9 item 22 only | Adds Pro features: chart ranges 1W/1M/1Y/All (fund, stock), side-by-side compare of two funds, extra fund metrics card, Dashboard portfolio analytics, extra order types (also shown as a card on Stock detail). |
+| C26 | New rule | — | No Pro banner, locked chip or "What Pro adds" sheet in Steady mode, the Stop coach, the invest flow (including Success and the stock buy flow), KYC or check-in. The only banner is in the Explore hub. |
 
 ---
 
@@ -814,3 +818,40 @@ A "Mood" card: Auto (shows the current simulated mood) · Up week · Flat · Sma
 - `mood.test.ts` (every scenario and threshold, Riya = big dip, liquid-only not a big dip, previews, clock, weekends, payday window, glow rules), `goals.test.ts` (ring warmth and glow), new App tests (Landing bento, check-in tiles, plan reveal, Steady mode order, rose ▼ / green ▲, payday, weekend, goal ring, Mood control).
 - `contrast.test.ts`: every text pair on each mood tint, and ink, muted, green, caution and rose text over the worst overlap of mood glow + time-of-day sky + any two blobs (gold in the payday week), in light and dark.
 - Screenshots only of changed screens at 390 and 1280 px, plus Home in dark.
+
+---
+
+## Stage 6b — Earned Pro
+
+Owner request on 2026-10-07. Goal: Pro is something a user earns, not a switch. No payment, no prices. README changes are C23–C26 above.
+
+### 6b.1 State and the lock
+- `prefs.proUnlocked` (new, default false) and the existing `prefs.view` (`'pro'` = Pro view on). `setView('pro')` is ignored while locked.
+- Actions: `passReadiness` (4 of 5 → unlock + Pro view on; a fail changes nothing), `unlockPro`, `lockPro` (both for Reviewer tools; lock also clears `readinessPassed`).
+- Saved state without `proUnlocked`: unlocked only if `readinessPassed` was already true; otherwise Starter. No version bump.
+- `src/lib/pro.ts`: `proMode(state, screen)` → `live` (unlocked, Pro view on) · `locked` (visible, dimmed) · `hidden` (unlocked but Pro view off, or locked where promotion is not allowed). `promoAllowed` = not Steady mode and not one of `NO_PROMO_SCREENS` (stop coach, invest plan, invest, success, stock buy, KYC, check-in). `showUpgradeBanner` = Explore hub, locked, promotion allowed.
+
+### 6b.2 Pro features (each wrapped in `ProGate`)
+| Feature | Where | Notes |
+|---|---|---|
+| Chart ranges 1W / 1M / 1Y / All | Fund detail, Stock detail | tail windows of the 24-point sample series (5, 10, 18, 24) |
+| Sample index strip | Explore hub (locked), Explore Pro (live) | existing `IndexStrip` |
+| Watchlist table with 52-week range | Explore hub (locked sample rows), Explore Pro Watchlist tab (live) | locked preview uses three sample companies, never the user's list |
+| Compare two funds | Fund detail | select a second fund, 8 plain rows, no "winner" |
+| Extra fund metrics | Fund detail card | expense ratio, 1/3/5-year illustrative returns. The existing Starter "Main risk and costs" card keeps its expense ratio line (never lock Starter) |
+| Portfolio analytics | Dashboard | category mix and one yearly figure: the funds' sample 1-year returns weighted by holdings, labelled "Illustrative, sample data", "not your own return and not a forecast". Not annualised from the short simulation, which would give extreme numbers |
+| Extra order types | Stock detail (locked or live), Stock buy (live only) | explained only, never placeable. Locked chips can't show in the buy flow, so the buy flow shows it only when live |
+
+### 6b.3 Locked look and the one sheet
+- Locked: the real feature rendered at 40% opacity, `blur-sm`, `inert` and `aria-hidden`, with a lock circle and a small "Pro" chip over it. One full-size button on top has the accessible name "<feature>: a locked Pro feature. Opens what Pro adds."
+- One `ProSheetProvider` hosts the "What Pro adds" bottom sheet (seven features, no prices), CTA "Unlock Pro: take the 5-question quick check" → `/you/trading?focus=check` (the check card comes first), and "Not now". The sheet closes by itself when promotion stops being allowed.
+- The only banner is "Upgrade to Pro" at the top of the Explore hub; it opens the same sheet.
+
+### 6b.4 Unlock
+The quick check is the existing 5 questions on `/you/trading`. Pass (4 of 5): a calm "Pro is unlocked" card (score, Pro view is on, "Open Explore", "Go to You"). Fail: score, the missed questions with the answer and why, a "Stocks vs funds" link and Retake. Existing Starter features are never locked.
+
+### 6b.5 Shell
+Starter/Pro toggle and the Starter badge are removed (top bar, desktop top bar, sidebar, You). `Wordmark` shows a "Pro" chip only while Pro view is on. You gets a "Pro view" switch card only after unlock. Reviewer tools gets "Unlock Pro" and "Lock Pro".
+
+### 6b.6 Tests and verification
+`pro.test.ts` (lock state, unlock via the quick check, Steady mode and flow rules, banner placement, chart ranges), `analytics.test.ts`, storage migration tests, and App tests for locked, live and Pro-view-off screens, Steady mode, flows, You, Reviewer tools. Screenshots of changed screens at 390 and 1280 px only.

@@ -1,5 +1,7 @@
 // Root: hash routing with guards, the responsive shell and every P0/P1 screen (Stages 3a–3d).
 import { useEffect, useRef } from 'react';
+import { ProSheetProvider } from './components/ProSheet';
+import { ScreenContext } from './components/ProGate';
 import { focusMain } from './components/focusMain';
 import { AppShell } from './components/AppShell';
 import { SCREEN_TITLE } from './components/nav';
@@ -42,6 +44,10 @@ import type { FundId } from './state/types';
 type ScreenRoute = Extract<Resolved, { kind: 'screen' }>;
 
 export function renderScreen(r: ScreenRoute) {
+  return <ScreenContext.Provider value={r.screen}>{screenFor(r)}</ScreenContext.Provider>;
+}
+
+function screenFor(r: ScreenRoute) {
   switch (r.screen) {
     case 'landing':
       return <Landing />;
@@ -102,7 +108,7 @@ export function renderScreen(r: ScreenRoute) {
     case 'tipCheck':
       return <TipCheck query={r.query} />;
     case 'trading':
-      return <Trading />;
+      return <Trading query={r.query} />;
   }
 }
 
@@ -140,7 +146,9 @@ export function App() {
   return (
     <ToastProvider>
       <AmbienceRoot />
-      <Routed />
+      <ProSheetProvider>
+        <Routed />
+      </ProSheetProvider>
     </ToastProvider>
   );
 }
