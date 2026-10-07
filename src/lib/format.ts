@@ -73,3 +73,16 @@ export function formatUnits(n: number): string {
 export function keepSignsTogether(text: string): string {
   return text.replace(new RegExp(MINUS + '(?!\u2060)', 'g'), MINUS + '\u2060');
 }
+
+/** Short ₹ for chart axes: ₹900, ₹6.2k, ₹1.5L. */
+export function compactINR(n: number): string {
+  const abs = Math.abs(n);
+  const sign = n < 0 ? MINUS : '';
+  if (abs < 1000) return `${sign}₹${Math.round(abs)}`;
+  if (abs < 100000) return `${sign}₹${trim(abs / 1000)}k`;
+  return `${sign}₹${trim(abs / 100000)}L`;
+}
+
+function trim(n: number): string {
+  return (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10).toString();
+}

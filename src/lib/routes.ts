@@ -1,6 +1,6 @@
 // Hash routes and guards (PLAN section 3, README 4.3). Pure: the React router
 // in src/router.tsx only reads the hash and applies what this returns.
-// P1 routes are added in Stage 3d; until then they resolve as unknown → /home.
+// P1 routes arrive through Stage 3d; ones not built yet resolve as unknown → /home.
 import { isFundId } from '../data/funds';
 import type { State } from '../state/types';
 import { missingBuckets } from './planStatus';
@@ -25,7 +25,9 @@ export type ScreenId =
   | 'learn'
   | 'glossary'
   | 'you'
-  | 'review';
+  | 'review'
+  | 'dashboard'
+  | 'notifications';
 
 export type Location = { path: string; query: Record<string, string> };
 
@@ -189,6 +191,8 @@ const ROUTES: { pattern: string; screen: ScreenId; guard?: Guard }[] = [
   { pattern: '/learn/glossary', screen: 'glossary' },
   { pattern: '/you', screen: 'you' },
   { pattern: '/review', screen: 'review' },
+  { pattern: '/dashboard', screen: 'dashboard' },
+  { pattern: '/notifications', screen: 'notifications' },
 ];
 
 /** Screens that hide the tab bar / sidebar (README 4.1). */
@@ -204,5 +208,14 @@ export function resolveRoute(loc: Location, state: State): Resolved {
   return { kind: 'redirect', to: '/home' };
 }
 
-/** Every P0 route pattern, for the reviewer jump links. */
+/**
+ * True when a route is built (matches a pattern), whatever its guard says.
+ * Lets links to P1 screens that don't exist yet fall back instead of going dead.
+ */
+export function routeExists(to: string): boolean {
+  const { path } = parseHash('#' + to);
+  return ROUTES.some((r) => matchPath(r.pattern, path) !== null);
+}
+
+/** Every built route pattern, for the reviewer jump links. */
 export const ROUTE_PATTERNS = ROUTES.map((r) => r.pattern);
