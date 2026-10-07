@@ -11,7 +11,7 @@ Log every prompt you actually sent, including edits and follow-ups. Do not tidy 
 | 5 | 07/10/2026 | Stage 0 | Claude Code (Opus 5.5) | P5: Stage 0 — understand, no code | Agent summarised the goal correctly, found 3 UX risks, 37 ambiguities and 10 contradictions (e.g. big-dip rule unreachable for index funds, brand green failing contrast) | Decided: big dip measured vs total invested; both plan SIPs set up in one pass; KYC only at payment; "Adjust split" slider to reduce paternalism |
 | 6 | 07/10/2026 | Stage 1 | Claude Code (Opus 5.5) | P6: Stage 1 — PLAN.md with my resolved assumptions | PLAN.md written (31 screen specs, 18 overrides of README) but push failed with GitHub 403 | Claude GitHub App was not installed on my account; fixed it via claude.ai GitHub settings |
 | 7 | 07/10/2026 | Stage 1 (retry) | Claude Code (Opus 5.5) | P7: Access fixed, add PLAN.md override line to CLAUDE.md, push and open PR | PR #1 "Stage 1: Plan" opened; I reviewed the decision log and merged | Added the CLAUDE.md line because the agent flagged that future sessions might ignore PLAN.md |
-| 8 | | Stage 2 | Claude Code | P8: Stage 2 — foundation, logic and tests | | |
+| 8 | 07/10/2026 | Stage 2 | Claude Code (Opus 5.5) | P8: Stage 2 — foundation, logic and tests | 327 tests passing across 22 files; single 191 KB index.html; agent checked the build in Chromium at 390/768/1280 px, light and dark, and fixed a 390 px edge bug; Riya seeds at −12.2% | Merged PR #2. Kept Opus for the first screen stage because the shell sets the visual system for everything after it |
 
 ---
 
