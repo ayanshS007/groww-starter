@@ -6,7 +6,7 @@ import { NAV_ITEMS, type NavId } from './nav';
 export function TabBar({ active }: { active?: NavId }) {
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 pb-safe backdrop-blur lg:hidden">
-      <ul className="mx-auto flex max-w-tablet justify-around px-2">
+      <ul className="mx-auto flex max-w-tablet justify-around px-safe">
         {NAV_ITEMS.filter((n) => n.mobile).map((n) => {
           const on = n.id === active;
           return (
