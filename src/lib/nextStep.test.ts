@@ -45,6 +45,19 @@ describe('Next-step card (PLAN C6)', () => {
   });
 });
 
+describe('after stopping every SIP in the plan', () => {
+  it('reads as a restart, not a first SIP, and says what stays invested', () => {
+    let s = withCheckin(fresh());
+    s = startSip(s, 'liquid1', 2000);
+    s = startSip(s, 'index50', 2000);
+    s = run(s, { type: 'stopSip', sipId: 'sip_1', reason: 'none' }, { type: 'stopSip', sipId: 'sip_2', reason: 'market_fell' });
+    const n = nextStep(s);
+    expect(n).toMatchObject({ kind: 'first_sip', to: '/invest/plan', cta: 'Restart my plan', title: 'Restart your plan whenever you like' });
+    expect(n.body).toContain('stays invested');
+    expect(n.title).not.toContain('first SIP');
+  });
+});
+
 describe('upcoming SIPs', () => {
   it('lists active SIPs by next date and moves past a skipped one', () => {
     let s = startSip(fresh(), 'index50', 1000, 20);
