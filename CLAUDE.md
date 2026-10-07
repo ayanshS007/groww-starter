@@ -5,6 +5,7 @@ Claude Code reads this file automatically at the start of every session. Keep it
 ## What this repo is
 A clickable front-end prototype: **Groww Starter**, a redesign of Groww for first-time investors aged 20–26.
 - **Spec (single source of truth):** `README.md`. If anything here or in a prompt conflicts with `README.md`, follow `README.md` and say so.
+- PLAN.md's 'Changes to README' section overrides README.md on the points it lists; everywhere else README.md is the source of truth.
 - **Visual references:** `design-refs/` + `design-refs/DESIGN_REFS.md` (read-only; never edit or delete).
 - **Running memory between sessions:** `PLAN.md` (approved plan), `CHANGELOG.md` (every decision and change). Read both at the start of every session before doing anything.
 
