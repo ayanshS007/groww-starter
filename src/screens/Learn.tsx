@@ -1,5 +1,5 @@
-// S17 Learn hub (README 9 item 17). Glossary entry + Stocks vs funds. No points,
-// badges or view counts. Tip Check (P1) and 60-second cards (P2) are not built yet.
+// S17 Learn hub (README 9 item 17). Glossary, Tip Check (P1) and Stocks vs funds.
+// No points, badges or view counts. 60-second cards (P2) are not built.
 import { useState } from 'react';
 import { BottomSheet } from '../components/BottomSheet';
 import { Button, ButtonLink } from '../components/Button';
@@ -20,7 +20,7 @@ export function Learn() {
         <h1 className="text-3xl font-bold text-ink">Learn</h1>
         <p className="mt-1 text-base text-ink-muted">Look up any word before you decide. One line each, with an everyday example.</p>
       </header>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card tint="mint" pad="lg" className="flex flex-col">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-brand-text">
             <Icon name="book" />
@@ -29,6 +29,16 @@ export function Learn() {
           <p className="mt-1 text-base text-ink">Every term used in the app, in plain English.</p>
           <ButtonLink to="/learn/glossary" className="mt-5 self-start">
             Open glossary
+          </ButtonLink>
+        </Card>
+        <Card tint="sky" pad="lg" className="flex flex-col">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-ink">
+            <Icon name="shield" />
+          </span>
+          <h2 className="mt-4 text-xl font-bold text-ink">Tip Check</h2>
+          <p className="mt-1 text-base text-ink">Heard a tip from a friend or a reel? Six yes/no questions, about 30 seconds.</p>
+          <ButtonLink to="/learn/tip-check" variant="secondary" className="mt-5 self-start">
+            Check a tip
           </ButtonLink>
         </Card>
         <Card tint="lavender" pad="lg" className="flex flex-col">

@@ -76,7 +76,12 @@ function ExploreTab() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-sm text-ink-muted">Tap the bookmark to follow a company in your watchlist.</p>
+        <p className="mt-3 text-sm text-ink-muted">
+          Tap a card to read about the company, or the bookmark to follow it.{' '}
+          <Link to="/explore/stocks" className="font-semibold text-brand-text underline-offset-4 hover:underline">
+            Search all stocks
+          </Link>
+        </p>
       </section>
 
       <section aria-labelledby="pro-funds-title">
@@ -279,7 +284,9 @@ function WatchlistTab() {
                 <li key={s.stock.id} className="flex items-center gap-3 py-3">
                   <LetterAvatar name={s.stock.name} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold text-ink">{s.stock.name}</span>
+                    <Link to={`/stock/${s.stock.id}`} className="block truncate font-semibold text-ink underline-offset-4 hover:underline">
+                      {s.stock.name}
+                    </Link>
                     <RangeBar52w low={s.range.low} high={s.range.high} pos={s.range.pos} className="mt-1 max-w-[160px]" />
                   </span>
                   {editing ? (
@@ -322,7 +329,9 @@ function WatchlistTab() {
                         <span className="flex items-center gap-3">
                           <LetterAvatar name={s.stock.name} />
                           <span>
-                            <span className="block font-semibold text-ink">{s.stock.name}</span>
+                            <Link to={`/stock/${s.stock.id}`} className="block font-semibold text-ink underline-offset-4 hover:underline">
+                              {s.stock.name}
+                            </Link>
                             <span className="block text-xs text-ink-muted">{s.stock.sector}</span>
                           </span>
                         </span>

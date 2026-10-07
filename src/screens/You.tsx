@@ -1,5 +1,6 @@
 // S19 You (README 9 item 18). Account, verification status, bank and autopay,
-// Redo check-in, notification toggles, Help, About, Reviewer tools, Log out.
+// Redo check-in, Starter/Pro view, stock budget and readiness, notification
+// toggles, Help, About, Reviewer tools, Log out.
 // No theme toggle, language switcher or referral offers.
 import { useState, type ReactNode } from 'react';
 import { Avatar } from '../components/Avatar';
@@ -151,6 +152,23 @@ export function You() {
         <div className="mt-4">
           <ViewToggle />
         </div>
+      </Card>
+
+      <Card aria-labelledby="stocks-title">
+        <h2 id="stocks-title" className="text-lg font-semibold text-ink">
+          Stocks
+        </h2>
+        <ul className="mt-1 divide-y divide-border">
+          <Row
+            title="Stock budget and readiness"
+            detail={`Limit: ${state.prefs.stockBudgetPct}% of your portfolio. Readiness check: ${state.prefs.readinessPassed ? 'passed' : 'not taken yet'}.`}
+            action={
+              <Link to="/you/trading" className={rowLink}>
+                Open <Icon name="chevronRight" size={16} />
+              </Link>
+            }
+          />
+        </ul>
       </Card>
 
       <Card>

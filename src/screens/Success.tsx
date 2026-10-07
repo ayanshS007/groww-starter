@@ -71,7 +71,11 @@ export function Success({ orderId }: { orderId: string }) {
                 <p className="font-semibold text-ink">{r.name}</p>
                 <p className="text-sm text-ink-muted">
                   {r.role ? `${ROLE[r.role]} · ` : ''}
-                  {monthly && r.day ? `on the ${ordinal(r.day)} of each month` : 'One time'}
+                  {monthly && r.day
+                    ? `on the ${ordinal(r.day)} of each month`
+                    : info.kind === 'buy' && r.units
+                      ? `${r.units} share${r.units === 1 ? '' : 's'} · delivery`
+                      : 'One time'}
                 </p>
               </div>
               <p className="text-right font-bold tabular-nums text-ink">

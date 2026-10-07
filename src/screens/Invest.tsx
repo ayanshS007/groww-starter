@@ -1,6 +1,7 @@
 // S10 Invest single fund and S11 Invest plan (README 9 item 9, PLAN items 4, 19,
-// 20, 24, 27, 31). One flow component drives both. The step lives in
-// state.investDraft, so a refresh resumes at the same step. KYC is asked only at
+// 20, 24, 27, 31). Single-fund review asks "What made you pick this?" (P1,
+// README 8.7); the plan flow records 'plan' itself (PLAN C11). One flow
+// component drives both. The step lives in state.investDraft, so a refresh resumes at the same step. KYC is asked only at
 // payment; leaving KYC lands back on review, finishing it resumes at payment.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
@@ -15,6 +16,7 @@ import { Icon } from '../components/Icon';
 import { LetterAvatar } from '../components/LetterAvatar';
 import { Note } from '../components/Note';
 import { OptionTiles } from '../components/OptionTile';
+import { PickReasonChips } from '../components/PickReasonChips';
 import { ReviewList } from '../components/ReviewList';
 import { SkeletonRow } from '../components/SkeletonRow';
 import { StepperInput } from '../components/StepperInput';
@@ -282,6 +284,18 @@ function ReviewStep({ d, mode, patch, back }: StepProps & { mode: 'single' | 'pl
         onChangeDate={monthly ? () => back('date') : undefined}
       />
       {note && <Note tone="caution">{note}</Note>}
+      {mode === 'single' && (
+        <PickReasonChips
+          value={d.pickReason}
+          onChange={(pickReason) => patch({ pickReason })}
+          offerDone={!!d.tipCheckOffered}
+          onSkipOffer={() => patch({ tipCheckOffered: true })}
+          onRunTipCheck={() => {
+            patch({ tipCheckOffered: true });
+            navigate(buildPath('/learn/tip-check', { next: nextUrl }));
+          }}
+        />
+      )}
       <ConfidenceBlock
         compact
         what={

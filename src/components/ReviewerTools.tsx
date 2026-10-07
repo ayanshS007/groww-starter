@@ -1,14 +1,17 @@
-// Reviewer tools (README 9 item 20): scenarios, advance one week, load persona,
-// jump links, reset. Shared by /review and the desktop right-edge panel.
+// Reviewer tools (README 9 item 20): scenarios, advance one week, simulate pay
+// credit, load persona, jump links, reset. Shared by /review and the desktop right-edge panel.
 import { useState } from 'react';
 import { PERSONA_SEEDS } from '../data/personas';
 import { realToday } from '../lib/dates';
-import { dateLabel, formatSigned } from '../lib/format';
+import { dateLabel, formatINR, formatSigned } from '../lib/format';
 import { jumpLinks } from '../lib/jumpLinks';
 import { SCENARIO_MOVE, SCENARIOS, simToday } from '../lib/market';
+import { defaultPay, validatePay } from '../lib/paydaySplit';
+import { buildPath } from '../lib/routes';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
 import type { PersonaId, Scenario } from '../state/types';
+import { AmountInput } from './AmountInput';
 import { Button } from './Button';
 import { Card } from './Card';
 import { Chip } from './Chip';
@@ -26,6 +29,43 @@ const SCENARIO_NAME: Record<Scenario, string> = {
 
 export function scenarioLabel(s: Scenario): string {
   return `${SCENARIO_NAME[s]} ${formatSigned(SCENARIO_MOVE[s] * 100, 'pct')}`;
+}
+
+/** "Simulate pay credit" (README 8.3, PLAN item 33): opens Payday Split with this amount. */
+function PayCredit({ compact, onDone }: { compact: boolean; onDone?: () => void }) {
+  const { state } = useStore();
+  const toast = useToast();
+  const [text, setText] = useState(String(defaultPay(state)));
+  const [error, setError] = useState<string>();
+  const H = compact ? 'h3' : 'h2';
+  const go = () => {
+    const v = validatePay(text);
+    if (!v.ok) return setError(v.error);
+    if (!state.plan) return setError('Payday Split needs a starter plan. Load a persona or take the check-in first.');
+    navigate(buildPath('/payday', { pay: String(v.value) }));
+    toast.show(`Pay credit of ${formatINR(v.value)} simulated.`);
+    onDone?.();
+  };
+  return (
+    <Card pad={compact ? 'sm' : 'md'}>
+      <H className="text-base font-semibold text-ink">Simulate pay credit</H>
+      <p className="mt-1 text-sm text-ink-muted">Pretend pay just arrived, then open Payday Split. No money moves.</p>
+      <div className="mt-3">
+        <AmountInput
+          label="Pay received"
+          value={text}
+          onChange={(v) => {
+            setText(v);
+            setError(undefined);
+          }}
+          error={error}
+        />
+      </div>
+      <Button variant="secondary" block={compact} onClick={go}>
+        Simulate pay credit
+      </Button>
+    </Card>
+  );
 }
 
 type Confirm = { kind: 'persona'; id: PersonaId } | { kind: 'reset' } | null;
@@ -78,6 +118,8 @@ export function ReviewerTools({ compact = false, onDone }: { compact?: boolean; 
           Advance one week
         </Button>
       </Card>
+
+      <PayCredit key={state.user.persona ?? 'none'} compact={compact} onDone={onDone} />
 
       <Card pad={compact ? 'sm' : 'md'}>
         <H className="text-base font-semibold text-ink">Load a demo persona</H>

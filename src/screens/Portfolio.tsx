@@ -1,5 +1,5 @@
 // S13 Portfolio (README 9 item 10). Numbers, the weekly insight right under
-// them, holdings, SIPs, empty state, disclaimer, small Reviewer tools link.
+// them, holdings, SIPs, goals (P1), empty state, disclaimer, Reviewer tools link.
 // The user's own dips are amber with an arrow and a word, never red.
 import { AssetBar } from '../components/AssetBar';
 import { ButtonLink } from '../components/Button';
@@ -7,6 +7,7 @@ import { Card } from '../components/Card';
 import { ChangeText } from '../components/ChangeText';
 import { Disclaimer } from '../components/Disclaimer';
 import { EmptyState } from '../components/EmptyState';
+import { GoalRow } from '../components/GoalRow';
 import { Icon } from '../components/Icon';
 import { InsightCard } from '../components/InsightCard';
 import { LetterAvatar } from '../components/LetterAvatar';
@@ -163,6 +164,26 @@ export function Portfolio() {
             )}
           </div>
           <p className="mt-3 text-sm text-ink-muted">Skip any month, free. Nothing resets.</p>
+        </Card>
+
+        <Card pad="lg" aria-labelledby="pf-goals-title">
+          <h2 id="pf-goals-title" className="text-lg font-semibold text-ink">
+            Goals
+          </h2>
+          {state.goals.length === 0 ? (
+            <p className="mt-2 text-base text-ink-muted">Saving for a laptop, a trip or a cushion? A goal shows what a month takes.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {state.goals.map((g) => (
+                <li key={g.id}>
+                  <GoalRow goal={g} state={state} />
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link to="/portfolio/goals" className="mt-3 inline-flex min-h-tap items-center gap-1 font-semibold text-brand-text underline-offset-4 hover:underline">
+            {state.goals.length === 0 ? 'Create a goal' : 'All goals'} <Icon name="chevronRight" size={18} />
+          </Link>
         </Card>
       </div>
 
