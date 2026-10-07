@@ -130,6 +130,8 @@ const ROUTES: { pattern: string; screen: ScreenId; guard?: Guard }[] = [
     guard: (p, state, loc) => {
       const signup = needsSignup((l) => buildPath(l.path, l.query))(p, state, loc);
       if (signup) return signup;
+      // '/kyc/done' is the "You're verified" screen; it only exists once KYC is done.
+      if (p.step === 'done') return state.user.kyc === 'done' ? null : { kind: 'redirect', to: buildPath('/kyc/1', loc.query) };
       if (state.user.kyc === 'done') return { kind: 'redirect', to: safeNext(loc.query.next) ?? '/you' };
       const n = Number(p.step);
       return Number.isInteger(n) && n >= 1 && n <= 4 ? null : { kind: 'redirect', to: buildPath('/kyc/1', loc.query) };

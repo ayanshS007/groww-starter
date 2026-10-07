@@ -59,3 +59,22 @@ Format: YYYY-MM-DD | stage | what | why
 2026-10-07 | 2 | Checked dist/index.html in Chromium via Playwright at 390/768/1280 px, light and dark | No external requests, no console errors, unknown route → /home, blocked storage shows the notice
 2026-10-07 | 2 | npm audit lists dev-only advisories (esbuild dev server, vitest, braces); left as is | Not in the shipped static bundle; fixing needs major tool upgrades
 2026-10-07 | 2 | deploy.yml runs npm test before the build | Failing tests never deploy; Pages needs Settings → Pages → Source: GitHub Actions
+2026-10-07 | 3a | Router reads the hash with useSyncExternalStore; screens navigate then dispatch in one handler | A guard must never see the new path with old state (or the reverse); timers wrap both in flushSync
+2026-10-07 | 3a | New route /kyc/done shows "You're verified" and needs KYC done; later KYC steps redirect to the first open step | README 9.6 wants a verified screen before returning; steps can't be skipped by URL
+2026-10-07 | 3a | Landing renders without tabs or sidebar | It is the entry page, not part of the signed-in app shell
+2026-10-07 | 3a | Stage 3b/3c screens (Explore, Portfolio, Invest, SIP…) render a "arrives in the next build" card with Back to Home | Keeps tabs and Next-step links working with no dead ends until those stages land
+2026-10-07 | 3a | Next-step card, status line and upcoming SIPs live in lib/nextStep.ts; a missing bucket links to /invest/:fundId?amount=<bucket> | Pure, tested; PLAN C6 order; Invest (3b) reads the amount as a preset
+2026-10-07 | 3a | A started check-in resumes at its first unanswered step; Close keeps the draft and goes Home | README 9.3 "back keeps answers"; no lost work
+2026-10-07 | 3a | Get started → /signup?next=/checkin/1 (or /home when a plan exists); sign-up redirects to next via its guard | One path, no race between navigate and the guard
+2026-10-07 | 3a | Home shows the portfolio snapshot (value, invested, change, insight headline) whenever holdings exist | Personas have holdings now; the full InsightCard and Portfolio come in 3b
+2026-10-07 | 3a | Cushion is drawn as brand green at 35%, grow as full brand green; split slider track uses the same two colours | README 10 reserves blue for info only
+2026-10-07 | 3a | Own-money change on Home: amber text + down arrow + "down" for screen readers; up uses link green | Hard rule: own dips never red, never colour alone
+2026-10-07 | 3a | Term definition sheet is portalled to <body>; Terms claim "first appearance" per screen via a TermScope keyed by path | A <dialog> may not sit inside the <p> holding the term; PLAN C8
+2026-10-07 | 3a | Reviewer persona load and reset confirm inline (two buttons) instead of a second dialog | The desktop panel is already a dialog; nested dialogs trap focus awkwardly
+2026-10-07 | 3a | Desktop reviewer panel is a right-docked dialog opened from an edge tab, shown at ≥ 1024 px on every screen | README 9.20; hidden on mobile, where /review is linked from Landing and You
+2026-10-07 | 3a | Learn hub shows Glossary and Stocks vs funds only; Tip Check tile waits for 3d | Tip Check is P1; no P2 cards
+2026-10-07 | 3a | Glossary opens one term at a time; ?term= opens and scrolls, ?from= shows "Back to where I was" | README 9.17 deep link; term sheets pass the current path as from
+2026-10-07 | 3a | Salary payday question (README 8.2) deferred to the Invest date step in 3b | That is where the SIP date is chosen; setPayday already exists
+2026-10-07 | 3a | Screen focus moves to <main> and the page scrolls to top on each route change (not first load) | Screen-reader and keyboard users land on the new content
+2026-10-07 | 3a | App placeholder tests replaced by render tests for every 3a route plus acceptance checks (one Next-step card, plan label, no advice/alarm words, masked mobile, Term once) | The placeholder they tested no longer exists
+2026-10-07 | 3a | Checked with Playwright (Chromium) on the built app: 15 screens at 390/768/1280 light + Home dark, and a scripted walkthrough at 390 and 1280 | Zero console errors, no external requests, no horizontal overflow

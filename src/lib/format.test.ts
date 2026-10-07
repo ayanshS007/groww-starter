@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dateLabel, formatINR, formatPct, formatSigned, formatUnits, maskMobile, MINUS, ordinal } from './format';
+import { dateLabel, formatINR, formatPct, formatSigned, formatUnits, keepSignsTogether, maskMobile, MINUS, ordinal } from './format';
 
 describe('formatINR', () => {
   it('uses Indian grouping', () => {
@@ -59,5 +59,13 @@ describe('misc', () => {
   });
   it('formats units', () => {
     expect(formatUnits(12.34567)).toBe('12.346');
+  });
+});
+
+describe('keepSignsTogether', () => {
+  it('adds a word joiner after each minus, once', () => {
+    const once = keepSignsTogether('Overall: −₹732 (−12.2%)');
+    expect(once).toBe('Overall: −\u2060₹732 (−\u206012.2%)');
+    expect(keepSignsTogether(once)).toBe(once);
   });
 });

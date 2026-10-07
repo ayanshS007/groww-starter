@@ -39,3 +39,39 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Adjust split slider: filled brand track up to the thumb, 44 px tap height. */
+.split-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+.split-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, rgb(var(--c-brand) / 0.35) var(--fill, 50%), rgb(var(--c-brand)) var(--fill, 50%));
+}
+.split-range::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, rgb(var(--c-brand) / 0.35) var(--fill, 50%), rgb(var(--c-brand)) var(--fill, 50%));
+}
+.split-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  margin-top: -10px;
+  height: 28px;
+  width: 28px;
+  border-radius: 9999px;
+  background: rgb(var(--c-surface));
+  border: 3px solid rgb(var(--c-ink));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+}
+.split-range::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: rgb(var(--c-surface));
+  border: 3px solid rgb(var(--c-ink));
+}
