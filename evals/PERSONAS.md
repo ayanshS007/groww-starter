@@ -29,7 +29,7 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 
 **Expected Home next step:** "Set up your cushion SIP" → ₹2,000 a month into Liquid Fund – A.
 
-**Expected plan health:** Cushion **To do** (₹0 of ₹1,12,500) · Time frame match **On track** · Stock budget **On track** (0% of 10%) · SIPs running **On track**.
+**Expected plan health:** Cushion **To do** (₹0 of a first ₹10,000; full target ₹1,12,500) · Time frame match **On track** · Stock budget **On track** (0% of 10%) · SIPs running **Keep an eye** (1 of 2 SIPs in the plan running; the cushion SIP isn't set up yet).
 
 | # | Step | Checkpoint | Result |
 |---|---|---|---|
@@ -63,7 +63,7 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 - No conflict note; no ceiling note (₹500 ≤ ₹1,500); no merge (both parts ≥ ₹100).
 - Suggested SIP date: the **10th** with "Skip any month, free." (irregular income).
 
-**Expected insight branch:** none before the first investment. After the first investment (scenario becomes `dip_small`, one week applied): **down, horizon < 3 yrs** branch, explaining the funds are the steadier type for this reason.
+**Expected insight branch:** none before the first investment. Straight after it: the **first-week** note ("Your money is on its way in."), holdings show "Processing, units arrive in 1–2 working days" and value equals what was invested. After Reviewer tools → Small dip → Advance one week: **down, horizon < 3 yrs** branch, explaining the funds are the steadier type for this reason.
 
 **Expected Home next step:** "Start your first SIP (quick verification included)" → `/invest/plan`.
 
@@ -75,7 +75,7 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 | K4 | Review → tick → Continue to payment | KYC starts at payment: PAN (wrong format shows an inline error), Aadhaar last 4 + code, selfie tile, ₹1 bank check | |
 | K5 | After KYC | Returns to the payment step of the same draft; UPI chooser uses text tiles only | |
 | K6 | Pay → Approve autopay | Success "Your plan is set. 2 SIPs, ₹500 a month."; Back goes to Portfolio, not into payment | |
-| K7 | Portfolio after first investment | Insight is the short-horizon "steadier type" branch | |
+| K7 | Portfolio after first investment, then Small dip → Advance one week | First-week note and "Processing" rows, no loss shown; after the week, the short-horizon "steadier type" branch | |
 | K8 | Direct URL `#/invest/x` | Redirects to fund list with "We couldn't find that fund" | |
 | K9 | Explore → Stocks → Voltara Grid (sample) | "₹1,000 buys 0 shares" with "Indian exchanges don't sell parts of a share." | |
 | K10 | Stock buy (1 share) → Continue | Stock budget sheet (first stock buy goes over 10%), Adjust and Buy anyway equal width, never blocks | |
@@ -140,8 +140,8 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 | A4 | Pro → Fund detail | Confidence blocks behind "Why this?" | |
 | A5 | Stocks → any stock → Buy (1 share within budget) → Review | Market/Limit explained; delivery only; risk checkbox; Place order → Success "Order placed (simulated)." | |
 | A6 | Back after stock success | Goes to Portfolio, not back into the order | |
-| A7 | You → Stocks: budget and readiness | Budget presets and stepper save; readiness 5 questions, pass at 4/5 | |
-| A8 | Pass readiness → stock buy | "More order types, explained" shown as text only; F&O "Not available in this prototype" | |
+| A7 | You → Stocks: budget and quick check | Budget presets and stepper save; "Quick check: 5 questions", 4 of 5 matching unlocks the explanations | |
+| A8 | Finish the quick check → stock buy | "More order types, explained" shown as text only; F&O "Not available in this prototype" | |
 | A9 | Switch back to Starter | Explore returns to the hub with the plain "Markets this week" line | |
 
 ---
