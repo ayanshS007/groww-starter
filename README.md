@@ -548,20 +548,22 @@ The one-page note (take, scope, out of scope, solution and why), the final promp
 ---
 
 ## 17. Definition of done
-- [ ] Landing → sign-up → check-in → plan → KYC → first SIP → portfolio works with no dead buttons
-- [ ] Planner matrix and A-rules correct; all tests pass
-- [ ] Every plan and fund detail shows "Why am I seeing this?" citing ≥ 2 answers; conflicts explained
-- [ ] Fund detail shows all three Confidence blocks without tabs
-- [ ] Skip, pause, edit, step-up and Stop coach work and update Home and Portfolio; "Stop anyway" always visible
-- [ ] Insight reacts to all scenarios; no alarm styling
-- [ ] (P1) Dashboard shows only my own money, all tiles/charts update with scenario and week changes, empty state works
-- [ ] (P1) Payday Split, Goals, Stocks safety, Tip Check, Starter/Pro, milestones, notifications work
-- [ ] No Won't feature built; no confetti, streak counter, leaderboard or projection
-- [ ] Disclaimers and plan labels present; all numbers labelled illustrative
-- [ ] Works at 390, 768 and 1280 px; light and dark tokens render cleanly
-- [ ] Direct URLs, refresh and storage failure never crash
-- [ ] `npm test` and `npm run build` pass; single-file `dist/index.html` produced; zero console errors
-- [ ] `CHANGELOG.md`, `evals/EVALS.md`, `evals/PERSONAS.md`, `DEPLOY.md` exist; GitHub Pages URL loads in incognito
+Ticked in Stage 5 only where checked in that stage; the note says how. Unticked items say what was and wasn't checked.
+
+- [x] Landing → sign-up → check-in → plan → KYC → first SIP → portfolio works with no dead buttons. *Checked:* scripted Playwright run on the single-file build at 390 and 1280 px (Get started → sign-up → 6 check-in steps → plan → Start this plan → KYC 4 steps → pay → autopay → Success → Go to portfolio → Back), every step advanced, 0 console errors, 0 network requests. Not a crawl of every control in Stage 5 (the Stage 3d-2 crawl is in `CHANGELOG.md`).
+- [x] Planner matrix and A-rules correct; all tests pass. *Checked:* `npm test`, 686 tests passing (`planner.test.ts` covers the 12 cells and A1–A6).
+- [x] Every plan and fund detail shows "Why am I seeing this?" citing ≥ 2 answers; conflicts explained. *Checked:* `planner.test.ts` (reasons cite ≥ 2 answers), `explore.test.ts` and `App.test.tsx` (fund detail why-text, conflict banners); Fund detail screenshots at 390 and 1280 px.
+- [x] Fund detail shows all three Confidence blocks without tabs. *Checked:* `App.test.tsx` acceptance test and screenshots at 390 and 1280 px.
+- [ ] Skip, pause, edit, step-up and Stop coach work and update Home and Portfolio; "Stop anyway" always visible. *Covered by reducer, sipCoach and App tests (all passing); not re-driven in a browser in Stage 5. Browser checks are in the Stage 3c and Stage 4 entries of `CHANGELOG.md`.*
+- [x] Insight reacts to all scenarios; no alarm styling. *Checked:* `insight.test.ts` (every branch, no alarm words for a liquid-only portfolio) and the `App.test.tsx` no-red/no-alarm-word tests, all passing.
+- [ ] (P1) Dashboard shows only my own money, all tiles/charts update with scenario and week changes, empty state works. *Stage 5 only checked the Dashboard layout (row 3 equal heights) at 390 and 1280 px for Riya; scenario and week updates not re-run.*
+- [ ] (P1) Payday Split, Goals, Stocks safety, Tip Check, Starter/Pro, milestones, notifications work. *Not re-run in Stage 5; browser checks are in the Stage 3d and Stage 4 entries of `CHANGELOG.md`.*
+- [x] No Won't feature built; no confetti, streak counter, leaderboard or projection. *Checked:* searched `src/` for confetti, leaderboard, streak, countdown and projection wording; only comments saying these are absent.
+- [ ] Disclaimers and plan labels present; all numbers labelled illustrative. *Seen in screenshots of Home, Dashboard and Fund detail; not checked on every screen.*
+- [ ] Works at 390, 768 and 1280 px; light and dark tokens render cleanly. *Stage 5 checked only the changed screens: Home at 390 and 1280 px in light and dark; Landing, Dashboard and Fund detail at 390 and 1280 px in light (screenshots); Plan at 390 and 1280 px by measured tap sizes and heading order, not screenshots. 768 px was not re-checked.*
+- [x] Direct URLs, refresh and storage failure never crash. *Checked:* with `localStorage` throwing, loaded and refreshed `/`, `/home`, `/portfolio`, `/dashboard`, `/fund/midcap1`, `/invest/x`, `/plan`, `/payday` and an unknown route: each landed on a sensible screen with the storage notice and 0 page errors.
+- [x] `npm test` and `npm run build` pass; single-file `dist/index.html` produced; zero console errors. *Checked:* both commands run before the final commit; `check-dist` confirmed one self-contained file; console had 0 errors on every page visited in Stage 5.
+- [ ] `CHANGELOG.md`, `evals/EVALS.md`, `evals/PERSONAS.md`, `DEPLOY.md` exist; GitHub Pages URL loads in incognito. *The four files exist (checked). The Pages URL was **not** checked: this environment can't open the published site, and Pages deploys only after this PR is merged to `main`. Follow `DEPLOY.md` to verify it.*
 
 ---
 

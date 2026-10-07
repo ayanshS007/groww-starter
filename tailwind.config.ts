@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss';
 import plugin from 'tailwindcss/plugin';
-import { cssVars, dark, light, tailwindColors } from './src/styles/tokens';
+import { BLOB_ALPHA, blobAlphaVars, cssVars, dark, light, tailwindColors } from './src/styles/tokens';
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -38,6 +38,8 @@ export default {
         'card-sm': '16px',
         'card-lg': '24px',
       },
+      // Padding that lifts a 22 px inline label to a 44 px tap target.
+      spacing: { hit: '11px' },
       minHeight: { tap: '44px' },
       minWidth: { tap: '44px' },
       maxWidth: { content: '1200px', tablet: '600px' },
@@ -48,8 +50,8 @@ export default {
   plugins: [
     plugin(({ addBase }) => {
       addBase({
-        ':root': { ...cssVars(light), 'color-scheme': 'light dark' },
-        '@media (prefers-color-scheme: dark)': { ':root': cssVars(dark) },
+        ':root': { ...cssVars(light), ...blobAlphaVars(BLOB_ALPHA.light), 'color-scheme': 'light dark' },
+        '@media (prefers-color-scheme: dark)': { ':root': { ...cssVars(dark), ...blobAlphaVars(BLOB_ALPHA.dark) } },
       });
     }),
   ],

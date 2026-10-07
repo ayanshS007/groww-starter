@@ -11,7 +11,7 @@ export function ReviewerPanel() {
         type="button"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        className="fixed right-0 top-1/2 z-30 min-h-tap -translate-y-1/2 rounded-l-card-sm border border-r-0 border-border bg-surface px-2 py-4 text-xs font-semibold text-ink-muted shadow-sm [writing-mode:vertical-rl] hover:text-ink"
+        className="fixed right-0 top-1/2 z-30 flex min-h-tap min-w-tap -translate-y-1/2 items-center justify-center rounded-l-card-sm border border-r-0 border-border bg-surface px-3 py-4 text-xs font-semibold text-ink-muted shadow-sm [writing-mode:vertical-rl] hover:text-ink"
       >
         Reviewer tools
       </button>

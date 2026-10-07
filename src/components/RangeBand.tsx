@@ -28,7 +28,7 @@ export function RangeBand({ low, high, className = '' }: Props) {
             <span className="font-semibold tabular-nums text-ink">{formatSigned(high, 'pct', 0)}</span>
           </span>
         </span>
-        <span className="mt-2 block text-xs text-ink-muted">Sample range for one year. The tick marks 0%.</span>
+        <span className="mt-2 block text-xs text-ink-muted">The tick marks 0%.</span>
       </figcaption>
     </figure>
   );

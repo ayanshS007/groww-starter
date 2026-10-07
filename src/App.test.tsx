@@ -802,3 +802,54 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
     expect(badge(run(riya, { type: 'setView', view: 'pro' }))).toBe('Groww Pro');
   });
 });
+
+describe('Stage 5 polish', () => {
+  const riyaState = buildPersona('riya', TODAY);
+  const headingLevels = (html: string) => [...html.matchAll(/<h([1-6])[\s>]/g)].map((m) => +m[1]);
+
+  it('Plan headings never skip a level and put the funds under their own h2 (QA #34)', () => {
+    const html = renderAt('#/plan', withCheckin(fresh()));
+    const levels = headingLevels(html);
+    expect(levels[0]).toBe(1);
+    levels.slice(1).forEach((l, i) => expect(l - levels[i]).toBeLessThanOrEqual(1));
+    expect(text(html)).toContain('Funds in your plan');
+    // every fund heading (h3) comes after the "Funds in your plan" h2, not after "Cushion vs Grow"
+    expect(html.indexOf('Funds in your plan')).toBeLessThan(html.indexOf('<h3'));
+  });
+  it('the sidebar plan card is not a heading, so no h2 can come before the page h1', () => {
+    const html = renderToString(
+      <StoreProvider storage={null} today={TODAY}>
+        <App />
+      </StoreProvider>,
+    );
+    expect(html).not.toMatch(/<h2[^>]*>Your plan<\/h2>/);
+  });
+  it('Dashboard row 3 cards stretch to the same height (QA #37)', () => {
+    const html = renderAt('#/dashboard', riyaState);
+    for (const id of ['health-title', 'month-title', 'goals-title']) {
+      const card = html.slice(0, html.indexOf(`id="${id}"`)).split('<section').pop()!;
+      expect(card).toContain('h-full');
+    }
+  });
+  it('Home draws the decorative backdrop, hidden from screen readers', () => {
+    const html = renderAt('#/home', riyaState);
+    expect(html).toMatch(/aria-hidden="true"[^>]*class="home-blobs"|class="home-blobs"[^>]*aria-hidden="true"/);
+    expect(html.match(/home-blob-/g)?.length).toBe(3);
+  });
+  it('other screens have no backdrop', () => {
+    for (const hash of ['#/dashboard', '#/portfolio', '#/plan']) expect(renderAt(hash, riyaState)).not.toContain('home-blobs');
+  });
+  it('Landing mock has no button-lookalike competing with Get started', () => {
+    const html = renderToString(
+      <StoreProvider storage={null} today={TODAY}>
+        <App />
+      </StoreProvider>,
+    );
+    expect(html).not.toContain('Start my plan');
+  });
+  it('Home plan card has no second Cushion / Grow legend under the bar', () => {
+    const html = renderAt('#/home', riyaState);
+    expect(html).not.toMatch(/<dt[^>]*>Cushion<\/dt>/);
+    expect(text(html)).toContain('Liquid Fund – A');
+  });
+});

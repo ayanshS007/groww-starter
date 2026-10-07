@@ -59,6 +59,17 @@ describe('fundFit (PLAN items 6, 30)', () => {
     expect(fit.banners.some((b) => b.tone === 'caution')).toBe(false);
     expect(fit.why).toContain('may grow slowly');
   });
+  it('Mid Cap (7+ yrs) for a 5+ yrs user is not called "the same as your time frame"', () => {
+    const fit = fundFit(getFund('midcap1')!, planned);
+    expect(fit.why).toContain('this fund suits 7+ yrs');
+    expect(fit.why).not.toContain('the same as your time frame');
+    expect(fit.why).toContain('at the longer end');
+    expect(fit.why).toContain('7 years or more');
+    expect(fit.banners.some((b) => b.tone === 'caution' && b.text.includes('time frame'))).toBe(false);
+  });
+  it('a fund with the same label as the time frame still reads "the same as your time frame"', () => {
+    expect(fundFit(getFund('flexi1')!, planned).why).toContain('the same as your time frame');
+  });
   it('browse mode offers the check-in instead of citing answers', () => {
     const fit = fundFit(getFund('gold1')!, fresh());
     expect(fit.banners[0].cta?.label).toBe('Take the check-in');

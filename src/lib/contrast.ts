@@ -14,3 +14,11 @@ export function contrastRatio(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
+
+/** Colour `fg` painted at `alpha` over opaque `bg`, as #RRGGBB. */
+export function blend(fg: string, bg: string, alpha: number): string {
+  const f = parseInt(fg.slice(1), 16);
+  const b = parseInt(bg.slice(1), 16);
+  const mix = (shift: number) => Math.round(((f >> shift) & 255) * alpha + ((b >> shift) & 255) * (1 - alpha));
+  return '#' + [16, 8, 0].map((sh) => mix(sh).toString(16).padStart(2, '0')).join('').toUpperCase();
+}

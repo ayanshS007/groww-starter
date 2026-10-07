@@ -35,9 +35,12 @@ export function Sidebar({ active, state }: { active?: NavId; state: State }) {
           })}
         </ul>
       </nav>
-      <div className="mt-auto">
-        <PlanSummaryCard state={state} compact />
-      </div>
+      {/* Home already shows the full plan card, so the sidebar copy would repeat it there. */}
+      {active !== 'home' && (
+        <div className="mt-auto">
+          <PlanSummaryCard state={state} compact />
+        </div>
+      )}
     </aside>
   );
 }

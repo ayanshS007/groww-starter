@@ -16,7 +16,12 @@ export function PlanSummaryCard({ state, compact = false }: { state: State; comp
     const to = state.user.signedUp ? '/checkin/1' : buildPath('/signup', { next: '/checkin/1' });
     return (
       <section aria-label="Your plan" className={`rounded-card bg-mint ${compact ? 'p-4' : 'p-5'}`}>
-        <h2 className={`${compact ? 'text-sm' : 'text-lg'} font-semibold text-ink`}>Your plan</h2>
+        {/* The compact card lives in the sidebar, before the page's h1, so it is not a heading. */}
+        {compact ? (
+          <p className="text-sm font-semibold text-ink">Your plan</p>
+        ) : (
+          <h2 className="text-lg font-semibold text-ink">Your plan</h2>
+        )}
         <p className="mt-1 text-sm text-ink">No plan yet. Six questions get you a starter shortlist.</p>
         <Link to={to} className="mt-2 inline-flex min-h-tap items-center text-sm font-semibold text-brand-text underline-offset-4 hover:underline">
           Take the check-in
@@ -28,7 +33,7 @@ export function PlanSummaryCard({ state, compact = false }: { state: State; comp
   if (compact) {
     return (
       <section aria-label="Your plan" className="rounded-card bg-mint p-4">
-        <h2 className="text-sm font-semibold text-ink">Your plan</h2>
+        <p className="text-sm font-semibold text-ink">Your plan</p>
         <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
           {formatINR(plan.monthly)}
           <span className="text-sm font-medium text-ink-muted"> /month</span>
@@ -67,7 +72,8 @@ export function PlanSummaryCard({ state, compact = false }: { state: State; comp
         </p>
       </div>
       <div className="mt-4">
-        <SplitBar plan={plan} />
+        {/* The rows below already name each part and its amount, so no second legend. */}
+        <SplitBar plan={plan} labels={false} />
       </div>
       <ul className="mt-4 space-y-2">
         {plan.buckets.map((b) => (
