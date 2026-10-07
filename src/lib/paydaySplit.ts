@@ -1,5 +1,8 @@
 // Payday Split (README 8.3 as changed by PLAN C14 and item 33). P1 logic.
-import { roundTo50 } from './planner';
+import type { State } from '../state/types';
+import { activeSipTotal } from './activity';
+import { cushionValue } from './market';
+import { cushionTarget, INCOME_MIDPOINT, roundTo50 } from './planner';
 
 export type PaydayInput = {
   pay: number;
@@ -37,4 +40,42 @@ export function splitPay({ pay, activeSipTotal, cushionValue, cushionTarget }: P
   const out: PaydaySplit = { toSips: activeSipTotal, topUp, toSpend: Math.max(0, rest), cushionGap };
   if (rest < 0) out.note = 'Your SIPs add up to more than this pay. You can skip a month, free.';
   return out;
+}
+
+/** PLAN item 33: "Simulate pay credit" defaults to ₹28,000 for Riya, else the income-band midpoint. */
+export const RIYA_PAY = 28000;
+
+export function defaultPay(state: Pick<State, 'checkin' | 'user'>): number {
+  if (state.user.persona === 'riya') return RIYA_PAY;
+  return state.checkin ? INCOME_MIDPOINT[state.checkin.incomeBand] : RIYA_PAY;
+}
+
+/**
+ * The cushion target Payday Split starts from: an Emergency cushion goal's
+ * target when there is one, else 3 × the income-band midpoint (README 8.3).
+ */
+export function paydayCushionTarget(state: Pick<State, 'checkin' | 'goals'>): number {
+  const goal = state.goals.find((g) => g.isCushion);
+  if (goal) return goal.target;
+  return state.checkin ? cushionTarget(state.checkin.incomeBand) : 0;
+}
+
+/** Everything Payday Split needs from state, for a given pay and target. */
+export function paydayFromState(
+  state: Pick<State, 'sips' | 'holdings' | 'market'>,
+  pay: number,
+  target: number,
+): PaydaySplit & { cushionValue: number; cushionTarget: number } {
+  const value = cushionValue(state);
+  return { ...splitPay({ pay, activeSipTotal: activeSipTotal(state.sips), cushionValue: value, cushionTarget: target }), cushionValue: value, cushionTarget: target };
+}
+
+/** Pay amounts accepted on the Payday screen and in Reviewer tools. */
+export function validatePay(input: string | number): { ok: true; value: number } | { ok: false; error: string } {
+  const n = typeof input === 'number' ? input : Number(String(input).replace(/[,\s₹]/g, ''));
+  if (String(input).trim() === '' || !Number.isFinite(n)) return { ok: false, error: 'Enter the amount you received.' };
+  if (!Number.isInteger(n)) return { ok: false, error: 'Use whole rupees.' };
+  if (n < 100) return { ok: false, error: 'Enter at least ₹100.' };
+  if (n > 1_000_000) return { ok: false, error: 'Enter up to ₹10,00,000.' };
+  return { ok: true, value: n };
 }

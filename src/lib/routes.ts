@@ -1,7 +1,8 @@
 // Hash routes and guards (PLAN section 3, README 4.3). Pure: the React router
 // in src/router.tsx only reads the hash and applies what this returns.
-// P1 routes arrive through Stage 3d; ones not built yet resolve as unknown → /home.
+// Every P0 and P1 route is built; /learn/card/:id (P2) stays unknown → /home.
 import { isFundId } from '../data/funds';
+import { isStockId } from '../data/stocks';
 import type { State } from '../state/types';
 import { missingBuckets } from './planStatus';
 
@@ -27,7 +28,15 @@ export type ScreenId =
   | 'you'
   | 'review'
   | 'dashboard'
-  | 'notifications';
+  | 'notifications'
+  | 'payday'
+  | 'goals'
+  | 'goal'
+  | 'stocks'
+  | 'stock'
+  | 'stockBuy'
+  | 'tipCheck'
+  | 'trading';
 
 export type Location = { path: string; query: Record<string, string> };
 
@@ -43,6 +52,8 @@ export const TOASTS = {
   noHolding: 'That holding isn’t in your portfolio',
   noSip: 'We couldn’t find that SIP',
   planRunning: 'Your plan’s SIPs are already running',
+  noGoal: 'We couldn’t find that goal',
+  noStock: 'We couldn’t find that company',
 } as const;
 
 /** "#/kyc/2?next=%2Finvest%2Findex50" → { path: '/kyc/2', query: { next: '/invest/index50' } } */
@@ -187,16 +198,37 @@ const ROUTES: { pattern: string; screen: ScreenId; guard?: Guard }[] = [
       return sip.status === 'stopped' ? { kind: 'redirect', to: `/portfolio/sip/${sip.id}` } : null;
     },
   },
+  { pattern: '/portfolio/goals', screen: 'goals' },
+  {
+    pattern: '/portfolio/goal/:id',
+    screen: 'goal',
+    guard: (p, state) =>
+      state.goals.some((g) => g.id === p.id) ? null : { kind: 'redirect', to: '/portfolio/goals', toast: TOASTS.noGoal },
+  },
+  { pattern: '/explore/stocks', screen: 'stocks' },
+  {
+    pattern: '/stock/:id',
+    screen: 'stock',
+    guard: (p) => (isStockId(p.id) ? null : { kind: 'redirect', to: '/explore/stocks', toast: TOASTS.noStock }),
+  },
+  {
+    pattern: '/stock/:id/buy',
+    screen: 'stockBuy',
+    guard: (p) => (isStockId(p.id) ? null : { kind: 'redirect', to: '/explore/stocks', toast: TOASTS.noStock }),
+  },
+  { pattern: '/payday', screen: 'payday', guard: needsPlan },
   { pattern: '/learn', screen: 'learn' },
   { pattern: '/learn/glossary', screen: 'glossary' },
+  { pattern: '/learn/tip-check', screen: 'tipCheck' },
   { pattern: '/you', screen: 'you' },
+  { pattern: '/you/trading', screen: 'trading' },
   { pattern: '/review', screen: 'review' },
   { pattern: '/dashboard', screen: 'dashboard' },
   { pattern: '/notifications', screen: 'notifications' },
 ];
 
 /** Screens that hide the tab bar / sidebar (README 4.1). */
-export const FLOW_SCREENS: ScreenId[] = ['signup', 'checkin', 'kyc', 'investPlan', 'invest', 'stopCoach'];
+export const FLOW_SCREENS: ScreenId[] = ['signup', 'checkin', 'kyc', 'investPlan', 'invest', 'stopCoach', 'stockBuy'];
 
 export function resolveRoute(loc: Location, state: State): Resolved {
   for (const r of ROUTES) {
@@ -208,10 +240,7 @@ export function resolveRoute(loc: Location, state: State): Resolved {
   return { kind: 'redirect', to: '/home' };
 }
 
-/**
- * True when a route is built (matches a pattern), whatever its guard says.
- * Lets links to P1 screens that don't exist yet fall back instead of going dead.
- */
+/** True when a route is built (matches a pattern), whatever its guard says. */
 export function routeExists(to: string): boolean {
   const { path } = parseHash('#' + to);
   return ROUTES.some((r) => matchPath(r.pattern, path) !== null);
