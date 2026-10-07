@@ -68,3 +68,8 @@ export function ordinal(n: number): string {
 export function formatUnits(n: number): string {
   return (Math.round(n * 1000) / 1000).toLocaleString('en-IN', { maximumFractionDigits: 3 });
 }
+
+/** Joins a minus sign to the number after it so a line never breaks between them. */
+export function keepSignsTogether(text: string): string {
+  return text.replace(new RegExp(MINUS + '(?!\u2060)', 'g'), MINUS + '\u2060');
+}
