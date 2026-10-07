@@ -41,13 +41,17 @@ export function Funds({ query }: { query: Record<string, string> }) {
   const inPlan = planFundIds(state);
   const from: From = filters.query.trim() ? 'search' : filters.collection ? 'collection' : 'link';
   const extra = sheetFilterCount(filters);
+  const pro = state.prefs.view === 'pro';
   const collections = [...COLLECTIONS.map((c) => ({ id: c.id as CollectionId | 'saved', label: c.label })), { id: 'saved' as const, label: 'Saved' }];
 
   return (
     <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-bold text-ink">Mutual funds</h1>
-        <p className="mt-1 text-base text-ink-muted">Sample funds. Tap one to read what it is and what could go wrong.</p>
+        <p className="mt-1 text-base text-ink-muted">
+          Sample funds. Tap one to read what it is and what could go wrong.
+          {pro && ' Returns are illustrative sample figures, not a ranking.'}
+        </p>
       </header>
 
       <div className="flex gap-2">
@@ -112,10 +116,10 @@ export function Funds({ query }: { query: Record<string, string> }) {
       </p>
 
       {results.length > 0 ? (
-        <ul className="grid gap-3 lg:grid-cols-2">
+        <ul className={pro ? 'space-y-2' : 'grid gap-3 lg:grid-cols-2'}>
           {results.map((f) => (
             <li key={f.id}>
-              <FundRow fund={f} inPlan={inPlan.has(f.id)} saved={state.watchlist.includes(f.id)} from={from} />
+              <FundRow fund={f} inPlan={inPlan.has(f.id)} saved={state.watchlist.includes(f.id)} from={from} dense={pro} />
             </li>
           ))}
         </ul>

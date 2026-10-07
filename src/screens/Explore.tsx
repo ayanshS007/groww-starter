@@ -1,5 +1,6 @@
 // S7 Explore hub (README 9 item 7). Starter view: hub tiles, one plain
 // "Markets this week" line, collections preview. No index strip, no movers.
+// Pro view (README 9 item 22, PLAN S31) lives in ExplorePro.
 import { ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
 import { Chip } from '../components/Chip';
@@ -9,8 +10,15 @@ import { MARKETS_THIS_WEEK } from '../lib/market';
 import { buildPath } from '../lib/routes';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
+import { ExplorePro } from './ExplorePro';
 
-export function Explore() {
+export function Explore({ query = {} }: { query?: Record<string, string> }) {
+  const { state } = useStore();
+  if (state.prefs.view === 'pro') return <ExplorePro query={query} />;
+  return <ExploreStarter />;
+}
+
+function ExploreStarter() {
   const { state } = useStore();
   const saved = state.watchlist.filter((id) => FUNDS.some((f) => f.id === id)).length;
   return (
