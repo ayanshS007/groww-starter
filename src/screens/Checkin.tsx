@@ -1,10 +1,10 @@
 // S3 Check-in (README 8.1, 9 item 3): one question per step, "Why we ask",
 // Continue disabled until answered, no auto-advance, Back keeps answers.
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { AmountInput } from '../components/AmountInput';
 import { Button } from '../components/Button';
 import { FlowHeader } from '../components/FlowHeader';
-import { Icon } from '../components/Icon';
+import { Icon, type IconName } from '../components/Icon';
 import { OptionTiles, type Option } from '../components/OptionTile';
 import { Term } from '../components/Term';
 import { CHECKIN_STEPS, isStepAnswered, MONTHLY_PRESETS } from '../lib/checkin';
@@ -24,7 +24,37 @@ import { useStore } from '../state/store';
 import type { CheckinAnswers, CushionAnswer, DipReaction, Horizon, IncomeBand, IncomeType, Purpose } from '../state/types';
 
 const opts = <T extends string>(labels: Record<T, string>, hints: Partial<Record<T, string>> = {}): Option<T>[] =>
-  (Object.keys(labels) as T[]).map((value) => ({ value, label: labels[value], hint: hints[value] }));
+  (Object.keys(labels) as T[]).map((value) => ({ value, label: labels[value], hint: hints[value], icon: ICONS[value] }));
+
+// One inline SVG icon per answer (Stage 6a). Bars grow with amount or time.
+const ICONS: Record<string, IconName> = {
+  stipend: 'cap',
+  parttime: 'clock',
+  salary: 'briefcase',
+  none: 'sprout',
+  lt10k: 'level1',
+  '10to25k': 'level2',
+  '25to50k': 'level3',
+  gt50k: 'level4',
+  yes: 'shield',
+  some: 'coins',
+  no: 'sprout',
+  wealth: 'trend',
+  goal: 'flag',
+  cushion: 'shield',
+  exploring: 'explore',
+  lt1: 'level1',
+  '1to3': 'level2',
+  '3to5': 'level3',
+  '5plus': 'level4',
+  sell: 'exit',
+  wait: 'pause',
+  stay: 'plus',
+};
+const PRESET_ICON: Record<number, IconName> = { 100: 'level1', 500: 'level2', 1000: 'level3', 2500: 'level4' };
+
+// The step shown last, so the next step slides in from the right (forward) or the left (back).
+let lastStep = 0;
 
 const PRESET_HINT: Record<number, string> = {
   100: 'About a coffee and a snack',
@@ -64,6 +94,12 @@ export function Checkin({ step }: { step: number }) {
 
   const [custom, setCustom] = useState(d.monthlyChoice === 'custom' && d.monthly ? String(d.monthly) : '');
   const [touched, setTouched] = useState(false);
+  // Each step is a fresh mount (one route per step), so remember where we came from.
+  const [from] = useState(() => lastStep);
+  useEffect(() => {
+    lastStep = step;
+  }, [step]);
+  const slide = from > step ? 'anim-step-back' : 'anim-step-fwd';
 
   const answered = isStepAnswered(step, d);
   const ceiling = d.incomeBand ? comfortCeiling(d.incomeBand) : undefined;
@@ -183,8 +219,8 @@ export function Checkin({ step }: { step: number }) {
             legend={legend}
             legendClassName="mb-6"
             options={[
-              ...MONTHLY_PRESETS.map((n) => ({ value: n, label: formatINR(n), hint: PRESET_HINT[n] })),
-              { value: 'custom' as const, label: 'Custom amount', hint: '₹100 to ₹1,00,000' },
+              ...MONTHLY_PRESETS.map((n) => ({ value: n, label: formatINR(n), hint: PRESET_HINT[n], icon: PRESET_ICON[n] })),
+              { value: 'custom' as const, label: 'Custom amount', hint: '₹100 to ₹1,00,000', icon: 'pencil' as const },
             ]}
             value={choice}
             onChange={(v) => {
@@ -223,16 +259,25 @@ export function Checkin({ step }: { step: number }) {
 
   return (
     <>
-      <FlowHeader onBack={onBack} closeTo="/home" closeLabel="Close, your answers are saved" step={step} steps={CHECKIN_STEPS} />
-      <main id="main" tabIndex={-1} className="mx-auto max-w-tablet px-safe pt-6 outline-none">
-        {body}
-        <aside className="mt-6 flex gap-3 rounded-card-sm bg-sky p-4 text-sm text-ink">
-          <Icon name="info" size={20} className="mt-0.5 shrink-0 text-info" />
-          <p>
-            <span className="font-semibold">Why we ask: </span>
-            {WHY[step]}
-          </p>
-        </aside>
+      <FlowHeader
+        onBack={onBack}
+        closeTo="/home"
+        closeLabel="Close, your answers are saved"
+        step={step}
+        steps={CHECKIN_STEPS}
+        stepFrom={from >= 1 && from <= CHECKIN_STEPS && from !== step ? from : undefined}
+      />
+      <main id="main" tabIndex={-1} className="mx-auto max-w-tablet overflow-x-clip px-safe pt-6 outline-none">
+        <div key={step} className={slide}>
+          {body}
+          <aside className="mt-6 flex gap-3 rounded-card-sm bg-sky p-4 text-sm text-ink">
+            <Icon name="info" size={20} className="mt-0.5 shrink-0 text-info" />
+            <p>
+              <span className="font-semibold">Why we ask: </span>
+              {WHY[step]}
+            </p>
+          </aside>
+        </div>
         <div className="sticky bottom-0 -mx-4 mt-6 bg-bg/95 px-4 pb-safe pt-3 backdrop-blur">
           <div className="pb-4">
             <Button block disabled={!answered} onClick={onContinue}>

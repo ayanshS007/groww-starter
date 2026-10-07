@@ -12,7 +12,7 @@ import { GoalFormSheet } from '../components/GoalFormSheet';
 import { GoalRow } from '../components/GoalRow';
 import { Icon } from '../components/Icon';
 import { Note } from '../components/Note';
-import { ProgressBar } from '../components/ProgressBar';
+import { GoalRing } from '../components/GoalRing';
 import { SipStatusPill } from '../components/StatusPill';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
@@ -166,11 +166,15 @@ export function GoalDetail({ id }: { id: string }) {
             </h2>
             <span className="rounded-full bg-surface2 px-3 py-1 text-xs font-medium text-ink-muted">Illustrative values</span>
           </div>
-          <p className="mt-3 text-4xl font-extrabold tabular-nums text-ink">{formatINR(s.value)}</p>
-          <p className="mt-1 text-base tabular-nums text-ink-muted">
-            of {formatINR(goal.target)} · {pct}%
-          </p>
-          <ProgressBar className="mt-3" value={pct} label={`${goal.name}: ${pct}% of target`} />
+          <div className="mt-3 flex items-center gap-5">
+            <GoalRing pct={s.pct} size={96} label={`${goal.name}: ${pct}% of target`} />
+            <div>
+              <p className="text-4xl font-extrabold tabular-nums text-ink">{formatINR(s.value)}</p>
+              <p className="mt-1 text-base tabular-nums text-ink-muted">
+                of {formatINR(goal.target)} · {pct}%
+              </p>
+            </div>
+          </div>
           <p className="mt-3 text-sm text-ink-muted">Counts the value of the funds behind your linked SIPs.</p>
         </Card>
 

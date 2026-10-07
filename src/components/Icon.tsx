@@ -31,6 +31,25 @@ const PATHS = {
   sparkle: 'M12 4v4M12 16v4M4 12h4M16 12h4',
   star: 'M12 4l2.4 5 5.6.6-4.2 3.8 1.2 5.6L12 16l-5 3 1.2-5.6L4 9.6 9.6 9z',
   bookmark: 'M7 4h10v16l-5-4-5 4z',
+  // Stage 6a: check-in tiles, clock and mood.
+  cap: 'M2.5 9 12 5l9.5 4L12 13zM6.5 11v4.5c3 2.5 8 2.5 11 0V11M21.5 9v5',
+  briefcase: 'M4 8h16v11H4zM9 8V5h6v3M4 13h16',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2',
+  sprout: 'M12 21v-9M12 12c0-4-3-6-7-6 0 4 3 6 7 6zM12 14c0-4 3-6 7-6 0 4-3 6-7 6z',
+  trend: 'M3 17l6-6 4 4 8-8M15 7h6v6',
+  flag: 'M5 21V4M5 4h11l-2 4 2 4H5',
+  coins: 'M9 7a5 2 0 1 0 0.01 0zM4 7v4c0 1.1 2.2 2 5 2s5-.9 5-2V7M10 15c0 1.1 2.2 2 5 2s5-.9 5-2v-4c0-1.1-2.2-2-5-2',
+  exit: 'M10 4H5v16h5M14 8l4 4-4 4M18 12H9',
+  pencil: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
+  // Rising bars; the bars not reached show as dots on the baseline.
+  level1: 'M4.5 19v-4M10 19h0M15 19h0M20 19h0',
+  level2: 'M4.5 19v-4M10 19v-7M15 19h0M20 19h0',
+  level3: 'M4.5 19v-4M10 19v-7M15 19v-10M20 19h0',
+  level4: 'M4.5 19v-4M10 19v-7M15 19v-10M20 19V5',
+  moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z',
+  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  leaf: 'M5 19C5 10 11 5 20 4c-1 9-6 15-15 15zM5 19l7-7',
 } as const;
 
 export type IconName = keyof typeof PATHS;

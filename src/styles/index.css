@@ -12,6 +12,17 @@
     @apply bg-bg text-ink font-sans text-base antialiased;
     background-color: rgb(var(--c-bg));
     font-variant-numeric: tabular-nums;
+    transition: background-color 300ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  /* Market mood glow (Stage 6a): a soft wash at the top of every screen. Its
+     colour and strength come from data-mood on <html> (tokens.ts MOOD_TOKENS). */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background: radial-gradient(120% 55% at 50% -12%, rgb(var(--c-mood-glow) / var(--mood-glow-a)), transparent 72%);
   }
   :focus-visible {
     outline: 3px solid rgb(var(--c-focus));
@@ -95,7 +106,8 @@
   border-radius: 9999px;
   filter: blur(64px);
   will-change: transform;
-  animation: blob-drift var(--blob-dur) ease-in-out infinite;
+  animation: blob-drift calc(var(--blob-dur) * var(--blob-pace, 1)) ease-in-out infinite;
+  transition: background-color 300ms cubic-bezier(0, 0, 0.2, 1);
 }
 .home-blobs[data-paused='true'] .home-blob {
   animation-play-state: paused;
@@ -132,6 +144,18 @@
   background: rgb(var(--c-blob-lavender) / var(--blob-a-lavender));
   animation-delay: -14s;
 }
+/* Payday week: the third blob turns gold. */
+.home-blobs[data-payday='true'] .home-blob-lavender {
+  background: rgb(var(--c-blob-gold) / var(--blob-a-gold));
+}
+/* Home's sky follows the simulated time of day (data-tod on <html>). */
+.home-sky {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 70vh;
+  background: linear-gradient(to bottom, rgb(var(--c-tod-sky) / var(--tod-a)), transparent);
+  transition: background 300ms cubic-bezier(0, 0, 0.2, 1);
+}
 @keyframes blob-drift {
   0%,
   100% {
@@ -148,4 +172,36 @@
   .home-blob {
     animation: none;
   }
+}
+
+/* ---------- Stage 6a motion: 150–300 ms, ease-out, off under reduced motion ---------- */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-from-right {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-from-left {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fill-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes bar-from {
+  from { width: var(--from); }
+}
+.anim-rise { animation: rise-in 280ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: var(--delay, 0ms); }
+.anim-step-fwd { animation: slide-from-right 240ms cubic-bezier(0, 0, 0.2, 1) both; }
+.anim-step-back { animation: slide-from-left 240ms cubic-bezier(0, 0, 0.2, 1) both; }
+.anim-fill { transform-origin: left center; animation: fill-x 300ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: var(--delay, 0ms); }
+.anim-bar { animation: bar-from 300ms cubic-bezier(0, 0, 0.2, 1) both; }
+/* Goal ring at 100%: a calm, still glow. */
+.goal-ring-glow { filter: drop-shadow(0 0 6px rgb(var(--c-brand) / 0.45)); }
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise, .anim-step-fwd, .anim-step-back, .anim-fill, .anim-bar { animation: none; }
+  body, .home-blob, .home-sky { transition: none; }
 }

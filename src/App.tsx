@@ -9,6 +9,7 @@ import { useKeyboardAvoidance } from './components/useKeyboardAvoidance';
 import { FLOW_SCREENS, type Resolved } from './lib/routes';
 import { useLocation, useRoute } from './router';
 import { Checkin } from './screens/Checkin';
+import { AmbienceRoot } from './components/useAmbience';
 import { Dashboard } from './screens/Dashboard';
 import { Explore } from './screens/Explore';
 import { FundDetail } from './screens/Fund';
@@ -138,6 +139,7 @@ function Routed() {
 export function App() {
   return (
     <ToastProvider>
+      <AmbienceRoot />
       <Routed />
     </ToastProvider>
   );

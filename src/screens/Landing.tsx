@@ -1,15 +1,63 @@
 // S1 Landing (README 9 item 1). No tickers, offers, returns or user counts.
+// Stage 6a: bold hero over the drifting blobs, then a 3-card value bento. No stats.
+import type { CSSProperties, ReactNode } from 'react';
 import { ButtonLink } from '../components/Button';
-import { Icon, type IconName } from '../components/Icon';
+import { HomeBackdrop } from '../components/HomeBackdrop';
+import { Icon } from '../components/Icon';
 import { Wordmark } from '../components/Wordmark';
 import { buildPath } from '../lib/routes';
 import { Link } from '../router';
 import { useStore } from '../state/store';
 
-const POINTS: { icon: IconName; text: string }[] = [
-  { icon: 'wallet', text: 'Start with ₹100 a month. Change it later.' },
-  { icon: 'pause', text: 'Skip any month, free. No lock-in.' },
-  { icon: 'book', text: 'Every word explained in plain English.' },
+type Bento = { title: string; body: string; tint: string; art: ReactNode; className: string };
+
+// Small geometric illustrations for the bento cards: inline SVG, decorative.
+const StepsArt = () => (
+  <svg aria-hidden viewBox="0 0 200 32" preserveAspectRatio="xMinYMid meet" className="h-8 w-[200px] text-brand-text" fill="none">
+    {[0, 1, 2, 3, 4, 5].map((i) => (
+      <circle key={i} cx={14 + i * 33} cy={16} r={12} className={i < 5 ? 'fill-brand' : 'fill-surface'} stroke="currentColor" strokeWidth={i < 5 ? 0 : 2.5} />
+    ))}
+  </svg>
+);
+const SkipArt = () => (
+  <svg aria-hidden viewBox="0 0 120 64" preserveAspectRatio="xMinYMid meet" className="h-16 w-32 lg:h-28 lg:w-56" fill="none">
+    {[0, 1, 2, 3].map((i) => (
+      <rect key={i} x={4 + i * 29} y={14} width={22} height={36} rx={7} className={i === 2 ? 'fill-surface stroke-ink' : 'fill-surface'} strokeWidth={2} strokeDasharray={i === 2 ? '4 4' : undefined} />
+    ))}
+    <path d="M66 27l12 10M78 27l-12 10" className="stroke-ink" strokeWidth={2.5} strokeLinecap="round" />
+  </svg>
+);
+const WhyArt = () => (
+  <svg aria-hidden viewBox="0 0 120 64" preserveAspectRatio="xMinYMid meet" className="h-16 w-32" fill="none">
+    <rect x={4} y={8} width={84} height={40} rx={14} className="fill-surface" />
+    <path d="M24 48l-6 12 16-12" className="fill-surface" />
+    <path d="M38 22a8 8 0 1 1 10 8v4M48 40v1" className="stroke-ink" strokeWidth={3} strokeLinecap="round" />
+    <circle cx={104} cy={22} r={12} className="fill-brand" />
+  </svg>
+);
+
+const BENTO: Bento[] = [
+  {
+    title: 'A plan in 2 minutes',
+    body: 'Six quick questions. You get a starter shortlist based on your answers, split into a cushion and a grow part.',
+    tint: 'bg-mint',
+    art: <StepsArt />,
+    className: 'md:col-span-2 lg:col-span-2',
+  },
+  {
+    title: 'Skip any month, free',
+    body: 'Rent due? Skip or pause your SIP. Nothing resets and nothing is locked in.',
+    tint: 'bg-peach',
+    art: <SkipArt />,
+    className: 'lg:row-span-2 lg:flex lg:flex-col lg:justify-between',
+  },
+  {
+    title: 'Always see why',
+    body: 'Every fund says what it is, why you’re seeing it, and what happens next. Every word, explained.',
+    tint: 'bg-lavender',
+    art: <WhyArt />,
+    className: 'lg:col-span-2',
+  },
 ];
 
 /** Static mock of the Starter home, for the desktop hero. Sample content only. */
@@ -61,31 +109,24 @@ export function Landing() {
 
   return (
     <div className="flex flex-1 flex-col pt-safe">
+      <HomeBackdrop sky={false} />
       <header className="mx-auto flex w-full max-w-content items-center px-safe py-4 lg:px-8">
         <Wordmark />
       </header>
-      <main id="main" tabIndex={-1} className="flex flex-1 items-center outline-none">
-        <div className="mx-auto grid w-full max-w-content items-center gap-12 px-safe pb-12 pt-4 md:max-w-tablet lg:max-w-content lg:grid-cols-2 lg:px-8">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-mint px-3 py-1 text-sm font-semibold text-brand-text">
-              <Icon name="sparkle" size={16} />
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
+        <div className="mx-auto grid w-full max-w-content items-center gap-12 px-safe pb-10 pt-4 md:max-w-tablet lg:max-w-content lg:grid-cols-2 lg:px-8 lg:pt-10">
+          <div className="anim-rise">
+            <p className="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm font-semibold text-brand-text shadow-sm">
+              <Icon name="leaf" size={16} />
               For your first investment
             </p>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-ink lg:text-5xl lg:leading-[1.1]">
-              Start investing with ₹100. Understand every step.
+            <h1 className="mt-5 text-5xl font-black tracking-tight text-ink md:text-6xl">
+              Start investing with{' '}
+              <span className="whitespace-nowrap bg-gradient-to-t from-brand/40 from-[38%] to-transparent to-[38%] px-1">₹100.</span>{' '}
+              Understand every step.
             </h1>
-            <p className="mt-4 text-lg text-ink-muted">A plan built on your answers, not on tips.</p>
-            <ul className="mt-8 space-y-3">
-              {POINTS.map((p) => (
-                <li key={p.text} className="flex items-center gap-3 text-base text-ink">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-brand-text shadow-sm">
-                    <Icon name={p.icon} size={20} />
-                  </span>
-                  {p.text}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <p className="mt-5 text-xl text-ink-muted">A plan built on your answers, not on tips.</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink to={start} className="sm:px-8">
                 Get started
               </ButtonLink>
@@ -100,10 +141,31 @@ export function Landing() {
               </Link>
             </p>
           </div>
-          <div className="hidden lg:block">
+          <div className="hidden lg:block anim-rise" style={{ '--delay': '120ms' } as CSSProperties}>
             <HomeMock />
           </div>
         </div>
+
+        <section aria-labelledby="why-starter" className="mx-auto w-full max-w-content px-safe pb-12 md:max-w-tablet lg:max-w-content lg:px-8">
+          <h2 id="why-starter" className="sr-only">
+            What you get
+          </h2>
+          <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {BENTO.map((b, i) => (
+              <li
+                key={b.title}
+                className={`anim-rise rounded-card-lg p-6 lg:p-7 ${b.tint} ${b.className}`}
+                style={{ '--delay': `${180 + i * 90}ms` } as CSSProperties}
+              >
+                {b.art}
+                <div>
+                  <h3 className="mt-4 text-2xl font-extrabold tracking-tight text-ink">{b.title}</h3>
+                  <p className="mt-2 text-base text-ink">{b.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
       <footer className="mx-auto w-full max-w-content px-safe pb-6 text-xs text-ink-muted pb-safe lg:px-8">
         Illustrative prototype. No real money, prices or accounts.

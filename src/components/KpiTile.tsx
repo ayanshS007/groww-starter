@@ -17,8 +17,8 @@ const TINT: Record<KpiTint, string> = {
 type Props = {
   tint: KpiTint;
   icon: IconName;
-  /** Amber icon for a down week (never red). */
-  iconTone?: 'ink' | 'caution' | 'brand';
+  /** Soft rose icon for the user's own down week (never alarm red). */
+  iconTone?: 'ink' | 'down' | 'brand';
   label: string;
   value: ReactNode;
   sub?: ReactNode;
@@ -27,7 +27,7 @@ type Props = {
 };
 
 export function KpiTile({ tint, icon, iconTone = 'ink', label, value, sub, spark, children }: Props) {
-  const iconColour = iconTone === 'caution' ? 'text-caution' : iconTone === 'brand' ? 'text-brand-text' : 'text-ink';
+  const iconColour = iconTone === 'down' ? 'text-own-down' : iconTone === 'brand' ? 'text-brand-text' : 'text-ink';
   return (
     <div className={`flex min-w-0 flex-col rounded-card p-4 lg:p-5 ${TINT[tint]}`}>
       <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-surface ${iconColour}`}>

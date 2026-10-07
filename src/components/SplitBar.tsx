@@ -1,8 +1,10 @@
 // Cushion vs Grow bar with ₹ labels (README 9 item 4). Labels carry the meaning.
+// `animate` fills each part in from the left on mount (Stage 6a plan reveal).
+import type { CSSProperties } from 'react';
 import { formatINR } from '../lib/format';
 import type { StarterPlan } from '../state/types';
 
-export function SplitBar({ plan, size = 'md', labels = true }: { plan: StarterPlan; size?: 'sm' | 'md'; labels?: boolean }) {
+export function SplitBar({ plan, size = 'md', labels = true, animate = false }: { plan: StarterPlan; size?: 'sm' | 'md'; labels?: boolean; animate?: boolean }) {
   const cushion = plan.buckets.find((b) => b.role === 'cushion')?.amount ?? 0;
   const grow = plan.buckets.find((b) => b.role === 'grow')?.amount ?? 0;
   const total = cushion + grow || 1;
@@ -10,8 +12,16 @@ export function SplitBar({ plan, size = 'md', labels = true }: { plan: StarterPl
   return (
     <div>
       <div className={`flex ${h} w-full gap-1 overflow-hidden rounded-full`} aria-hidden>
-        {cushion > 0 && <div className="h-full rounded-full bg-brand/35" style={{ width: `${(cushion / total) * 100}%` }} />}
-        {grow > 0 && <div className="h-full rounded-full bg-brand" style={{ width: `${(grow / total) * 100}%` }} />}
+        {cushion > 0 && (
+          <div className="h-full transition-[width] duration-300" style={{ width: `${(cushion / total) * 100}%` }}>
+            <div className={`h-full rounded-full bg-brand/35 ${animate ? 'anim-fill' : ''}`} />
+          </div>
+        )}
+        {grow > 0 && (
+          <div className="h-full transition-[width] duration-300" style={{ width: `${(grow / total) * 100}%` }}>
+            <div className={`h-full rounded-full bg-brand ${animate ? 'anim-fill' : ''}`} style={{ '--delay': '150ms' } as CSSProperties} />
+          </div>
+        )}
       </div>
       {labels && <dl className={`mt-2 flex ${size === 'sm' ? 'flex-col gap-1 text-xs' : 'justify-between gap-3 text-sm'}`}>
         <div className="flex items-center gap-1.5">

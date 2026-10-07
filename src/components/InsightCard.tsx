@@ -8,7 +8,7 @@ import { Icon, type IconName } from './Icon';
 export const INSIGHT_TONE: Record<Insight['tone'], { bg: string; icon: IconName; label: string }> = {
   calm: { bg: 'bg-mint', icon: 'check', label: 'Steady week' },
   neutral: { bg: 'bg-surface2', icon: 'info', label: 'This week' },
-  caution: { bg: 'bg-caution-fill', icon: 'caution', label: 'Worth a look' },
+  caution: { bg: 'bg-caution-fill', icon: 'eye', label: 'Worth a look' }, // no warning icon on a dip (Stage 6a)
 };
 
 /**

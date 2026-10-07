@@ -7,6 +7,7 @@ import { firstUnansweredStep, isCheckinStarted } from './checkin';
 import { addDays, daysBetween, nextDateForDay } from './dates';
 import { dateLabel, formatINR } from './format';
 import { simToday } from './market';
+import { timeOfDay } from './mood';
 import { hasLiveSip } from './planStatus';
 import { buildPath } from './routes';
 
@@ -169,9 +170,14 @@ export function statusLine(state: State): string {
   return 'Your plan is running. Nothing needs you today.';
 }
 
-/** "Good morning" style greeting with the user's first name, if known. */
-export function greeting(name: string | undefined, hour: number): string {
-  const part = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+const GREETING = { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening', night: 'Quiet night' } as const;
+
+/**
+ * Greeting for the simulated time of day, with the user's first name if known.
+ * Takes an hour (0–23) or a time of day picked in Reviewer tools.
+ */
+export function greeting(name: string | undefined, when: number | keyof typeof GREETING): string {
+  const part = GREETING[typeof when === 'number' ? timeOfDay(when) : when];
   const first = name?.trim().split(/\s+/)[0];
   return first ? `${part}, ${first}` : part;
 }

@@ -103,7 +103,7 @@ export function AreaChart({ points, dip }: { points: ChartPoint[]; dip?: ChartPo
           {a && <line x1={x(active!)} x2={x(active!)} y1={M.top} y2={base} className="stroke-ink-muted" strokeWidth={1} />}
           {points.map((p, i) =>
             p.down ? (
-              <circle key={p.week} cx={x(i)} cy={y(p.value)} r={5} className="fill-caution-icon stroke-surface" strokeWidth={2} />
+              <circle key={p.week} cx={x(i)} cy={y(p.value)} r={5} className="fill-own-down stroke-surface" strokeWidth={2} />
             ) : null,
           )}
           {a && <circle cx={x(active!)} cy={y(a.value)} r={5} className="fill-brand-text stroke-surface" strokeWidth={2} />}
@@ -145,7 +145,7 @@ export function AreaChart({ points, dip }: { points: ChartPoint[]; dip?: ChartPo
               <span className="font-semibold tabular-nums">{formatSigned(a.move)}</span>
             </p>
           )}
-          {a.down && <p className="mt-1 text-xs font-semibold text-caution">{a.stayedInvested ? 'Down week. You stayed invested.' : 'Down week.'}</p>}
+          {a.down && <p className="mt-1 text-xs font-semibold text-own-down">{a.stayedInvested ? 'Down week. You stayed invested.' : 'Down week.'}</p>}
         </div>
       )}
 
@@ -194,7 +194,7 @@ export function AreaLegend() {
       </li>
       <li className="flex items-center gap-1.5">
         <svg width="10" height="10" aria-hidden>
-          <circle cx="5" cy="5" r="4" className="fill-caution-icon" />
+          <circle cx="5" cy="5" r="4" className="fill-own-down" />
         </svg>
         Down week
       </li>

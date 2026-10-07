@@ -33,6 +33,7 @@ import type {
   Scenario,
   Sip,
   State,
+  ReviewPreview,
   StopReason,
 } from './types';
 
@@ -77,10 +78,14 @@ export type Action =
   | { type: 'markNotificationsRead'; ids: string[] }
   | { type: 'seeMilestone'; id: MilestoneId }
   | { type: 'setPayday'; day: number }
+  | { type: 'creditPay' }
+  | { type: 'setPreview'; patch: Partial<ReviewPreview> }
   | { type: 'loadPersona'; persona: PersonaId; today: ISODate }
   | { type: 'reset'; today: ISODate };
 
 // ---------- helpers ----------
+export const DEFAULT_PREVIEW: ReviewPreview = { mood: 'auto', timeOfDay: 'auto', day: 'auto' };
+
 const clampDay = (d: number) => Math.min(28, Math.max(1, Math.round(d)));
 
 function pushActivity(state: State, item: Omit<ActivityItem, 'id'>): State {
@@ -461,6 +466,12 @@ export function reducer(state: State, action: Action): State {
 
     case 'setPayday':
       return { ...state, user: { ...state.user, payday: clampDay(action.day) } };
+
+    case 'creditPay':
+      return { ...state, payCreditWeek: week };
+
+    case 'setPreview':
+      return { ...state, preview: { ...DEFAULT_PREVIEW, ...state.preview, ...action.patch } };
 
     case 'loadPersona':
       return buildPersona(action.persona, action.today);

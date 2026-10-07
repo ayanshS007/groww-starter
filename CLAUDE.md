@@ -32,7 +32,7 @@ npm run preview   # serve the build
 - All market data is simulated. Every number shown is labelled illustrative or sample.
 - No advice language ("best", "recommended for you", "guaranteed"). Use "starter shortlist based on your answers".
 - No confetti, streak counters, leaderboards, points, countdowns or return projections.
-- The user's own portfolio dips are never red. Neutral or amber, icon + text.
+- The user's own losses may use a soft rose tone with ▼ and sign, never alarm red, red buttons, red backgrounds or warning icons.
 - No real logos, real company names, real prices or brand illustrations from `design-refs/`. Text wordmark "Groww" only; letter avatars for sample companies.
 - Do not write my submission documents: no one-page note, no invented eval results, users or quotes. Agent findings are labelled **agent-simulated**.
 - Never weaken a test to make it pass. Fix the code; if a test is genuinely wrong, fix it and log why.

@@ -35,6 +35,12 @@ export type ColorTokens = {
   blobGreen: string;
   blobMint: string;
   blobLavender: string;
+  // Stage 6a. The user's own loss: a soft rose, always with ▼ and a sign. Never
+  // alarm red (marketDown is for Pro market prices only).
+  ownDown: string;
+  gold: string; // payday accent: borders, icon chips and the glow only
+  goldFill: string; // payday card fill behind ink text
+  ringStart: string; // goal ring at 0%, warms to brand at 100% (decoration)
 }
 
 /**
@@ -60,8 +66,8 @@ export const light: ColorTokens = {
   inkMuted: '#4B5563',
   brand: '#00D09C',
   onBrand: '#1F2937',
-  brandText: '#007A5A',
-  caution: '#9A5B00',
+  brandText: '#00704F',
+  caution: '#8C5300',
   cautionFill: '#FDF1DA',
   cautionIcon: '#F5A524',
   info: '#3B4FE0',
@@ -81,6 +87,10 @@ export const light: ColorTokens = {
   blobGreen: '#5EEBC2',
   blobMint: '#A9F5DC',
   blobLavender: '#CFC3FF',
+  ownDown: '#A8345A',
+  gold: '#E9B23C',
+  goldFill: '#FFF4D6',
+  ringStart: '#A6EBD3',
 };
 
 export const dark: ColorTokens = {
@@ -89,7 +99,7 @@ export const dark: ColorTokens = {
   surface2: '#273449',
   border: '#334155',
   ink: '#E5E7EB',
-  inkMuted: '#A3AEC2',
+  inkMuted: '#B8C1D0',
   brand: '#00D09C',
   onBrand: '#0B1220',
   brandText: '#3DE0B5',
@@ -113,6 +123,10 @@ export const dark: ColorTokens = {
   blobGreen: '#00D09C',
   blobMint: '#2FBF9A',
   blobLavender: '#7A6AE0',
+  ownDown: '#F6B3C8',
+  gold: '#D9A63A',
+  goldFill: '#3A3016',
+  ringStart: '#2C7A64',
 };
 
 /** Text-on-background pairs that must reach WCAG AA (4.5:1). */
@@ -138,10 +152,106 @@ export const TEXT_PAIRS: [keyof ColorTokens, keyof ColorTokens][] = [
   ['ink', 'cautionFill'],
   ['marketUp', 'surface'],
   ['marketDown', 'surface'],
+  // Stage 6a: the user's own change sits on cards, KPI tints and the page.
+  ['ownDown', 'bg'],
+  ['ownDown', 'surface'],
+  ['ownDown', 'surface2'],
+  ['ownDown', 'mint'],
+  ['ownDown', 'peach'],
+  ['ownDown', 'lavender'],
+  ['ownDown', 'sky'],
+  ['brandText', 'peach'],
+  ['brandText', 'surface2'],
+  ['ink', 'goldFill'],
+  ['onBrand', 'gold'],
+  ['inkMuted', 'goldFill'],
+  ['brandText', 'goldFill'],
 ];
 
 /** Text pairs that sit straight on the page background, where Home's blobs can sit behind them. */
-export const BLOB_TEXT_FG: (keyof ColorTokens)[] = ['ink', 'inkMuted', 'brandText', 'caution'];
+export const BLOB_TEXT_FG: (keyof ColorTokens)[] = ['ink', 'inkMuted', 'brandText', 'caution', 'ownDown'];
+
+// ---------- Stage 6a: market mood, time of day, payday ----------
+export const MOODS = ['up', 'flat', 'small_dip', 'big_dip'] as const;
+export type Mood = (typeof MOODS)[number];
+export const TIMES_OF_DAY = ['morning', 'afternoon', 'evening', 'night'] as const;
+export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
+type Scheme = 'light' | 'dark';
+
+/**
+ * What each mood changes, app-wide, through CSS variables on <html data-mood>:
+ * the page background (`--c-bg`), a soft glow at the top of every screen, the
+ * three Home blob colours (slots green / mint / lavender) and how fast they drift.
+ */
+export type MoodTokens = { bg: string; glow: string; glowAlpha: number; blobs: [string, string, string]; blobPace: number };
+
+export const MOOD_TOKENS: Record<Scheme, Record<Mood, MoodTokens>> = {
+  light: {
+    up: { bg: '#F2FAF6', glow: '#5EEBC2', glowAlpha: 0.18, blobs: ['#5EEBC2', '#7FF0C9', '#A9F5DC'], blobPace: 1 },
+    flat: { bg: light.bg, glow: '#A9F5DC', glowAlpha: 0.14, blobs: [light.blobGreen, light.blobMint, light.blobLavender], blobPace: 1 },
+    small_dip: { bg: '#FBF6F3', glow: '#FFC7AE', glowAlpha: 0.2, blobs: ['#FFC9B0', '#F9C0CF', '#CFC3FF'], blobPace: 1 },
+    big_dip: { bg: '#FBF3F5', glow: '#F6B3C6', glowAlpha: 0.2, blobs: ['#F6B3C6', '#D9CCFF', '#FFD1BD'], blobPace: 2.5 },
+  },
+  dark: {
+    up: { bg: '#0D1A27', glow: '#00D09C', glowAlpha: 0.12, blobs: ['#00B386', '#25A383', '#2A8F7A'], blobPace: 1 },
+    flat: { bg: dark.bg, glow: '#2FBF9A', glowAlpha: 0.06, blobs: [dark.blobGreen, dark.blobMint, dark.blobLavender], blobPace: 1 },
+    small_dip: { bg: '#16162B', glow: '#E39A7F', glowAlpha: 0.1, blobs: ['#C9785F', '#B5607E', '#7A6AE0'], blobPace: 1 },
+    big_dip: { bg: '#191529', glow: '#D77A9B', glowAlpha: 0.11, blobs: ['#B5607E', '#7A6AE0', '#9A5A6E'], blobPace: 2.5 },
+  },
+};
+
+/** Home's sky: a gradient at the top of Home that follows the simulated time of day. */
+export const TOD_TOKENS: Record<Scheme, Record<TimeOfDay, { sky: string; alpha: number }>> = {
+  light: {
+    morning: { sky: '#FFD8A8', alpha: 0.26 },
+    afternoon: { sky: '#BFE3FF', alpha: 0.26 },
+    evening: { sky: '#E7C6F5', alpha: 0.24 },
+    night: { sky: '#C3CAFF', alpha: 0.22 },
+  },
+  dark: {
+    morning: { sky: '#5C3B1E', alpha: 0.18 },
+    afternoon: { sky: '#1A3F63', alpha: 0.2 },
+    evening: { sky: '#40285C', alpha: 0.22 },
+    night: { sky: '#1A2366', alpha: 0.3 },
+  },
+};
+
+/** Payday glow: in the week pay is credited, Home's third blob turns gold. */
+export const GOLD_BLOB: Record<Scheme, { colour: string; alpha: number }> = {
+  light: { colour: '#FFD36B', alpha: 0.2 },
+  dark: { colour: '#C9961F', alpha: 0.14 },
+};
+
+function moodVars(m: MoodTokens): Record<string, string> {
+  return {
+    '--c-bg': hexToRgbChannels(m.bg),
+    '--c-mood-glow': hexToRgbChannels(m.glow),
+    '--mood-glow-a': String(m.glowAlpha),
+    '--c-blob-green': hexToRgbChannels(m.blobs[0]),
+    '--c-blob-mint': hexToRgbChannels(m.blobs[1]),
+    '--c-blob-lavender': hexToRgbChannels(m.blobs[2]),
+    '--blob-pace': String(m.blobPace),
+  };
+}
+
+/** Rules for one colour scheme: defaults on :root, then one block per mood and per time of day. */
+export function ambienceCss(scheme: Scheme): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {
+    ':root': {
+      ...moodVars(MOOD_TOKENS[scheme].flat),
+      '--c-tod-sky': hexToRgbChannels(TOD_TOKENS[scheme].afternoon.sky),
+      '--tod-a': '0',
+      '--c-blob-gold': hexToRgbChannels(GOLD_BLOB[scheme].colour),
+      '--blob-a-gold': String(GOLD_BLOB[scheme].alpha),
+    },
+  };
+  for (const mood of MOODS) out[`:root[data-mood="${mood}"]`] = moodVars(MOOD_TOKENS[scheme][mood]);
+  for (const tod of TIMES_OF_DAY) {
+    const t = TOD_TOKENS[scheme][tod];
+    out[`:root[data-tod="${tod}"]`] = { '--c-tod-sky': hexToRgbChannels(t.sky), '--tod-a': String(t.alpha) };
+  }
+  return out;
+}
 
 const toVarName = (k: string) => '--c-' + k.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
 

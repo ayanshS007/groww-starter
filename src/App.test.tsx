@@ -34,7 +34,8 @@ describe('App', () => {
         <App />
       </StoreProvider>,
     );
-    expect(html).toContain('Start investing with ₹100. Understand every step.');
+    // The ₹100 is highlighted in its own span (Stage 6a), so compare the text.
+    expect(text(html)).toContain('Start investing with ₹100. Understand every step.');
     expect(html).toContain('Get started');
   });
   it('shows the storage notice when storage is unavailable, instead of crashing', () => {
@@ -502,7 +503,9 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
   });
 
   it('Home’s insight sits in an aria-live region that is in the page even before there is a number to show', () => {
-    const html = renderAt('#/home', riya);
+    // Riya is in a big dip, so Steady mode shows the full insight card at the top instead (Stage 6a).
+    expect(renderAt('#/home', riya)).toMatch(/<section aria-label="This week" aria-live="polite"/);
+    const html = renderAt('#/home', run(riya, { type: 'setPreview', patch: { mood: 'flat' } }));
     expect(html).toMatch(/aria-live="polite"[^>]*>(<p class="flex gap-2 rounded-card-sm)/);
     expect(renderAt('#/portfolio', riya)).toMatch(/aria-label="This week"/);
   });
@@ -654,11 +657,13 @@ describe('Stage 3d-1: Starter / Pro view (README 9 item 22)', () => {
     expect(t.toLowerCase()).not.toMatch(/top gainers|most bought|top movers/);
     expect(html).toContain('aria-current="page"');
   });
-  it('Pro holdings keep the user’s own dip amber, never market red', () => {
+  it('Pro holdings show the user’s own dip in soft rose with ▼, never market red', () => {
+    // Owner rule change in Stage 6a: own losses use a soft rose with ▼ and a sign (was amber).
     const html = renderAt('#/explore?tab=holdings', pro(riya));
     expect(text(html)).toContain('Nifty 50 Index Fund');
     expect(html).not.toContain('market-down');
-    expect(html).toContain('text-caution');
+    expect(html).toContain('text-own-down');
+    expect(html).toContain('▼');
   });
   it('Pro watchlist shows a table for Arjun’s stocks; orders list Riya’s payments', () => {
     const arjun = pro(buildPersona('arjun', TODAY));
@@ -685,7 +690,8 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
   const riya = buildPersona('riya', TODAY);
 
   it('Home shows "Got paid? Split it" with a plan, and the milestone card once earned', () => {
-    const t = text(renderAt('#/home', riya));
+    // Riya's real mood is a big dip (Steady mode hides the card, Stage 6a), so preview a flat week.
+    const t = text(renderAt('#/home', run(riya, { type: 'setPreview', patch: { mood: 'flat' } })));
     expect(t).toContain('Got paid? Split it');
     expect(t).not.toContain('Milestone');
     const first = startSip(withCheckin(fresh()), 'index50', 500);
@@ -851,5 +857,85 @@ describe('Stage 5 polish', () => {
     const html = renderAt('#/home', riyaState);
     expect(html).not.toMatch(/<dt[^>]*>Cushion<\/dt>/);
     expect(text(html)).toContain('Liquid Fund – A');
+  });
+});
+
+describe('Stage 6a: visual upgrade and market mood', () => {
+  const riya = buildPersona('riya', TODAY);
+  const mood = (s: State, m: 'up' | 'flat' | 'small_dip' | 'big_dip') => run(s, { type: 'setPreview', patch: { mood: m } });
+
+  it('Landing: bold hero, the three value cards, blobs, and no stats', () => {
+    const html = renderAt('#/', fresh());
+    const t = text(html);
+    for (const s of ['A plan in 2 minutes', 'Skip any month, free', 'Always see why', 'Get started', 'Just exploring']) expect(t).toContain(s);
+    expect(html).toContain('home-blobs');
+    expect(t).not.toMatch(/\d+(,\d+)*\+? (users|investors|people)|rated|downloads/i);
+  });
+
+  it('Check-in: every answer tile has an icon, and the selected one a ring and a check', () => {
+    const s = run(withCheckin(fresh()), { type: 'saveCheckinAnswer', answers: { incomeType: 'salary' } });
+    const html = renderAt('#/checkin/1', s);
+    expect((html.match(/<label/g) ?? []).length).toBe(8);
+    expect((html.match(/rounded-card-sm transition-colors/g) ?? []).length).toBe(8); // icon chips
+    expect(html).toMatch(/ring-4 ring-brand\/30/);
+    expect(html).toContain('anim-step-fwd');
+  });
+
+  it('Plan: the split bar fills and the bucket cards cascade in', () => {
+    const html = renderAt('#/plan', withCheckin(fresh()));
+    expect(html).toContain('anim-fill');
+    expect((html.match(/class="anim-rise"/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('Steady mode (Riya’s big dip): insight first on Home and Dashboard, no payday card', () => {
+    const home = renderAt('#/home', riya);
+    expect(text(home)).toContain('Steady mode');
+    expect(home.indexOf('aria-label="This week"')).toBeLessThan(home.indexOf('Your next step'));
+    expect(text(home)).not.toContain('Got paid? Split it');
+    const dash = renderAt('#/dashboard', riya);
+    expect(dash.indexOf('aria-label="This week"')).toBeLessThan(dash.indexOf('Current value'));
+    const calm = renderAt('#/dashboard', mood(riya, 'flat'));
+    expect(calm.indexOf('aria-label="This week"')).toBeGreaterThan(calm.indexOf('Current value'));
+  });
+
+  it('own changes: rose ▼ when down, green ▲ when up, never red or a warning icon', () => {
+    const down = renderAt('#/home', riya);
+    expect(down).toContain('text-own-down');
+    expect(down).toContain('▼');
+    expect(down).not.toMatch(/market-down|text-red|bg-red|border-red/);
+    const arjunUp = advance(buildPersona('arjun', TODAY), 2, 'up');
+    const up = renderAt('#/portfolio', arjunUp);
+    expect(up).toContain('▲');
+    expect(up).toMatch(/text-brand-text[^"]*"><span aria-hidden="true" class="text-\[0.8em\]/);
+  });
+
+  it('payday glow: gold "Payday week" card after a pay credit, gone next week', () => {
+    const paid = run(mood(riya, 'flat'), { type: 'creditPay' });
+    expect(text(renderAt('#/home', paid))).toContain('Payday week');
+    expect(text(renderAt('#/home', advance(paid, 1, 'flat')))).not.toContain('Payday week');
+  });
+
+  it('time of day and weekend previews: greeting and "Markets are resting"', () => {
+    const night = run(riya, { type: 'setPreview', patch: { timeOfDay: 'night', day: 'weekend' } });
+    const t = text(renderAt('#/home', night));
+    expect(t).toContain('Quiet night, Riya');
+    expect(t).toContain('Markets are resting. So can you.');
+    expect(text(renderAt('#/explore', night))).toContain('Markets are resting. So can you.');
+    expect(text(renderAt('#/home', run(riya, { type: 'setPreview', patch: { day: 'weekday' } })))).not.toContain('Markets are resting');
+  });
+
+  it('goal ring: a progressbar with the % written inside, glowing only at 100%', () => {
+    const meera = buildPersona('meera', TODAY);
+    const html = renderAt('#/portfolio/goals', meera);
+    expect(html).toMatch(/role="progressbar"[^>]*aria-valuenow="\d+"/);
+    expect(html).not.toContain('goal-ring-glow');
+    const g = meera.goals[0];
+    const done = run(meera, { type: 'updateGoal', goalId: g.id, patch: { target: 100 } });
+    expect(renderAt(`#/portfolio/goal/${g.id}`, done)).toContain('goal-ring-glow');
+  });
+
+  it('Reviewer tools has a Mood control with every mood, plus time of day and day', () => {
+    const t = text(renderAt('#/review', fresh()));
+    for (const s of ['Mood', 'Auto', 'Up week', 'Flat', 'Small dip', 'Big dip', 'Time of day', 'Morning', 'Night', 'Weekend']) expect(t).toContain(s);
   });
 });
