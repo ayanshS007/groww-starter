@@ -141,3 +141,15 @@ export function linkableSips(state: Pick<State, 'sips'>, goal: Pick<Goal, 'id'>)
 
 /** "Switch to a steadier fund" opens the funds suited to money needed within a year. */
 export const STEADIER_FUNDS_ROUTE = '/explore/funds?collection=need_this_year';
+
+/**
+ * Goal ring colour (Stage 6a): 0 at the start (mint), 1 at the target (brand
+ * green). The ring warms in a straight line and gets a calm glow at 100%.
+ */
+export function ringWarmth(pct: number): number {
+  return Math.max(0, Math.min(1, pct / 100));
+}
+
+export function ringGlows(pct: number): boolean {
+  return pct >= 100;
+}

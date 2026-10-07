@@ -1,3 +1,4 @@
+import type { Mood, TimeOfDay } from '../styles/tokens';
 // State shape from PLAN.md section 4 (overrides README 6.4, see PLAN C10).
 
 // ---------- primitives ----------
@@ -208,6 +209,13 @@ export type MarketState = {
   startDate: ISODate; // simulated week 0
 };
 
+/** Reviewer-only previews (Stage 6a). 'auto' means "follow the simulation". */
+export type ReviewPreview = {
+  mood: Mood | 'auto';
+  timeOfDay: TimeOfDay | 'auto';
+  day: 'auto' | 'weekday' | 'weekend';
+};
+
 export type State = {
   version: 1;
   user: {
@@ -240,6 +248,9 @@ export type State = {
   kycProgress?: KycProgress;
   readNotifications: string[];
   seenMilestones: string[];
+  /** Simulated week in which "Simulate pay credit" last ran (payday glow). */
+  payCreditWeek?: number;
+  preview?: ReviewPreview;
 };
 
 // ---------- reference data ----------

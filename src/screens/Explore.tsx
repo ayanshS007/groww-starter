@@ -8,6 +8,8 @@ import { Icon } from '../components/Icon';
 import { COLLECTIONS, FUNDS } from '../data/funds';
 import { STOCKS } from '../data/stocks';
 import { MARKETS_THIS_WEEK } from '../lib/market';
+import { MARKETS_RESTING } from '../lib/mood';
+import { useAmbience } from '../components/useAmbience';
 import { buildPath } from '../lib/routes';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
@@ -21,6 +23,7 @@ export function Explore({ query = {} }: { query?: Record<string, string> }) {
 
 function ExploreStarter() {
   const { state } = useStore();
+  const { weekend } = useAmbience();
   const saved = state.watchlist.filter((id) => FUNDS.some((f) => f.id === id)).length;
   return (
     <div className="space-y-6">
@@ -70,8 +73,9 @@ function ExploreStarter() {
       </Card>
 
       <p aria-live="polite" className="flex items-start gap-2 rounded-card-sm bg-surface2 p-4 text-sm text-ink">
-        <Icon name="info" size={18} className="mt-0.5 shrink-0 text-ink-muted" />
+        <Icon name={weekend ? 'moon' : 'info'} size={18} className="mt-0.5 shrink-0 text-ink-muted" />
         <span>
+          {weekend && <span className="font-semibold">{MARKETS_RESTING} </span>}
           {MARKETS_THIS_WEEK[state.market.scenario]} <span className="text-ink-muted">Sample data.</span>
         </span>
       </p>

@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss';
 import plugin from 'tailwindcss/plugin';
-import { BLOB_ALPHA, blobAlphaVars, cssVars, dark, light, tailwindColors } from './src/styles/tokens';
+import { ambienceCss, BLOB_ALPHA, blobAlphaVars, cssVars, dark, light, tailwindColors } from './src/styles/tokens';
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -31,6 +31,8 @@ export default {
       '2xl': ['1.5rem', { lineHeight: '2rem' }],
       '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
       '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+      '5xl': ['3rem', { lineHeight: '1.05' }],
+      '6xl': ['3.75rem', { lineHeight: '1.02' }],
     },
     extend: {
       borderRadius: {
@@ -49,9 +51,17 @@ export default {
   },
   plugins: [
     plugin(({ addBase }) => {
+      // Market mood and time of day (Stage 6a) set data-mood / data-tod on <html>;
+      // ambienceCss() turns each into variables. Dark rules come last so they win.
+      const lightAmb = ambienceCss('light');
+      const darkAmb = ambienceCss('dark');
       addBase({
-        ':root': { ...cssVars(light), ...blobAlphaVars(BLOB_ALPHA.light), 'color-scheme': 'light dark' },
-        '@media (prefers-color-scheme: dark)': { ':root': { ...cssVars(dark), ...blobAlphaVars(BLOB_ALPHA.dark) } },
+        ':root': { ...cssVars(light), ...blobAlphaVars(BLOB_ALPHA.light), ...lightAmb[':root'], 'color-scheme': 'light dark' },
+        ...Object.fromEntries(Object.entries(lightAmb).filter(([k]) => k !== ':root')),
+        '@media (prefers-color-scheme: dark)': {
+          ':root': { ...cssVars(dark), ...blobAlphaVars(BLOB_ALPHA.dark), ...darkAmb[':root'] },
+          ...Object.fromEntries(Object.entries(darkAmb).filter(([k]) => k !== ':root')),
+        },
       });
     }),
   ],

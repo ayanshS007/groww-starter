@@ -3,6 +3,8 @@ import { buildPersona } from '../data/personas';
 import { advance, run } from '../test/fixtures';
 import { addDays, addMonths } from './dates';
 import {
+  ringGlows,
+  ringWarmth,
   GOAL_SUGGESTIONS,
   goalProgress,
   goalShortfall,
@@ -150,5 +152,19 @@ describe('goalSummary (goal detail)', () => {
     expect(linkableSips(other, other.goals[1]).map((x) => x.id)).toEqual(['sip_1']);
     const stopped = run(other, { type: 'stopSip', sipId: 'sip_1', reason: 'none' });
     expect(linkableSips(stopped, stopped.goals[1])).toEqual([]);
+  });
+});
+
+describe('goal ring (Stage 6a)', () => {
+  it('warms from mint (0) to green (1) in a straight line, clamped', () => {
+    expect(ringWarmth(-5)).toBe(0);
+    expect(ringWarmth(0)).toBe(0);
+    expect(ringWarmth(40)).toBeCloseTo(0.4);
+    expect(ringWarmth(100)).toBe(1);
+    expect(ringWarmth(130)).toBe(1);
+  });
+  it('glows only at 100% or more', () => {
+    expect(ringGlows(99)).toBe(false);
+    expect(ringGlows(100)).toBe(true);
   });
 });

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { AreaChart, AreaLegend } from '../components/AreaChart';
 import { Button, ButtonLink } from '../components/Button';
 import { Card } from '../components/Card';
-import { ChangeText } from '../components/ChangeText';
+import { ChangeText, OWN_CHANGE_MARK, OWN_CHANGE_TONE } from '../components/ChangeText';
 import { Chip } from '../components/Chip';
 import { Disclaimer } from '../components/Disclaimer';
 import { GoalRow } from '../components/GoalRow';
@@ -18,6 +18,7 @@ import { ProgressBar } from '../components/ProgressBar';
 import { StatusPill, type PillTone } from '../components/StatusPill';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
+import { useAmbience } from '../components/useAmbience';
 import { getFund } from '../data/funds';
 import { activeSipTotal } from '../lib/activity';
 import {
@@ -182,11 +183,12 @@ function Tiles({ state, period }: { state: State; period: Period }) {
       <KpiTile
         tint="peach"
         icon={dir === 'flat' ? 'minus' : down ? 'arrowDown' : 'arrowUp'}
-        iconTone={down ? 'caution' : 'brand'}
+        iconTone={down ? 'down' : 'brand'}
         label="This week"
         value={keepSignsTogether(formatSigned(week.amount))}
         sub={
-          <span className={`font-semibold ${dir === 'flat' ? 'text-ink' : down ? 'text-caution' : 'text-brand-text'}`}>
+          <span className={`font-semibold ${OWN_CHANGE_TONE[dir]}`}>
+            {dir !== 'flat' && <span aria-hidden>{OWN_CHANGE_MARK[dir]} </span>}
             {keepSignsTogether(formatSigned(week.pct, 'pct'))}
             <span className="sr-only">{dir === 'flat' ? ', no change' : down ? ', down' : ', up'}</span>
             <span className="font-normal text-ink-muted"> market move</span>
@@ -502,18 +504,24 @@ function EmptyDashboard({ state }: { state: State }) {
 
 export function Dashboard() {
   const { state } = useStore();
+  const { steady } = useAmbience();
   const [period, setPeriod] = useState<Period>('12w');
   if (!hasDashboardData(state)) return <EmptyDashboard state={state} />;
+  // Steady mode (big dip): the insight goes to the very top, on every width.
+  const banner = (
+    <div className={steady ? 'lg:order-first lg:col-span-12' : 'lg:order-8 lg:col-span-12'}>
+      <InsightBanner state={state} />
+    </div>
+  );
   return (
     <div className="space-y-5 lg:space-y-6">
       <Header period={period} onPeriod={setPeriod} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
+        {steady && banner}
         <div className="lg:order-1 lg:col-span-12">
           <Tiles state={state} period={period} />
         </div>
-        <div className="lg:order-8 lg:col-span-12">
-          <InsightBanner state={state} />
-        </div>
+        {!steady && banner}
         <div className="lg:order-2 lg:col-span-7">
           <ValueCard state={state} period={period} />
         </div>

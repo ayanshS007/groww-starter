@@ -142,6 +142,10 @@ PLAN.md overrides `README.md` at each point below. Everything not listed follows
 | C16 | 6.3 `data/learn.ts` | Learn cards file | Holds only P0/P1 content; no P2 cards. |
 | C17 | 9 item 9 Success copy | "Your first SIP is set." | Copy varies by order type (item 32). |
 | C18 | 16 Stage 5 `DEPLOY.md` | Claude artifact, optional Vercel/Netlify | Also covers **GitHub Pages**, matching `PROMPTS.md`. |
+| C19 | 10 Motion | 150–200 ms ease-out | **150–300 ms** ease-out (Stage 6a owner request), still off under `prefers-reduced-motion`. |
+| C20 | 8.5, 10, 11 "no red for normal dips"; S13/S14 "neutral/amber" | The user's own dips are neutral or amber | The user's own losses use a **soft rose** with ▼ and a sign (≥ 4.5:1), gains green with ▲. Never alarm red, red buttons, red backgrounds or warning icons (owner rule, Stage 6a). |
+| C21 | 9 item 1 Landing | Headline, sub, CTAs | Same copy and CTAs, plus drifting blobs and a 3-card value bento ("A plan in 2 minutes", "Skip any month, free", "Always see why"). No stats. |
+| C22 | 9 item 5 Home order | Greeting → Next-step card → snapshot with insight → … | In **Steady mode** (big dip) the full insight card comes first and the "Got paid? Split it" card is hidden. Same on Dashboard: the insight banner moves to the top. |
 
 ---
 
@@ -763,3 +767,50 @@ Each stage ends with `npm test` + `npm run build`, a commit, a PR "Stage <n>: <n
 **Stage 4 — QA:** `evals/EVALS.md`, `evals/PERSONAS.md` (blank results), walkthroughs at 390/768/1280 px, an agent-simulated report. Fix only the items picked.
 
 **Stage 5 — Polish and ship:** hierarchy, CTA clarity, states, a11y, terminology; `DEPLOY.md`; README 17 ticked only where verified.
+
+---
+
+## Stage 6 — Visual upgrade and market mood (6a)
+
+Owner request on 2026-10-07. Goal: make the first impression feel made for 20–26 year olds, and let the whole app's look react calmly to the market and the user's own money. No new routes, no new P-level features, nothing from the Won't list. README changes are C19–C22 above.
+
+### 6a.1 First impression
+- **Landing:** bold hero (48 px mobile, 60 px from 768 px, black weight) with ₹100 highlighted; the Home blobs drift behind it; a 3-card bento below (mint "A plan in 2 minutes", peach "Skip any month, free", lavender "Always see why"), each with a small inline-SVG drawing. On desktop the Starter-home mock stays on the right (README 9.1). No stats, counts or testimonials.
+- **Check-in:** chunky option tiles with an inline SVG icon per answer (bars that grow for amounts and time frames), selected state = green border + 4 px green ring + filled check badge + filled icon chip. Each step slides in from the right (from the left going back), 240 ms; the progress bar animates from the previous step, 300 ms. Shared `OptionTiles` keep their old layout elsewhere and only gain the ring.
+- **Starter plan reveal:** the Cushion vs Grow bar fills from the left (300 ms, grow 150 ms after cushion), then the bucket cards rise in one after the other (280 ms, 200 ms and 310 ms delays).
+- **Motion rules:** 150–300 ms ease-out, `animation: none` under `prefers-reduced-motion` (no delayed reveal either).
+
+### 6a.2 Market mood (`src/lib/mood.ts`)
+One function, `marketMood(state)`, returns `up | flat | small_dip | big_dip`:
+- **Own money** (holdings that have lived through a simulated week): big dip if overall ≤ −10% (the insight's big-dip line) or this week ≤ −5%; small dip if this week ≤ −0.5%; up if this week ≥ +1%; else flat.
+- **No money of your own yet:** from the latest simulated week's scenario (or the chosen one before any week): up → up, normal/flat → flat, dip_small → small dip, dip_sharp → big dip.
+- A Reviewer-tools preview overrides it.
+
+`AmbienceRoot` writes the mood, time of day, payday and weekend to `<html data-mood data-tod data-payday data-weekend>`. `tokens.ts` (`MOOD_TOKENS`, `TOD_TOKENS`, `GOLD_BLOB`) holds every value, and Tailwind emits them as CSS variables for light and dark:
+
+| Mood | Page tint (`--c-bg`) | Glow at the top of every screen | Home blobs | User's own change |
+|---|---|---|---|---|
+| Up | soft green | green | greener (green, mint, light mint) | green ▲ |
+| Flat | neutral mint (base) | faint mint | green, mint, lavender | ink, no arrow |
+| Small dip | soft peach | peach | peach, rose, lavender | soft rose ▼ |
+| Big dip | soft rose | rose | rose, lavender, peach; drift 2.5× slower | soft rose ▼ |
+
+The own-change colour follows the number itself (▲ green when up, ▼ rose when down), not the mood, so a preview never mislabels a number.
+
+**Steady mode** (big dip): the insight card moves to the top of Home (with "Steady mode: just what matters this week.") and Dashboard; blobs slow; nothing promotional shows. The app has no ads or offers by design (README 3.3), so the one element that asks for more money than the plan, Home's "Got paid? Split it" card, and its payday glow are hidden. Navigation (Explore, Stocks) and plan set-up stay.
+
+Never: alarm red, red buttons, red backgrounds or warning icons for the user's own losses. The insight's "Worth a look" icon changes from a warning triangle to an eye.
+
+### 6a.3 Scenario-reactive extras
+- **Simulated clock** = the simulated date at the viewer's real hour (weeks are all the simulation advances). Time of day: morning 5–11, afternoon 12–16, evening 17–20, night otherwise. Greeting: Good morning / Good afternoon / Good evening / Quiet night. Home's sky gradient follows it.
+- **Payday glow:** in the simulated week pay is credited (a salary payday in the last 7 simulated days, or "Simulate pay credit" this week), Home's third blob turns gold and the "Got paid? Split it" card gets a gold fill, ring and a "Payday week" chip (text, not colour alone). Only when that card shows.
+- **Goal ring:** Goals list, Dashboard goals and Goal detail show a ring with the % written inside; the arc warms from mint to Groww green and gets a still glow at 100%.
+- **Markets closed:** on a simulated Saturday or Sunday, Home shows "Markets are resting. So can you." and Starter Explore's market line starts with it.
+
+### 6a.4 Reviewer tools
+A "Mood" card: Auto (shows the current simulated mood) · Up week · Flat · Small dip · Big dip, plus Time of day (Auto · Morning · Afternoon · Evening · Night) and Day (Auto · Weekday · Weekend). Stored in `state.preview` (optional), cleared by Reset and persona loads. "Simulate pay credit" also records `state.payCreditWeek`.
+
+### 6a.5 Tests and verification
+- `mood.test.ts` (every scenario and threshold, Riya = big dip, liquid-only not a big dip, previews, clock, weekends, payday window, glow rules), `goals.test.ts` (ring warmth and glow), new App tests (Landing bento, check-in tiles, plan reveal, Steady mode order, rose ▼ / green ▲, payday, weekend, goal ring, Mood control).
+- `contrast.test.ts`: every text pair on each mood tint, and ink, muted, green, caution and rose text over the worst overlap of mood glow + time-of-day sky + any two blobs (gold in the payday week), in light and dark.
+- Screenshots only of changed screens at 390 and 1280 px, plus Home in dark.

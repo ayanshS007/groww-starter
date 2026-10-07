@@ -1,5 +1,5 @@
 // S4 Starter plan (README 9 item 4, PLAN item 9 / C7 Adjust split).
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { BottomSheet } from '../components/BottomSheet';
 import { Button, ButtonLink } from '../components/Button';
 import { Card, type Tint } from '../components/Card';
@@ -142,7 +142,7 @@ export function Plan() {
             A <Term id="cushion">cushion</Term> covers surprises, so you never have to sell your grow money in a hurry.
           </p>
           <div className="mt-4">
-            <SplitBar plan={plan} />
+            <SplitBar plan={plan} animate />
           </div>
           <div className="mt-6 border-t border-border pt-5">
             <SplitSlider plan={plan} onChange={(pct) => dispatch({ type: 'setPlanSplit', cushionPct: pct })} />
@@ -161,8 +161,11 @@ export function Plan() {
           <h2 id="plan-funds" className="sr-only">
             Funds in your plan
           </h2>
-          {plan.buckets.map((b) => (
-            <BucketCard key={b.role} bucket={b} plan={plan} />
+          {/* Reveal: the cards cascade in after the split bar fills (Stage 6a). */}
+          {plan.buckets.map((b, i) => (
+            <div key={b.role} className="anim-rise" style={{ '--delay': `${200 + i * 110}ms` } as CSSProperties}>
+              <BucketCard bucket={b} plan={plan} />
+            </div>
           ))}
         </section>
 

@@ -10,7 +10,10 @@ import { defaultPay, validatePay } from '../lib/paydaySplit';
 import { buildPath } from '../lib/routes';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
-import type { PersonaId, Scenario } from '../state/types';
+import { DEFAULT_PREVIEW } from '../state/reducer';
+import type { PersonaId, ReviewPreview, Scenario } from '../state/types';
+import { MOODS, TIMES_OF_DAY } from '../styles/tokens';
+import { autoMood, MOOD_LABEL, TIME_OF_DAY_LABEL } from '../lib/mood';
 import { AmountInput } from './AmountInput';
 import { Button } from './Button';
 import { Card } from './Card';
@@ -33,7 +36,7 @@ export function scenarioLabel(s: Scenario): string {
 
 /** "Simulate pay credit" (README 8.3, PLAN item 33): opens Payday Split with this amount. */
 function PayCredit({ compact, onDone }: { compact: boolean; onDone?: () => void }) {
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
   const toast = useToast();
   const [text, setText] = useState(String(defaultPay(state)));
   const [error, setError] = useState<string>();
@@ -42,6 +45,7 @@ function PayCredit({ compact, onDone }: { compact: boolean; onDone?: () => void 
     const v = validatePay(text);
     if (!v.ok) return setError(v.error);
     if (!state.plan) return setError('Payday Split needs a starter plan. Load a persona or take the check-in first.');
+    dispatch({ type: 'creditPay' }); // Home glows gold for the rest of this simulated week
     navigate(buildPath('/payday', { pay: String(v.value) }));
     toast.show(`Pay credit of ${formatINR(v.value)} simulated.`);
     onDone?.();
@@ -64,6 +68,54 @@ function PayCredit({ compact, onDone }: { compact: boolean; onDone?: () => void 
       <Button variant="secondary" block={compact} onClick={go}>
         Simulate pay credit
       </Button>
+    </Card>
+  );
+}
+
+const DAY_NAME = { auto: 'Auto', weekday: 'Weekday', weekend: 'Weekend' } as const;
+
+/** Mood and clock previews (Stage 6a): see each market mood, time of day and the weekend state instantly. */
+function MoodPreview({ compact }: { compact: boolean }) {
+  const { state, dispatch } = useStore();
+  const p = { ...DEFAULT_PREVIEW, ...state.preview };
+  const H = compact ? 'h3' : 'h2';
+  const set = (patch: Partial<ReviewPreview>) => dispatch({ type: 'setPreview', patch });
+  const auto = autoMood(state);
+  return (
+    <Card pad={compact ? 'sm' : 'md'}>
+      <H className="text-base font-semibold text-ink">Mood</H>
+      <p className="mt-1 text-sm text-ink-muted">
+        Preview the app’s market mood. Auto follows the simulation (now: {MOOD_LABEL[auto].toLowerCase()}). Big dip turns on Steady mode.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Mood preview">
+        <Chip selected={p.mood === 'auto'} onClick={() => set({ mood: 'auto' })}>
+          Auto
+        </Chip>
+        {MOODS.map((m) => (
+          <Chip key={m} selected={p.mood === m} onClick={() => set({ mood: m })}>
+            {MOOD_LABEL[m]}
+          </Chip>
+        ))}
+      </div>
+      <p className="mt-4 text-sm font-semibold text-ink">Time of day</p>
+      <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Time of day preview">
+        <Chip selected={p.timeOfDay === 'auto'} onClick={() => set({ timeOfDay: 'auto' })}>
+          Auto
+        </Chip>
+        {TIMES_OF_DAY.map((t) => (
+          <Chip key={t} selected={p.timeOfDay === t} onClick={() => set({ timeOfDay: t })}>
+            {TIME_OF_DAY_LABEL[t]}
+          </Chip>
+        ))}
+      </div>
+      <p className="mt-4 text-sm font-semibold text-ink">Day</p>
+      <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Weekday or weekend preview">
+        {(['auto', 'weekday', 'weekend'] as const).map((d) => (
+          <Chip key={d} selected={p.day === d} onClick={() => set({ day: d })}>
+            {DAY_NAME[d]}
+          </Chip>
+        ))}
+      </div>
     </Card>
   );
 }
@@ -118,6 +170,8 @@ export function ReviewerTools({ compact = false, onDone }: { compact?: boolean; 
           Advance one week
         </Button>
       </Card>
+
+      <MoodPreview compact={compact} />
 
       <PayCredit key={state.user.persona ?? 'none'} compact={compact} onDone={onDone} />
 
