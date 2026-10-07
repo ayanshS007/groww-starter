@@ -1,12 +1,13 @@
 // Home's single Next-step card and status line (README 9 item 5 as changed by
 // PLAN C6), plus the upcoming-SIP list used by Home and the sidebar plan card.
 import { getFund } from '../data/funds';
-import type { FundId, ISODate, PlanBucket, Sip, State } from '../state/types';
+import type { ISODate, PlanBucket, Sip, State } from '../state/types';
 import { nextDueDate } from './activity';
 import { firstUnansweredStep, isCheckinStarted } from './checkin';
 import { addDays, nextDateForDay } from './dates';
 import { dateLabel, formatINR } from './format';
 import { simToday } from './market';
+import { hasLiveSip } from './planStatus';
 import { buildPath } from './routes';
 
 export type NextStep =
@@ -22,11 +23,6 @@ export type UpcomingSip = {
   /** Set when the instalment before `date` is being skipped. */
   skippedDate?: ISODate;
 };
-
-/** True when a non-stopped SIP exists in this fund. */
-function hasLiveSip(sips: Sip[], fundId: FundId): boolean {
-  return sips.some((s) => s.fundId === fundId && s.status !== 'stopped');
-}
 
 /** Active SIPs with their next debit date, earliest first. Paused and stopped SIPs are left out. */
 export function upcomingSips(state: Pick<State, 'sips' | 'market'>): UpcomingSip[] {

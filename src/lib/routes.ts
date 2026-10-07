@@ -3,6 +3,7 @@
 // P1 routes are added in Stage 3d; until then they resolve as unknown → /home.
 import { isFundId } from '../data/funds';
 import type { State } from '../state/types';
+import { missingBuckets } from './planStatus';
 
 export type ScreenId =
   | 'landing'
@@ -39,6 +40,7 @@ export const TOASTS = {
   noOrder: 'We couldn’t find that order',
   noHolding: 'That holding isn’t in your portfolio',
   noSip: 'We couldn’t find that SIP',
+  planRunning: 'Your plan’s SIPs are already running',
 } as const;
 
 /** "#/kyc/2?next=%2Finvest%2Findex50" → { path: '/kyc/2', query: { next: '/invest/index50' } } */
@@ -144,7 +146,13 @@ const ROUTES: { pattern: string; screen: ScreenId; guard?: Guard }[] = [
     screen: 'fund',
     guard: (p) => (isFundId(p.id) ? null : { kind: 'redirect', to: '/explore/funds', toast: TOASTS.noFund }),
   },
-  { pattern: '/invest/plan', screen: 'investPlan', guard: needsPlan },
+  {
+    pattern: '/invest/plan',
+    screen: 'investPlan',
+    guard: (p, state, loc) =>
+      needsPlan(p, state, loc) ??
+      (missingBuckets(state).length === 0 ? { kind: 'redirect', to: '/portfolio', toast: TOASTS.planRunning } : null),
+  },
   {
     pattern: '/invest/success/:orderId',
     screen: 'success',
