@@ -1,4 +1,4 @@
-# Prompt log (submission artifact 2)
+# Prompt log 
 
 Log every prompt you actually sent, including edits and follow-ups. Do not tidy them up afterwards; reviewers value honest iteration.
 
@@ -50,3 +50,31 @@ Log every prompt you actually sent, including edits and follow-ups. Do not tidy 
 > Record these as "Resolved assumptions" in PLAN.md:
 > - Accept all your proposed assumptions in section 3 (items 1–37) and your proposed resolutions in section 4, except where changed below.
 > - Section 4 #2: the insight's "move" for
+
+
+
+
+##  The first draft was a linear flow, not a full app. I wanted it rebuilt around real user research before any code. How I'd write these prompts now (retrospective, written after the project)
+
+### P1 
+Context: Groww PM intern case — design Groww for first-time investors aged 20–26. Attached: my earlier README and PROMPTS draft.
+Problem with the draft: it's a single linear journey, not a complete app (no tabs, SIPs, KYC, portfolio).
+Task: research current data on Gen Z investors in India (adoption, barriers, SIP behaviour), then rebuild the spec as a full app.
+Output: a build spec only. No code yet.
+
+### P2 
+Before building, I want to agree on the solution.
+Goal: help 20–26 year olds start investing AND stay invested; they should feel comfortable, not pushed.
+Give me: (1) the core problem in one line, (2) a solution with 3–4 pillars, (3) creative features beyond the standard app (plans, UI, engagement), (4) how each feature maps to a user problem.
+Constraint: engagement must reward good habits, not trading frequency.
+
+### P3 
+Stress-test every feature you proposed.
+Use the attached NPD framework (intent → persona → pain points → top issues → MVP → metrics).
+For each feature: score it with RICE, run a vanity check (does it move a real outcome or only usage?), and sort with MoSCoW.
+Then update the README so the build only includes features that passed.
+
+### P4 
+Add a Dashboard: one view of the user's own money and plan, no market data.
+Then prepare the handoff to Claude Code: final README, an agent rules file, a staged prompt file, and notes on my attached design references.
+You decide the detailed UI within Groww's brand. Also tell me exactly what to paste at each stage.
