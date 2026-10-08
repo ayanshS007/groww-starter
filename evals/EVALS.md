@@ -16,9 +16,9 @@ Groww Starter was tested in three layers.
 
 | # | Person | Role | Age | Relation to me |
 |---|---|---|---|---|
-| 1 | Nishant Tripathi | Ex-PM, Zupee | 24 | [RELATION] |
-| 2 | Akansh Shankar | 2nd-year PGP student, IIM Indore (Accenture PPO) | 25 | [RELATION] |
-| 3 | Mantra Jain | Student, IIT Kanpur | 21 | [RELATION] |
+| 1 | Nishant Tripathi | Ex-PM, Zupee | 24 | Senior |
+| 2 | Akansh Shankar | 2nd-year PGP student, IIM Indore (Accenture PPO) | 25 | Brother |
+| 3 | Mantra Jain | Student, IIT Kanpur | 21 | Friend |
 
 
 
