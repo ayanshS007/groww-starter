@@ -1,7 +1,7 @@
 > **Reviewing this project?** Start with [REVIEWER_README.md](REVIEWER_README.md). Live app: https://ayanshs007.github.io/groww-starter/
 > This README is the build spec that Claude Code worked from.
 
-# Groww Starter — Groww for Gen Z (Build Spec v4)
+# Groww Starter — Groww for Gen Z (Build Spec)
 
 > You are an AI coding agent building a clickable front-end prototype of the Groww app, redesigned for first-time investors aged 20–26.
 > This file is the single source of truth. Working agreements for the coding agent are in `CLAUDE.md`; visual references are in `design-refs/`. Read all three before writing code. If your own idea conflicts with this file, this file wins.
