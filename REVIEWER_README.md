@@ -55,12 +55,14 @@ The reasoning behind each choice is in [`FEASIBILITY.md`](FEASIBILITY.md) (what 
 
 ## Submission artifacts
 
+All four artifacts are collected in [`submission/`](submission/README.md).
+
 | Artifact | Where | Status |
 |---|---|---|
-| One-pager | [`submission/ONE_PAGER.md`](submission/ONE_PAGER.md) | Written by the author. To be added. |
-| Prompts | [`PROMPT_LOG.md`](PROMPT_LOG.md) (prompts sent) and [`PROMPTS.md`](PROMPTS.md) (stage prompts) | Present |
-| Evals | [`evals/README.md`](evals/README.md) | Layers explained, with feedback from 4 real users ([`EVALS.md`](evals/EVALS.md)). |
-| App link | https://ayanshs007.github.io/groww-starter/ | Live. Steps to publish and check it are in [`DEPLOY.md`](DEPLOY.md). |
+| One-pager | [`submission/1_ONE_PAGER/ONE_PAGER_Groww_Starter.pdf`](submission/1_ONE_PAGER/ONE_PAGER_Groww_Starter.pdf) | Written by the author. |
+| Prompts | [`submission/2_PROMPTS/PROMPT_LOG.md`](submission/2_PROMPTS/PROMPT_LOG.md) (prompts sent) and [`submission/2_PROMPTS/PROMPTS.md`](submission/2_PROMPTS/PROMPTS.md) (stage prompts) | Present |
+| Evals | [`submission/3_EVALS/README.md`](submission/3_EVALS/README.md) | Layers explained, with feedback from 4 real users ([`EVALS.md`](submission/3_EVALS/EVALS.md)). |
+| App link | https://ayanshs007.github.io/groww-starter/ ([`submission/4_APP/APP_LINK.md`](submission/4_APP/APP_LINK.md)) | Live. Steps to publish and check it are in [`DEPLOY.md`](DEPLOY.md). |
 
 ## How it was built
 
@@ -100,7 +102,7 @@ npm run preview   # serve the build
 | `src/state/` | Store, reducer, storage |
 | `docs/screenshots/` | Screenshots at 390 and 1280 px |
 | `evals/` | Eval layers, persona scripts, user-test script |
-| `submission/` | Submission documents written by the author |
+| `submission/` | The four submission artifacts, in numbered folders (copies of the working files) |
 | `design-refs/` | Visual references (read-only) |
 | `release/` | Single-file build |
 | `.github/workflows/` | GitHub Pages deploy |
