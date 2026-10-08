@@ -17,9 +17,9 @@ describe('filterFunds', () => {
   });
   it('collections, category, risk bands and min SIP combine', () => {
     expect(f({ collection: 'need_this_year' })).toEqual(['liquid1', 'liquid2']);
-    expect(f({ category: 'Index' })).toEqual(['index50', 'indexnext50']);
-    expect(f({ risks: ['low'] })).toEqual(['liquid1', 'liquid2', 'shortdebt1', 'arb1']);
-    expect(f({ risks: ['high'], maxMinSip: 100 })).toEqual(['index50', 'indexnext50', 'flexi1', 'midcap1']);
+    expect(f({ category: 'Index' })).toEqual(['index50', 'indexnext50', 'index50b']);
+    expect(f({ risks: ['low'] })).toEqual(['liquid1', 'liquid2', 'shortdebt1', 'arb1', 'shortdebt2']);
+    expect(f({ risks: ['high'], maxMinSip: 100 })).toEqual(['index50', 'indexnext50', 'flexi1', 'midcap1', 'index50b', 'flexi2']);
     expect(f({ maxMinSip: 100 })).not.toContain('arb1');
   });
   it('Saved collection uses the watchlist', () => {
@@ -37,11 +37,16 @@ describe('fundFit (PLAN items 6, 30)', () => {
   const kabir = buildPersona('kabir', TODAY); // 1–3 yrs, would sell
   const planned = withCheckin(fresh()); // 5+ yrs, wait
 
-  it('a plan fund has no mismatch banner and cites ≥ 2 answers', () => {
+  it('a fund in a plan category has no mismatch banner, says it is one of the category, and cites ≥ 2 answers', () => {
     const fit = fundFit(getFund('index50')!, planned);
     expect(fit.bucket?.role).toBe('grow');
-    expect(fit.banners).toEqual([]);
-    expect(fit.why).toContain('grow part of your starter plan');
+    expect(fit.banners.some((b) => b.tone === 'caution')).toBe(false);
+    expect(fit.banners.map((b) => b.text)).toEqual([
+      'This is one of the Nifty 50 index funds in your starter plan. The plan names the category. Which fund you pick is up to you.',
+    ]);
+    // "Why am I seeing this?" is about the category, and the other fund in it reads the same way.
+    expect(fit.why).toContain('Its category, Nifty 50 index funds, is the grow part of your starter plan');
+    expect(fundFit(getFund('index50b')!, planned).bucket?.category).toBe('index50');
     expect(fit.bucket!.citedAnswers.length).toBeGreaterThanOrEqual(2);
   });
   it('a longer-horizon fund names both horizons and a risk mismatch', () => {
@@ -55,7 +60,7 @@ describe('fundFit (PLAN items 6, 30)', () => {
     expect(fit.why).toMatch(/probably sell/);
   });
   it('a shorter-horizon fund is not a caution, but the text says it may grow slowly', () => {
-    const fit = fundFit(getFund('liquid2')!, planned);
+    const fit = fundFit(getFund('arb1')!, planned);
     expect(fit.banners.some((b) => b.tone === 'caution')).toBe(false);
     expect(fit.why).toContain('may grow slowly');
   });

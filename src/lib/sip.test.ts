@@ -103,10 +103,11 @@ describe('units that stay invested', () => {
 });
 
 describe('defaultCompareFund', () => {
-  it('uses the plan’s alternative when it is a different fund', () => {
-    const s = withCheckin(fresh(), { dipReaction: 'stay' }); // 5+ yrs + stay → Flexi Cap as the alternative
-    expect(s.plan?.alternativeFundId).toBe('flexi1');
-    expect(defaultCompareFund(s, { fundId: 'index50' })).toBe('flexi1');
+  it('starts with another fund in the same plan category, by name (never a pick for the user)', () => {
+    const s = withCheckin(fresh(), { dipReaction: 'stay' }); // 5+ yrs + stay → Nifty 50 index funds, Flexi cap as the other category
+    expect(s.plan?.alternativeCategory).toBe('flexi');
+    expect(defaultCompareFund(s, { fundId: 'index50' })).toBe('index50b');
+    expect(defaultCompareFund(s, { fundId: 'index50b' })).toBe('index50');
   });
   it('falls back to a same-category fund, then to any other fund', () => {
     expect(defaultCompareFund({ plan: undefined }, { fundId: 'liquid1' })).toBe('liquid2');

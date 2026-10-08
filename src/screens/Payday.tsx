@@ -1,6 +1,6 @@
 // S21 Payday Split (README 8.3 with PLAN C14 and item 33). Three lines:
 // Already going to SIPs · Cushion top-up · Yours to spend. One CTA tops up the
-// cushion with a one-time investment into liquid1. "A suggestion, not a rule."
+// cushion with a one-time investment into the user's own liquid fund. "A suggestion, not a rule."
 // Never "invest everything", no spending shaming, no projections.
 import { useState } from 'react';
 import { AmountInput } from '../components/AmountInput';
@@ -17,7 +17,8 @@ import { getFund } from '../data/funds';
 import { formatINR, formatPct } from '../lib/format';
 import { singleDraft } from '../lib/invest';
 import { defaultPay, PAYDAY_COPY, paydayCushionTarget, paydayFromState, validatePay } from '../lib/paydaySplit';
-import { CUSHION_FUND, cushionStep } from '../lib/planner';
+import { cushionStep } from '../lib/planner';
+import { cushionFundId } from '../lib/planStatus';
 import { goBack, navigate } from '../router';
 import { useStore } from '../state/store';
 
@@ -54,13 +55,16 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
   // QA #20: a first ₹10,000 leads; the full target is a small second line.
   const step = cushionStep(split.cushionValue, split.cushionTarget);
   const cushionPct = step.main > 0 ? Math.min(100, (split.cushionValue / step.main) * 100) : 100;
-  const fund = getFund(CUSHION_FUND)!;
-  const canTopUp = pay.ok && topUp >= fund.minOneTime && !topUpError;
+  // Stage 7a: the app doesn't choose a fund. The top-up goes to the liquid fund the user picked or holds.
+  const fundId = cushionFundId(state);
+  const fund = fundId ? getFund(fundId) : undefined;
+  const minTopUp = fund?.minOneTime ?? 500;
+  const canTopUp = pay.ok && !!fund && topUp >= minTopUp && !topUpError;
 
   const topUpNow = () => {
-    if (!canTopUp) return;
-    dispatch({ type: 'startInvestDraft', draft: singleDraft(CUSHION_FUND, { type: 'one_time', amount: topUp }) });
-    navigate(`/invest/${CUSHION_FUND}`);
+    if (!canTopUp || !fundId) return;
+    dispatch({ type: 'startInvestDraft', draft: singleDraft(fundId, { type: 'one_time', amount: topUp }) });
+    navigate(`/invest/${fundId}`);
   };
 
   return (
@@ -138,7 +142,7 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
           <div className="flex items-start justify-between gap-4 py-4">
             <dt>
               <span className="block font-semibold text-ink">Yours to spend</span>
-              <span className="block text-sm text-ink-muted">Rent, food, family, fun. It’s yours.</span>
+              <span className="block text-sm text-ink-muted">This part is yours. Spend it however you like.</span>
             </dt>
             <dd className="text-xl font-bold tabular-nums text-ink">{formatINR(toSpend)}</dd>
           </div>
@@ -197,21 +201,25 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
       {topUp > 0 && (
         <ConfidenceBlock
           compact
-          what={<>A one-time top-up into {fund.name}, a steady fund for money you may need soon.</>}
+          what={<>A one-time top-up into {fund ? fund.name : 'the liquid fund you pick'}, a steady fund for money you may need soon.</>}
           why="You told us pay came in. A cushion means a surprise bill doesn’t force you to sell your grow funds."
           next={<>You review the amount, then pay. Units arrive in 1–2 working days and show as cushion in Portfolio. Withdraw any time; money reaches your bank in 1–3 working days.</>}
         />
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        {canTopUp ? (
+        {!fund && topUp > 0 ? (
+          <Button className="sm:flex-1" onClick={() => navigate('/plan')}>
+            Pick a cushion fund first
+          </Button>
+        ) : canTopUp ? (
           <Button className="sm:flex-1" onClick={topUpNow}>
             Top up cushion with {formatINR(topUp)}
           </Button>
         ) : (
           <p className="flex items-center gap-2 rounded-card-sm bg-surface2 p-4 text-sm text-ink sm:flex-1">
             <Icon name="info" size={18} className="shrink-0 text-ink-muted" />
-            {topUp === 0 ? 'No top-up this time. Nothing else to do.' : `The smallest top-up is ${formatINR(fund.minOneTime)}.`}
+            {topUp === 0 ? 'No top-up this time. Nothing else to do.' : `The smallest top-up is ${formatINR(minTopUp)}.`}
           </p>
         )}
         <Button variant="secondary" className="sm:flex-1" onClick={() => goBack('/home')}>

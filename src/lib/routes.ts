@@ -45,7 +45,7 @@ export type Resolved =
   | { kind: 'redirect'; to: string; toast?: string };
 
 export const TOASTS = {
-  signUpFirst: 'Let’s set up your account first',
+  signUpFirst: 'Set up your account first',
   checkinFirst: 'Answer a few questions first',
   noFund: 'We couldn’t find that fund',
   noOrder: 'We couldn’t find that order',

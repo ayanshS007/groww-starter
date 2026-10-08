@@ -19,7 +19,7 @@ export function HiddenTradingSheet({ open, onClose }: { open: boolean; onClose: 
           <span className="font-semibold">
             <Term id="f-and-o">F&amp;O</Term>
           </span>{' '}
-          uses borrowed bets that can lose more than you put in. It is not available in this prototype.
+          uses borrowed bets that can lose more than you put in. It isn’t available in this prototype.
         </p>
         <p className="text-sm text-ink-muted">Nothing is locked forever. This keeps the first steps simple.</p>
         <Button block onClick={onClose}>

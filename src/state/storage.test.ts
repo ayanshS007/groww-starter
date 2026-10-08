@@ -120,3 +120,48 @@ describe('Stage 6b: Pro is earned (saved state)', () => {
     expect(s.prefs).toMatchObject({ proUnlocked: false, view: 'starter' });
   });
 });
+
+describe('Stage 7a: a plan saved before categories', () => {
+  const oldPlan = (state: ReturnType<typeof createInitialState>) => ({
+    ...state,
+    plan: {
+      monthly: 4000,
+      rule: 'A4',
+      riskComfort: 'moderate',
+      suggestedCushionPct: 50,
+      cushionPct: 50,
+      buckets: [
+        { role: 'cushion', fundId: 'liquid1', amount: 2000, reason: 'old', citedAnswers: ['cushion', 'incomeType'] },
+        { role: 'grow', fundId: 'index50', amount: 2000, reason: 'old', citedAnswers: ['horizon', 'dipReaction'] },
+      ],
+      factors: [],
+      comfortCeiling: 10000,
+      label: 'Starter shortlist based on your answers. Not investment advice.',
+      createdAt: '2026-10-01',
+    },
+  });
+  const checkin = { incomeType: 'salary', incomeBand: '25to50k', cushion: 'no', purpose: 'wealth', horizon: '5plus', dipReaction: 'wait', monthly: 4000, monthlyChoice: 'custom' };
+
+  it('is rebuilt from the check-in with categories and nothing preselected', () => {
+    const raw = JSON.stringify(oldPlan({ ...createInitialState(TODAY), checkin } as never));
+    const s = parseSavedState(raw, TODAY)!;
+    expect(s.plan!.buckets.map((b) => [b.role, b.category, b.fundId, b.amount])).toEqual([
+      ['cushion', 'liquid', undefined, 2000],
+      ['grow', 'index50', undefined, 2000],
+    ]);
+    expect(s.plan!.buckets.every((b) => b.candidateFundIds.length >= 2)).toBe(true);
+    expect(s.plan!.createdAt).toBe('2026-10-01');
+  });
+  it('is dropped when there is no check-in to rebuild it from', () => {
+    const s = parseSavedState(JSON.stringify(oldPlan(createInitialState(TODAY))), TODAY)!;
+    expect(s.plan).toBeUndefined();
+  });
+  it('a current plan is kept as saved', () => {
+    const planned = reducer(
+      reducer(createInitialState(TODAY), { type: 'saveCheckinAnswer', answers: checkin as never }),
+      { type: 'completeCheckin' },
+    );
+    const picked = reducer(planned, { type: 'pickPlanFund', role: 'cushion', fundId: 'liquid2' });
+    expect(parseSavedState(JSON.stringify(picked), TODAY)!.plan).toEqual(picked.plan);
+  });
+});

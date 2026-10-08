@@ -7,7 +7,7 @@ import { STOCKS } from './stocks';
 const ADVICE = ['best', 'recommended for you', 'guaranteed', 'top performing', 'must buy'];
 
 describe('funds (README 7.1)', () => {
-  it('has the 10 README funds with their table values', () => {
+  it('has the 10 README funds with their table values, then a second fund for each plan category (Stage 7a)', () => {
     expect(FUNDS.map((f) => [f.id, f.risk, f.minSip, f.minOneTime, f.vol])).toEqual([
       ['liquid1', 1, 100, 100, 0.02],
       ['liquid2', 1, 100, 500, 0.02],
@@ -19,8 +19,12 @@ describe('funds (README 7.1)', () => {
       ['flexi1', 5, 100, 500, 1.2],
       ['midcap1', 5, 100, 500, 1.45],
       ['gold1', 3, 100, 500, 0.4],
+      ['shortdebt2', 2, 100, 500, 0.17],
+      ['balanced2', 3, 100, 500, 0.62],
+      ['index50b', 4, 100, 500, 1.0],
+      ['flexi2', 5, 100, 500, 1.18],
     ]);
-    expect(FUNDS.map((f) => f.horizonLabel)).toEqual(['< 1 yr', '< 1 yr', '1–3 yrs', '1–3 yrs', '3–5 yrs', '5+ yrs', '5+ yrs', '5+ yrs', '7+ yrs', '3+ yrs']);
+    expect(FUNDS.map((f) => f.horizonLabel)).toEqual(['< 1 yr', '< 1 yr', '1–3 yrs', '1–3 yrs', '3–5 yrs', '5+ yrs', '5+ yrs', '5+ yrs', '7+ yrs', '3+ yrs', '1–3 yrs', '3–5 yrs', '5+ yrs', '5+ yrs']);
   });
   it.each(FUNDS.map((f) => [f.id, f] as const))('%s has every required field', (_id, f) => {
     expect(f.whatItIs.split('. ').length).toBeGreaterThanOrEqual(2);

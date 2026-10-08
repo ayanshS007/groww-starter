@@ -24,9 +24,10 @@ describe('demo personas (README 7.4, PLAN C2/C15)', () => {
     expect(s.market.history.at(-1)).toBe('dip_sharp');
     expect(s.market.history.indexOf('dip_sharp')).toBeLessThan(s.market.history.length - 1);
     expect(s.market.scenario).toBe('dip_sharp');
-    expect(s.plan!.buckets.map((b) => [b.fundId, b.amount])).toEqual([
-      ['liquid1', 2000],
-      ['index50', 2000],
+    // The plan names categories with funds to pick from; it never picks one (Stage 7a).
+    expect(s.plan!.buckets.map((b) => [b.category, b.fundId, b.amount])).toEqual([
+      ['liquid', undefined, 2000],
+      ['index50', undefined, 2000],
     ]);
     // Only the index SIP exists, so the cushion bucket is the next step (PLAN item 7).
     expect(s.sips.some((x) => x.fundId === 'liquid1')).toBe(false);

@@ -150,6 +150,10 @@ PLAN.md overrides `README.md` at each point below. Everything not listed follows
 | C24 | 9 item 22 "Pro puts Confidence blocks behind Why this?" | In Pro view | Unchanged, but Pro view now needs unlock. |
 | C25 | 9 item 6, S9, S24 | Pro features listed in 9 item 22 only | Adds Pro features: chart ranges 1W/1M/1Y/All (fund, stock), side-by-side compare of two funds, extra fund metrics card, Dashboard portfolio analytics, extra order types (also shown as a card on Stock detail). |
 | C26 | New rule | — | No Pro banner, locked chip or "What Pro adds" sheet in Steady mode, the Stop coach, the invest flow (including Success and the stock buy flow), KYC or check-in. The only banner is in the Explore hub. |
+| C27 | 7.1 Funds; 8.1 Step B and "Cushion bucket is always `liquid1`"; 9 item 4 Starter plan | The planner picks one fund per part and the plan card shows it; 10 funds | **The plan names a category per part** (Liquid funds, Short duration debt funds, Balanced advantage funds, Nifty 50 index funds; Flexi cap funds as the alternative) and lists 2–3 funds of that category, sorted by name, to pick from. Nothing is preselected and the planner never returns a chosen fund (a personal fund pick can count as investment advice). Four mock funds are added so every category has at least 2: `shortdebt2`, `balanced2`, `index50b`, `flexi2`. `/invest/plan` asks for a pick for any part without one before the date step. |
+| C28 | 8.6 Stop coach; 9 item 12 SIP detail; 1.1 item 25 | Skip, pause and edit are available any time | **Real autopay cutoff** (Stage 7a): when the next debit is within 3 business days (Mon–Fri) on the simulated calendar, Skip, Pause and Edit for that instalment are unavailable, with one line. Undo works only before the cutoff of the skipped debit. The Stop coach shows only the options still possible; "Stop anyway" stays. |
+| C29 | 4.3 missing-state toast; 8.5 insight; 11 Copy | Quoted strings such as "Let's set up your account first" and "one week is not a trend" | UI copy is rewritten (Stage 7a): contractions, short sentences, concrete ₹ examples, a banned-word list, at most one `!` per screen, no em dashes. Compliance labels, disclaimers and "not a recommendation" wording are kept. README-quoted product copy (Landing headline and sub, check-in questions and options, Stop coach option labels, plan label) is unchanged. |
+| C30 | 8.3 Payday Split | CTA invests in `liquid1` | The top-up goes to the liquid fund the user picked or already holds. With none, the button reads "Pick a cushion fund first" and opens the plan. |
 
 ---
 
@@ -855,3 +859,36 @@ Starter/Pro toggle and the Starter badge are removed (top bar, desktop top bar, 
 
 ### 6b.6 Tests and verification
 `pro.test.ts` (lock state, unlock via the quick check, Steady mode and flow rules, banner placement, chart ranges), `analytics.test.ts`, storage migration tests, and App tests for locked, live and Pro-view-off screens, Steady mode, flows, You, Reviewer tools. Screenshots of changed screens at 390 and 1280 px only.
+
+---
+
+## Stage 7 — Real-world fixes and natural copy (7a)
+
+Owner request on 2026-10-08. Goal: fix two things that would not survive contact with real rules (a personal fund pick can read as investment advice; autopay debits can't be changed at the last minute) and make the copy sound like a person. No new routes, nothing from the Won't list. README changes are C27–C30 above.
+
+### 7a.1 The plan shows categories, you pick the fund
+- **Data.** `Fund.planCategory` (`liquid`, `short_debt`, `balanced`, `index50`, `flexi`) marks the funds the planner can point to. Added `shortdebt2` (Short Duration Debt Fund – B), `balanced2`, `index50b` (Nifty 50 Index Fund – B) and `flexi2`. Funds in one category share risk and time frame (a test checks it), so any of them fits the plan the same way. `PLAN_CATEGORIES` holds the label, a one-liner and the glossary Term for each; `fundsInPlanCategory` sorts by name.
+- **Planner.** `growCategory` returns a category (and an alternative category). `PlanBucket` is `{ role, category, candidateFundIds, fundId?, amount, reason, citedAnswers }`; the planner never sets `fundId`. `StarterPlan.alternativeCategory` replaces `alternativeFundId`. Reasons talk about the category ("Nifty 50 index funds aim to grow your money…").
+- **State.** `pickPlanFund { role, fundId }` stores the user's pick on the bucket (it must be one of the candidates). A rebuilt plan (check-in redo, Adjust split) keeps a pick whose category is unchanged. A plan saved before this stage is rebuilt from the check-in on load, with nothing preselected.
+- **Plan screen.** Each part shows the category, why it fits (Why this category?) and a "Pick a fund" list: label "Funds in this category. Pick any. This isn't a recommendation.", 2–3 funds sorted by name, a "Read about" link each. "See other options" shows the alternative category and its funds.
+- **A part's fund** = the user's pick, else the fund in that category they run (or last ran) a SIP in. A part counts as running when any fund in its category has a live SIP. Home, Next-step, plan health, Payday and Fund detail follow this (`planStatus.ts`).
+- **`/invest/plan`.** If a part that still needs a SIP has no fund, the flow opens on "Pick a fund for each part" (same list, Continue disabled until each part has one); the picks are saved in the plan. Then date, review, pay as before.
+- **Fund detail.** A fund in a plan category says it is one of that category's funds in the plan, and "Why am I seeing this?" explains the category. The tag reads "Your pick" or "In your plan's category".
+- **Payday.** The top-up goes to the user's own liquid fund; none yet → "Pick a cushion fund first".
+
+### 7a.2 Skip, pause and edit cutoff
+- `src/lib/cutoff.ts`: `businessDaysBetween` (Mon–Fri, no holiday calendar), `withinCutoff` (≤ 3 business days after the simulated today, counting the debit day), `sipChangeWindow(state, sip)` → `{ debitDate, locked, canSkip, canUndo, canPause, canEdit, line }`. The line is "Too close to the debit date to change this one. You can change the next."
+- The instalment a change touches is the next one that will actually debit. Skip needs it outside the cutoff. Undo needs the skipped debit outside the cutoff. Pause and Edit need the next debit outside it. Paused SIPs have no debit coming, so Pause/Edit stay open for them.
+- **Reducer** ignores `skipNext`, `undoSkip`, `pauseSip` and `editSip` when the window says no (the UI hides the way in, the reducer is the rule).
+- **UI.** SIP detail shows the line above the buttons and disables Skip/Undo, Pause and Edit. Home and Dashboard swap the Skip link for the line. The Stop coach passes the window to `coachFor`, which drops the options that aren't possible and adds the line to the response (Money is tight → only "Stop anyway"; Market fell → "Keep going" and "Stop anyway"; Something else → only "Stop anyway"). "Stop anyway" stays last and the same size. The "SIP due in 2 days" notification no longer offers a free skip.
+- The demo's clock only moves in whole weeks, so Reviewer tools → Advance one week is how a reviewer reaches the cutoff.
+
+### 7a.3 Natural copy
+- Voice: a smart older friend. Short sentences, contractions, a concrete ₹ example where an adjective was doing the work.
+- Never: seamless, effortless, empower, journey, leverage, robust, elevate, delve, dive into, navigate, embark, holistic, tailored, curated, game-changer, "Let's", "Here's the thing", "Rest assured". At most one exclamation mark per screen. No em dashes (the empty-value placeholder is an en dash). No three-item rhetorical lists.
+- Kept as they were: compliance labels, disclaimers, the plan label, "not a recommendation" wording, product names (Starter plan, Stop coach, Steady mode, Pro, "Unlock Pro") and README-quoted acceptance copy.
+- Where the cutoff changes what's true, the copy says so ("Skip a month, free, up to 3 working days before the debit").
+- `src/copy.test.tsx` renders every route for 11 states and scans the source of toasts, lib copy and data for the banned list, em dashes and exclamation marks.
+
+### 7a.4 Tests and verification
+`planner.test.ts` (categories, 2–3 sorted candidates, shared risk/time frame, never a chosen fund), `planStatus.test.ts`, `invest.test.ts` (pick step, picks survive a split change), `storage.test.ts` (old saved plan), `cutoff.test.ts` (business days, window, reducer, undo), `sipCoach.test.ts` (only possible options), `copy.test.tsx`, App tests for the Plan, pick step, Payday, SIP detail, Home and Dashboard. Screenshots of changed screens at 390 and 1280 px only.

@@ -59,7 +59,7 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
     return {
       branch: 'big_dip',
       headline: head,
-      body: `That's a bigger fall than usual. Past falls like this have recovered, but there's no promise this one will. Selling now would lock in the fall. Your time frame is ${h}. Reviewing your plan is optional.`,
+      body: `That’s a bigger fall than usual, and it’s fine to feel it. Past falls like this have recovered, but there’s no promise this one will. Selling now would lock in the fall. Your time frame is ${h}. Reviewing your plan is optional.`,
       actionNeeded: false,
       action: 'review_plan',
       tone: 'caution',
@@ -71,7 +71,7 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
     return {
       branch: 'calm',
       headline: head,
-      body: 'One week is not a trend. Nothing to do.',
+      body: 'One week isn’t a trend. Nothing to do.',
       actionNeeded: false,
       tone: 'calm',
     };

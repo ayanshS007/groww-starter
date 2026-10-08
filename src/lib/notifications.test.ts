@@ -29,11 +29,16 @@ describe('deriveNotifications', () => {
     const due = byKind(s, 'sip_due');
     expect(due).toHaveLength(1);
     expect(due[0]).toMatchObject({ id: 'sip_due:sip_1:2026-11-10', title: 'SIP due in 2 days' });
+    // Inside the 3-business-day cutoff, so it must not offer a free skip (Stage 7a).
+    expect(due[0].body).toContain('Too close to change this one. You can change the next.');
+    expect(due[0].body).not.toMatch(/skip/i);
   });
   it('no sip_due when the next instalment is skipped', () => {
-    let s = advance(base(), 3, 'flat');
-    s = { ...s, market: { ...s.market, startDate: '2026-10-11' } };
-    expect(byKind(run(s, { type: 'skipNext', sipId: 'sip_1' }), 'sip_due')).toEqual([]);
+    let s = advance(base(), 3, 'flat'); // 4 Nov: the 10th is 4 business days away, so skipping is still allowed
+    s = run(s, { type: 'skipNext', sipId: 'sip_1' });
+    expect(s.sips[0].skipNext).toBe(true);
+    s = { ...s, market: { ...s.market, startDate: '2026-10-11' } }; // 8 Nov: now 2 days before the debit
+    expect(byKind(s, 'sip_due')).toEqual([]);
   });
   it('sip_skipped_paused for skips and pauses', () => {
     let s = run(base(), { type: 'skipNext', sipId: 'sip_1' });

@@ -42,6 +42,13 @@ export type CoachContext = {
   weekChange?: Change;
   /** Fund the user is comparing against, for "Found a better fund". */
   otherFundId?: FundId;
+  /**
+   * What can still change for the next instalment (cutoff, Stage 7a). Anything left out counts as
+   * possible. Options that aren't possible are not shown at all.
+   */
+  can?: Partial<{ skip: boolean; pause: boolean; edit: boolean }>;
+  /** The one line explaining why options are missing, when the cutoff is the reason. */
+  cutoffLine?: string;
 };
 
 const STOP: Omit<CoachOption, 'primary'> = { id: 'stop_anyway', label: 'Stop anyway' };
@@ -61,6 +68,11 @@ export function compareFunds(current: Fund, other: Fund): ComparisonRow[] {
 
 export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachContext = {}): Coaching {
   const paused = sip.status === 'paused';
+  const can = { skip: true, pause: true, edit: true, ...context.can };
+  const line = context.cutoffLine;
+  /** Keeps only the options that are still possible. */
+  const possible = (opts: Omit<CoachOption, 'primary'>[]) =>
+    opts.filter((o) => (o.id === 'skip_next' ? can.skip : o.id === 'pause' ? can.pause : o.id === 'lower_amount' ? can.edit : true));
   const pause: Omit<CoachOption, 'primary'> = paused
     ? { id: 'keep_paused', label: 'Keep it paused' }
     : { id: 'pause', label: 'Pause' };
@@ -86,11 +98,11 @@ export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachCon
         };
       }
       return {
-        response: `${move}${keepGoing}`,
-        options: withPrimary([
+        response: `${move}${keepGoing}${line ? ` ${line}` : ''}`,
+        options: withPrimary(possible([
           { id: 'keep_going', label: 'Keep going' },
           { id: 'pause', label: 'Pause 1–3 months' },
-        ]),
+        ])),
       };
     }
 
@@ -101,13 +113,15 @@ export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachCon
           options: withPrimary([pause, { id: 'lower_amount', label: 'Lower amount' }]),
         };
       }
+      // Too close to the debit date: nothing here can change this one, so only Stop anyway is left.
+      if (line && !can.skip && !can.pause && !can.edit) return { response: line, options: withPrimary([]) };
       return {
         response: 'Skipping is free and keeps your plan alive.',
-        options: withPrimary([
+        options: withPrimary(possible([
           { id: 'skip_next', label: 'Skip next instalment' },
           { id: 'lower_amount', label: 'Lower amount' },
           pause,
-        ]),
+        ])),
       };
 
     case 'need_money':
@@ -129,7 +143,7 @@ export function coachFor(reason: CoachReason | null, sip: Sip, context: CoachCon
     }
 
     case 'other':
-      return { response: null, options: withPrimary([pause]) };
+      return { response: line && !can.pause ? line : null, options: withPrimary(possible([pause])) };
   }
 }
 

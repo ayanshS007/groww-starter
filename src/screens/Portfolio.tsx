@@ -164,7 +164,7 @@ export function Portfolio() {
               </ButtonLink>
             )}
           </div>
-          <p className="mt-3 text-sm text-ink-muted">Skip any month, free. Nothing resets.</p>
+          <p className="mt-3 text-sm text-ink-muted">Skip a month, free, up to 3 working days before the debit. Nothing resets.</p>
         </Card>
 
         <Card pad="lg" aria-labelledby="pf-goals-title">

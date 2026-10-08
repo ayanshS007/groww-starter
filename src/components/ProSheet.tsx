@@ -38,7 +38,7 @@ export function ProSheetProvider({ children }: { children: ReactNode }) {
       {children}
       <BottomSheet open={open && allowed} onClose={() => setOpen(false)} title={PRO_SHEET_TITLE}>
         <p className="text-base text-ink">
-          Pro is earned, not bought. Pass a 5-question quick check (4 of 5) and these open up. Nothing changes in the Starter features you already use.
+          Pro is earned, not bought. Get 4 of 5 on a quick check and these open up. Nothing in Starter changes.
         </p>
         <ul className="mt-4 space-y-3">
           {PRO_FEATURES.map((f) => (

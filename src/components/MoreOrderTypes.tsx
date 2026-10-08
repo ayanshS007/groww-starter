@@ -16,7 +16,7 @@ export function MoreOrderTypes() {
             <span className="text-ink-muted">{o.text}</span>
           </li>
         ))}
-        <li className="text-sm text-ink-muted">Explained only. You can’t place these here. F&amp;O is not available in this prototype.</li>
+        <li className="text-sm text-ink-muted">Explained only. You can’t place these here. F&amp;O isn’t available in this prototype.</li>
       </ul>
     </details>
   );

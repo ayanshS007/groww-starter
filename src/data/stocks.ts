@@ -119,7 +119,7 @@ const SEEDS: Seed[] = [
     whatTheyDo: 'Runs a payments app for small shops.',
     sizeLabel: 'Mid',
     volFactor: 1.6,
-    mainRisk: 'It is not yet profitable and depends on raising more money.',
+    mainRisk: 'It isn’t profitable yet and depends on raising more money.',
     dayChangePct: -2.4,
     seed: 109,
   },

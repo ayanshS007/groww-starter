@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { CheckinAnswers, Horizon, RiskComfort } from '../state/types';
+import { FUNDS, fundsInPlanCategory, getFund } from '../data/funds';
+import type { CheckinAnswers, Horizon, PlanCategoryId, RiskComfort } from '../state/types';
 import { PLAN_LABEL } from '../state/types';
 import {
   buildPlan,
@@ -57,25 +58,72 @@ describe('derived values', () => {
 });
 
 describe('grow category matrix: all 12 cells', () => {
-  const cells: [Horizon, RiskComfort, string, string | undefined, string | undefined][] = [
-    ['lt1', 'low', 'liquid1', undefined, undefined],
-    ['lt1', 'moderate', 'liquid1', undefined, undefined],
-    ['lt1', 'high', 'liquid1', undefined, 'short_high'],
-    ['1to3', 'low', 'shortdebt1', undefined, undefined],
-    ['1to3', 'moderate', 'shortdebt1', undefined, undefined],
-    ['1to3', 'high', 'shortdebt1', 'balanced1', undefined],
-    ['3to5', 'low', 'shortdebt1', undefined, undefined],
-    ['3to5', 'moderate', 'balanced1', undefined, undefined],
-    ['3to5', 'high', 'balanced1', 'index50', undefined],
-    ['5plus', 'low', 'balanced1', undefined, 'long_low'],
+  const cells: [Horizon, RiskComfort, PlanCategoryId, PlanCategoryId | undefined, string | undefined][] = [
+    ['lt1', 'low', 'liquid', undefined, undefined],
+    ['lt1', 'moderate', 'liquid', undefined, undefined],
+    ['lt1', 'high', 'liquid', undefined, 'short_high'],
+    ['1to3', 'low', 'short_debt', undefined, undefined],
+    ['1to3', 'moderate', 'short_debt', undefined, undefined],
+    ['1to3', 'high', 'short_debt', 'balanced', undefined],
+    ['3to5', 'low', 'short_debt', undefined, undefined],
+    ['3to5', 'moderate', 'balanced', undefined, undefined],
+    ['3to5', 'high', 'balanced', 'index50', undefined],
+    ['5plus', 'low', 'balanced', undefined, 'long_low'],
     ['5plus', 'moderate', 'index50', undefined, undefined],
-    ['5plus', 'high', 'index50', 'flexi1', undefined],
+    ['5plus', 'high', 'index50', 'flexi', undefined],
   ];
-  it.each(cells)('%s × %s → %s (alt %s, conflict %s)', (h, c, fund, alt, conflict) => {
+  it.each(cells)('%s × %s → %s (alt %s, conflict %s)', (h, c, category, alt, conflict) => {
     const g = growCategory(h, c);
-    expect(g.fundId).toBe(fund);
-    expect(g.alternativeFundId).toBe(alt);
+    expect(g.category).toBe(category);
+    expect(g.alternativeCategory).toBe(alt);
     expect(g.conflict).toBe(conflict);
+  });
+});
+
+describe('categories, not funds (Stage 7a)', () => {
+  const usedCategories: PlanCategoryId[] = ['liquid', 'short_debt', 'balanced', 'index50', 'flexi'];
+  it('every category the planner can use has 2–3 funds, sorted by name', () => {
+    for (const c of usedCategories) {
+      const funds = fundsInPlanCategory(c);
+      expect(funds.length).toBeGreaterThanOrEqual(2);
+      expect(funds.length).toBeLessThanOrEqual(3);
+      const names = funds.map((f) => f.name);
+      expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+    }
+  });
+  it('funds in one category share risk and time frame, so any of them fits the plan the same way', () => {
+    for (const c of usedCategories) {
+      const funds = fundsInPlanCategory(c);
+      expect(new Set(funds.map((f) => f.risk)).size).toBe(1);
+      expect(new Set(funds.map((f) => f.horizon)).size).toBe(1);
+    }
+  });
+  it('no fund belongs to a category the planner cannot reach', () => {
+    for (const f of FUNDS) if (f.planCategory) expect(usedCategories).toContain(f.planCategory);
+  });
+  it('a plan lists a category and its candidate funds for every part, and never picks one', () => {
+    for (const horizon of ['lt1', '1to3', '3to5', '5plus'] as const) {
+      for (const dipReaction of ['sell', 'wait', 'stay'] as const) {
+        for (const cushion of ['no', 'some', 'yes'] as const) {
+          const plan = buildPlan(answers({ horizon, dipReaction, cushion }), TODAY);
+          for (const b of plan.buckets) {
+            expect(b.fundId).toBeUndefined();
+            expect(b.candidateFundIds.length).toBeGreaterThanOrEqual(2);
+            expect(b.candidateFundIds.length).toBeLessThanOrEqual(3);
+            expect(b.candidateFundIds).toEqual(fundsInPlanCategory(b.category).map((f) => f.id));
+            for (const id of b.candidateFundIds) expect(getFund(id)?.planCategory).toBe(b.category);
+          }
+          expect(JSON.stringify(plan)).not.toContain('"fundId"');
+        }
+      }
+    }
+  });
+  it('the reason talks about the category, not a fund by name', () => {
+    const plan = buildPlan(answers(), TODAY);
+    for (const b of plan.buckets) {
+      for (const f of FUNDS) expect(b.reason).not.toContain(f.name);
+    }
+    expect(plan.buckets.find((b) => b.role === 'grow')!.reason).toContain('Nifty 50 index funds');
   });
 });
 
@@ -84,7 +132,7 @@ describe('split rules A1–A6 (first match wins)', () => {
     expect(splitRule(answers({ purpose: 'cushion', cushion: 'yes' }))).toEqual({ rule: 'A1', cushionPct: 100 });
     const plan = buildPlan(answers({ purpose: 'cushion' }), TODAY);
     expect(plan.buckets).toHaveLength(1);
-    expect(plan.buckets[0]).toMatchObject({ role: 'cushion', fundId: 'liquid1', amount: 4000 });
+    expect(plan.buckets[0]).toMatchObject({ role: 'cushion', category: 'liquid', amount: 4000 });
   });
   it('A2: horizon under 1 year → 100% cushion', () => {
     expect(splitRule(answers({ horizon: 'lt1', cushion: 'yes' }))).toEqual({ rule: 'A2', cushionPct: 100 });
@@ -102,8 +150,8 @@ describe('split rules A1–A6 (first match wins)', () => {
   it('A4: no cushion and salary → 50/50', () => {
     expect(splitRule(answers())).toEqual({ rule: 'A4', cushionPct: 50 });
     const plan = buildPlan(answers(), TODAY);
-    expect(plan.buckets.map((b) => [b.role, b.fundId, b.amount])).toEqual([
-      ['cushion', 'liquid1', 2000],
+    expect(plan.buckets.map((b) => [b.role, b.category, b.amount])).toEqual([
+      ['cushion', 'liquid', 2000],
       ['grow', 'index50', 2000],
     ]);
   });
@@ -116,8 +164,8 @@ describe('split rules A1–A6 (first match wins)', () => {
     expect(splitRule(answers({ cushion: 'yes' }))).toEqual({ rule: 'A6', cushionPct: 0 });
     const plan = buildPlan(answers({ cushion: 'yes', dipReaction: 'stay' }), TODAY);
     expect(plan.buckets).toHaveLength(1);
-    expect(plan.buckets[0]).toMatchObject({ role: 'grow', fundId: 'index50', amount: 4000 });
-    expect(plan.alternativeFundId).toBe('flexi1');
+    expect(plan.buckets[0]).toMatchObject({ role: 'grow', category: 'index50', amount: 4000 });
+    expect(plan.alternativeCategory).toBe('flexi');
   });
 });
 
@@ -129,7 +177,7 @@ describe('conflict notes', () => {
   });
   it('5+ yrs + Low attaches the balanced-fund note', () => {
     const plan = buildPlan(answers({ dipReaction: 'sell' }), TODAY);
-    expect(plan.buckets.find((b) => b.role === 'grow')?.fundId).toBe('balanced1');
+    expect(plan.buckets.find((b) => b.role === 'grow')?.category).toBe('balanced');
     expect(plan.conflictNote).toBe(CONFLICT_NOTES.long_low);
   });
   it('no conflict note elsewhere', () => {
@@ -173,10 +221,10 @@ describe('reasons and factors', () => {
     expect(new Set(keys).size).toBe(keys.length);
     expect(plan.factors.find((f) => f.answer === 'monthly')?.text).toContain('₹4,000');
   });
-  it('a goal changes the wording, not the fund', () => {
+  it('a goal changes the wording, not the category', () => {
     const wealth = buildPlan(answers({ purpose: 'wealth' }), TODAY);
     const goal = buildPlan(answers({ purpose: 'goal' }), TODAY);
-    expect(goal.buckets.map((b) => [b.fundId, b.amount])).toEqual(wealth.buckets.map((b) => [b.fundId, b.amount]));
+    expect(goal.buckets.map((b) => [b.category, b.amount])).toEqual(wealth.buckets.map((b) => [b.category, b.amount]));
     expect(goal.buckets.map((b) => b.reason)).not.toEqual(wealth.buckets.map((b) => b.reason));
     expect(goal.buckets.find((b) => b.role === 'grow')!.reason).toContain('goal');
   });
@@ -286,7 +334,7 @@ describe('Adjust split (PLAN item 9)', () => {
   it('liquid grow category collapses into one liquid bucket with its own line', () => {
     const plan = buildPlan(answers({ horizon: 'lt1' }), TODAY, 40);
     expect(plan.buckets).toHaveLength(1);
-    expect(plan.buckets[0]).toMatchObject({ role: 'cushion', fundId: 'liquid1', amount: 4000 });
+    expect(plan.buckets[0]).toMatchObject({ role: 'cushion', category: 'liquid', amount: 4000 });
     expect(plan.splitNote).toBe(SPLIT_NOTES.liquid);
     expect(plan.cushionPct).toBe(40);
   });

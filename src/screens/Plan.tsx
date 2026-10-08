@@ -10,13 +10,14 @@ import { RiskMeter } from '../components/RiskMeter';
 import { SplitBar } from '../components/SplitBar';
 import { SplitSlider } from '../components/SplitSlider';
 import { Term } from '../components/Term';
+import { FundPicker } from '../components/FundPicker';
 import { WhyDrawer } from '../components/WhyDrawer';
-import { FUNDS, getFund } from '../data/funds';
+import { fundsInPlanCategory, getFund, PLAN_CATEGORIES } from '../data/funds';
 import { formatINR } from '../lib/format';
-import { planAction } from '../lib/planStatus';
+import { bucketFundId, planAction } from '../lib/planStatus';
 import { Link } from '../router';
 import { useStore } from '../state/store';
-import type { Fund, FundCategory, PlanBucket, StarterPlan } from '../state/types';
+import type { Fund, FundCategory, PlanBucket, PlanCategoryId, StarterPlan } from '../state/types';
 
 export const CATEGORY_TERM: Partial<Record<FundCategory, { id: string; text: string }>> = {
   Liquid: { id: 'liquid-fund', text: 'Liquid fund' },
@@ -31,14 +32,23 @@ export function CategoryLabel({ fund }: { fund: Fund }) {
   return t ? <Term id={t.id}>{t.text}</Term> : <>{fund.category} fund</>;
 }
 
+/** "Liquid fund" as a glossary Term when the category has one. */
+export function PlanCategoryLabel({ category }: { category: PlanCategoryId }) {
+  const t = PLAN_CATEGORIES[category].term;
+  return t ? <Term id={t.id}>{t.text}</Term> : <>{PLAN_CATEGORIES[category].label}</>;
+}
+
 const ROLE: Record<PlanBucket['role'], { title: string; sub: ReactNode; tint: Tint; icon: IconName }> = {
   cushion: { title: 'Cushion', sub: <>Money for surprises, quick to <Term id="redemption">withdraw</Term></>, tint: 'sky', icon: 'shield' },
   grow: { title: 'Grow', sub: 'Money you can leave alone to grow', tint: 'mint', icon: 'arrowUp' },
 };
 
 function BucketCard({ bucket, plan }: { bucket: PlanBucket; plan: StarterPlan }) {
-  const fund = getFund(bucket.fundId)!;
+  const { state, dispatch } = useStore();
+  const cat = PLAN_CATEGORIES[bucket.category];
   const role = ROLE[bucket.role];
+  // The candidates share risk and time frame (a data test checks it), so the first one speaks for the category.
+  const sample = getFund(bucket.candidateFundIds[0])!;
   return (
     <Card tint={role.tint} as="article" pad="lg" aria-labelledby={`bucket-${bucket.role}`}>
       <div className="flex items-start justify-between gap-4">
@@ -57,54 +67,61 @@ function BucketCard({ bucket, plan }: { bucket: PlanBucket; plan: StarterPlan })
         </p>
       </div>
       <h3 id={`bucket-${bucket.role}`} className="mt-5 text-xl font-bold text-ink">
-        {fund.name}
+        {cat.label}
       </h3>
-      <p className="mt-1 text-base text-ink">{fund.oneLiner}.</p>
+      <p className="mt-1 text-base text-ink">{cat.oneLiner}.</p>
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-ink-muted">Type</dt>
           <dd className="font-medium text-ink">
-            <CategoryLabel fund={fund} />
+            <PlanCategoryLabel category={bucket.category} />
           </dd>
         </div>
         <div>
           <dt className="text-ink-muted">Time frame</dt>
-          <dd className="font-medium text-ink">{fund.horizonLabel}</dd>
+          <dd className="font-medium text-ink">{sample.horizonLabel}</dd>
         </div>
         <div className="sm:col-span-2">
           <dt className="sr-only">Risk</dt>
           <dd>
-            <RiskMeter risk={fund.risk} />
+            <RiskMeter risk={sample.risk} />
           </dd>
         </div>
       </dl>
       <WhyDrawer bucket={bucket} factors={plan.factors} />
+      <div className="mt-4 rounded-card-sm bg-surface/70 p-4">
+        <FundPicker
+          bucket={bucket}
+          name={`pick-${bucket.role}`}
+          value={bucketFundId(state.sips, bucket)}
+          onChange={(fundId) => dispatch({ type: 'pickPlanFund', role: bucket.role, fundId })}
+        />
+      </div>
     </Card>
   );
 }
 
 function OtherOptions({ plan }: { plan: StarterPlan }) {
-  const grow = plan.buckets.find((b) => b.role === 'grow');
-  const growFund = grow ? getFund(grow.fundId) : undefined;
-  const inPlan = new Set(plan.buckets.map((b) => b.fundId));
-  const alt = plan.alternativeFundId ? getFund(plan.alternativeFundId) : undefined;
-  const same = growFund ? FUNDS.filter((f) => f.category === growFund.category && !inPlan.has(f.id) && f.id !== alt?.id) : [];
-  const cushionPeers = FUNDS.filter((f) => f.category === 'Liquid' && !inPlan.has(f.id));
-  const rows: { fund: Fund; why: string }[] = [
-    ...(alt ? [{ fund: alt, why: 'Also fits your answers, with bigger ups and downs.' }] : []),
-    ...same.map((fund) => ({ fund, why: `Same type as your grow fund.` })),
-    ...cushionPeers.map((fund) => ({ fund, why: 'Same type as your cushion fund.' })),
-  ];
+  const alt = plan.alternativeCategory ? PLAN_CATEGORIES[plan.alternativeCategory] : undefined;
+  const altFunds = plan.alternativeCategory ? fundsInPlanCategory(plan.alternativeCategory) : [];
+  if (!alt) {
+    return (
+      <p className="text-base text-ink">
+        Your answers point to one category for each part, so there isn’t another to show. Change an answer and the plan changes too.
+      </p>
+    );
+  }
   return (
     <>
-      <p className="text-sm text-ink-muted">Other funds that fit the same slots. Filters, not advice.</p>
+      <p className="text-sm text-ink-muted">Another category that also fits your answers, with bigger ups and downs. Filters, not advice.</p>
+      <h3 className="mt-3 text-lg font-bold text-ink">{alt.label}</h3>
+      <p className="text-sm text-ink-muted">{alt.oneLiner}.</p>
       <ul className="mt-3 space-y-2">
-        {rows.map(({ fund, why }) => (
+        {altFunds.map((fund) => (
           <li key={fund.id}>
-            <Link to={`/fund/${fund.id}`} className="flex min-h-tap items-center justify-between gap-3 rounded-card-sm border border-border p-4 hover:bg-surface2">
+            <Link to={`/fund/${fund.id}?from=plan`} className="flex min-h-tap items-center justify-between gap-3 rounded-card-sm border border-border p-4 hover:bg-surface2">
               <span>
                 <span className="block font-semibold text-ink">{fund.name}</span>
-                <span className="block text-sm text-ink-muted">{why}</span>
                 <RiskMeter risk={fund.risk} className="mt-2" />
               </span>
               <Icon name="chevronRight" className="shrink-0 text-ink-muted" />
@@ -159,7 +176,7 @@ export function Plan() {
 
         <section aria-labelledby="plan-funds" className="space-y-4">
           <h2 id="plan-funds" className="sr-only">
-            Funds in your plan
+            Categories in your plan
           </h2>
           {/* Reveal: the cards cascade in after the split bar fills (Stage 6a). */}
           {plan.buckets.map((b, i) => (
@@ -186,7 +203,7 @@ export function Plan() {
           }
           next={
             <>
-              Pick a date, review, then a quick verification at payment. Skip any month, free. Nothing is locked in.
+              Pick a date, check it over, then a quick verification when you pay. Skip a month, free. Nothing is locked in.
             </>
           }
         />

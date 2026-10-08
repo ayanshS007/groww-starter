@@ -14,6 +14,7 @@ import { SipStatusPill } from '../components/StatusPill';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { getFund } from '../data/funds';
+import { sipChangeWindow } from '../lib/cutoff';
 import { dateLabel, formatINR } from '../lib/format';
 import { singleDraft } from '../lib/invest';
 import { sipDateText, sipFacts, sipHoldingId, stepUpAmount, stepUpLine, unitsValue, linkedGoalName } from '../lib/sip';
@@ -39,6 +40,8 @@ export function SipDetail({ id }: { id: string }) {
 
   const fund = getFund(sip.fundId);
   const facts = sipFacts(state, sip);
+  // Real autopay rules: a debit within 3 business days can't be skipped, paused around or edited.
+  const win = sipChangeWindow(state, sip);
   const active = sip.status === 'active';
   const paused = sip.status === 'paused';
   const stopped = sip.status === 'stopped';
@@ -80,24 +83,25 @@ export function SipDetail({ id }: { id: string }) {
       Resume now
     </Button>
   ) : facts.skippedDate ? (
-    <Button block onClick={() => dispatch({ type: 'undoSkip', sipId: sip.id })}>
+    <Button block disabled={!win.canUndo} onClick={() => dispatch({ type: 'undoSkip', sipId: sip.id })}>
       Undo skip
     </Button>
   ) : (
-    <Button block onClick={skip}>
+    <Button block disabled={!win.canSkip} onClick={skip}>
       Skip next instalment
     </Button>
   );
 
   const actions = (
     <div className="flex flex-col gap-3">
+      {win.line && <Note tone="info">{win.line}</Note>}
       {primary}
       {!stopped && (
         <>
-          <Button block variant="secondary" onClick={() => setSheet('pause')} aria-haspopup="dialog">
+          <Button block variant="secondary" disabled={!win.canPause} onClick={() => setSheet('pause')} aria-haspopup="dialog">
             {paused ? 'Change the pause' : 'Pause 1, 2 or 3 months'}
           </Button>
-          <Button block variant="secondary" onClick={() => setSheet('edit')} aria-haspopup="dialog">
+          <Button block variant="secondary" disabled={!win.canEdit} onClick={() => setSheet('edit')} aria-haspopup="dialog">
             Edit amount or date
           </Button>
           <ButtonLink to={`/portfolio/sip/${sip.id}/stop`} variant="quiet" block>

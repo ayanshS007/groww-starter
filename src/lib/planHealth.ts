@@ -5,7 +5,7 @@ import { addDays } from './dates';
 import { dateLabel, formatINR, formatPct } from './format';
 import { cushionValue, heldFunds, HORIZON_TEXT, horizonRank, portfolioValue, stockValue } from './market';
 import { cushionStep, cushionTarget } from './planner';
-import { missingBuckets } from './planStatus';
+import { bucketInvestPath, missingBuckets } from './planStatus';
 
 export type HealthStatus = 'good' | 'watch' | 'todo';
 export type HealthCheckId = 'cushion' | 'horizon' | 'stocks' | 'sips';
@@ -107,8 +107,8 @@ export function sipCheck(state: HealthState): HealthCheck {
     return {
       ...base,
       status: 'watch',
-      detail: `${n - missing.length} of ${n} SIPs in your plan running. ${getFund(b.fundId)?.name ?? 'One part'} isn’t set up yet.`,
-      fixRoute: `/invest/${b.fundId}?amount=${b.amount}`,
+      detail: `${n - missing.length} of ${n} SIPs in your plan running. Your ${b.role} part isn’t set up yet.`,
+      fixRoute: bucketInvestPath(state.sips, b),
       fixLabel: 'Set it up',
     };
   }

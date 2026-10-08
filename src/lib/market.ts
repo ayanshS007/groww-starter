@@ -246,6 +246,6 @@ export const MARKETS_THIS_WEEK: Record<Scenario, string> = {
   normal: 'Markets this week: a small rise. Normal for a week.',
   dip_small: 'Markets this week: a small dip. Normal for a week.',
   dip_sharp: 'Markets this week: a bigger dip than usual. These happen every few years.',
-  up: 'Markets this week: a good rise. One week is not a trend.',
+  up: 'Markets this week: a good rise. One week isn’t a trend.',
   flat: 'Markets this week: almost no change.',
 };

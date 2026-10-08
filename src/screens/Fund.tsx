@@ -25,6 +25,7 @@ import { getFund } from '../data/funds';
 import { fundFit, parseFrom } from '../lib/explore';
 import { formatINR } from '../lib/format';
 import { singleDraft, type InvestType } from '../lib/invest';
+import { bucketFundId } from '../lib/planStatus';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
 import { CategoryLabel } from './Plan';
@@ -34,6 +35,7 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
   const toast = useToast();
   const fund = getFund(id)!;
   const fit = fundFit(fund, state, parseFrom(query.from));
+  const pickedFundId = fit.bucket ? bucketFundId(state.sips, fit.bucket) : undefined;
   const confidence = (
     <ConfidenceBlock
       what={fund.whatItIs}
@@ -83,7 +85,7 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
             </p>
             {fit.bucket && (
               <p className="mt-2 inline-flex rounded-full bg-mint px-3 py-1 text-sm font-semibold text-ink">
-                In your plan · {fit.bucket.role === 'cushion' ? 'Cushion' : 'Grow'}
+                {pickedFundId === fund.id ? 'Your pick' : 'In your plan’s category'} · {fit.bucket.role === 'cushion' ? 'Cushion' : 'Grow'}
               </p>
             )}
           </div>

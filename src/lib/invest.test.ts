@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { buildPersona } from '../data/personas';
 import { nextOrderId } from '../state/reducer';
+import { unpickedBuckets } from './planStatus';
 import type { InvestDraft, State } from '../state/types';
-import { fresh, run, startSip, TODAY, withCheckin } from '../test/fixtures';
+import { fresh, run, startSip, TODAY, withCheckin, withPicks } from '../test/fixtures';
 import {
   amountPresets,
   ceilingNote,
@@ -127,7 +128,34 @@ describe('resolveStep (refresh and KYC rules)', () => {
 });
 
 describe('plan flow', () => {
-  const planned = withCheckin(fresh());
+  const unpicked = withCheckin(fresh());
+  const planned = withPicks(unpicked);
+  it('asks for a pick first: nothing is in the draft until each part has a fund (Stage 7a)', () => {
+    expect(unpickedBuckets(unpicked).map((b) => b.role)).toEqual(['cushion', 'grow']);
+    expect(planParts(unpicked)).toEqual([]);
+    const oneDone = withPicks({ ...unpicked }, {});
+    expect(unpickedBuckets(oneDone)).toEqual([]);
+    const cushionOnly = run(unpicked, { type: 'pickPlanFund', role: 'cushion', fundId: 'liquid2' });
+    expect(unpickedBuckets(cushionOnly).map((b) => b.role)).toEqual(['grow']);
+    expect(planParts(cushionOnly).map((p) => p.fundId)).toEqual(['liquid2']);
+  });
+  it('a pick must be one of the part’s listed funds', () => {
+    const bad = run(unpicked, { type: 'pickPlanFund', role: 'cushion', fundId: 'index50' });
+    expect(bad.plan!.buckets[0].fundId).toBeUndefined();
+  });
+  it('picks survive a change of split and a redo of the same answers', () => {
+    const s = run(planned, { type: 'setPlanSplit', cushionPct: 80 });
+    expect(s.plan!.buckets.map((b) => b.fundId)).toEqual(['liquid1', 'index50']);
+    const redo = run(planned, { type: 'completeCheckin' });
+    expect(redo.plan!.buckets.map((b) => b.fundId)).toEqual(['liquid1', 'index50']);
+  });
+  it('a pick is dropped when its category changes', () => {
+    const s = run(planned, { type: 'saveCheckinAnswer', answers: { horizon: '1to3' } }, { type: 'completeCheckin' });
+    const grow = s.plan!.buckets.find((b) => b.role === 'grow')!;
+    expect(grow.category).toBe('short_debt');
+    expect(grow.fundId).toBeUndefined();
+    expect(s.plan!.buckets.find((b) => b.role === 'cushion')!.fundId).toBe('liquid1');
+  });
   it('one draft with both parts; a part with a running SIP is left out', () => {
     expect(planParts(planned).map((p) => [p.fundId, p.amount])).toEqual([
       ['liquid1', 2000],
@@ -194,7 +222,9 @@ describe('UPI id', () => {
 describe('persona state still works with the flow', () => {
   it('Riya already has a live index SIP, so only the cushion part is left', () => {
     const riya: State = buildPersona('riya', TODAY);
-    expect(planParts(riya).map((p) => p.fundId)).toEqual(['liquid1']);
+    expect(planParts(riya)).toEqual([]); // the cushion part still needs a pick
+    expect(unpickedBuckets(riya).map((b) => b.role)).toEqual(['cushion']);
+    expect(planParts(withPicks(riya)).map((p) => p.fundId)).toEqual(['liquid1']);
   });
 });
 

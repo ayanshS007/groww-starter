@@ -68,8 +68,7 @@ export function Trading({ query = {} }: { query?: Record<string, string> }) {
           Quick check: 5 questions
         </h2>
         <p className="mt-1 text-base text-ink">
-          How single stocks behave, in five questions. It isn’t a test of you. Get 4 of 5 and Pro unlocks. Any you miss come with the answer and why, and you can try
-          again any time.
+          Five questions on how single stocks behave. It’s not a test of you. Get 4 right and Pro unlocks. If you miss one, you’ll see the answer and why. Try again whenever you like.
         </p>
         {state.prefs.proUnlocked && !result && (
           <p className="mt-3 flex items-center gap-2 text-base font-semibold text-brand-text">
@@ -167,7 +166,7 @@ export function Trading({ query = {} }: { query?: Record<string, string> }) {
           Stock budget
         </h2>
         <p className="mt-1 text-base text-ink">
-          The most of your portfolio you want in single stocks. Going over it shows a gentle note with the numbers. It never stops a buy.
+          The most you want in single stocks, as a share of your portfolio. If a buy goes over it, you get a short note with the numbers. It never blocks the buy.
         </p>
         <p className="mt-3 text-sm text-ink-muted">
           Now: stocks are {formatPct(nowPct, 0)} of your portfolio ({formatINR(stocks)} of {formatINR(total)}, sample values).

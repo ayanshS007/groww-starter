@@ -74,7 +74,7 @@ export function sipFacts(state: State, sip: Sip): SipFacts {
   if (sip.status === 'stopped') return { next: sip.stoppedAt ? `Stopped on ${dateLabel(sip.stoppedAt)}` : 'Stopped' };
   if (sip.status === 'paused') return { next: sip.pausedUntil ? `Restarts after ${dateLabel(sip.pausedUntil)}` : 'Paused' };
   const u = upcomingSips(state).find((x) => x.sip.id === sip.id);
-  if (!u) return { next: '—' };
+  if (!u) return { next: '–' };
   if (u.skippedDate) {
     return {
       next: `${dateLabel(u.skippedDate, { short: true })} is skipped. Next: ${dateLabel(u.date, { short: true })}`,
@@ -96,15 +96,14 @@ export function sipDateText(sip: Pick<Sip, 'dayOfMonth'>): string {
 }
 
 /**
- * Fund the "Found a better fund" comparison starts with: the plan's alternative
- * when it differs, else the first other fund in the same category, else the
- * first other fund.
+ * Fund the "Found a better fund" comparison starts with: the first other fund in
+ * the same plan category (else the same category), else the first other fund.
+ * Listed by name, so it is never a pick for the user.
  */
-export function defaultCompareFund(state: Pick<State, 'plan'>, sip: Pick<Sip, 'fundId'>): FundId {
-  const alt = state.plan?.alternativeFundId;
-  if (alt && alt !== sip.fundId) return alt;
+export function defaultCompareFund(_state: Pick<State, 'plan'>, sip: Pick<Sip, 'fundId'>): FundId {
   const current = getFund(sip.fundId);
-  const same = FUNDS.find((f) => f.id !== sip.fundId && f.category === current?.category);
+  const sameKind = (f: Fund) => (current?.planCategory ? f.planCategory === current.planCategory : f.category === current?.category);
+  const same = FUNDS.filter((f) => f.id !== sip.fundId && sameKind(f)).sort((a, b) => a.name.localeCompare(b.name))[0];
   return (same ?? FUNDS.find((f) => f.id !== sip.fundId) ?? FUNDS[0]).id;
 }
 

@@ -1,16 +1,16 @@
 // Check-in → Starter plan (README 8.1, PLAN items 1–10, C7). Pure functions.
-import { getFund } from '../data/funds';
+import { fundsInPlanCategory, PLAN_CATEGORIES } from '../data/funds';
 import type {
   AnswerKey,
   CheckinAnswers,
   CushionAnswer,
   DipReaction,
-  FundId,
   Horizon,
   IncomeBand,
   IncomeType,
   ISODate,
   PlanBucket,
+  PlanCategoryId,
   PlanFactor,
   PlanRule,
   Purpose,
@@ -25,7 +25,8 @@ export const MIN_MONTHLY = 100;
 export const MAX_MONTHLY = 100_000;
 /** Smallest SIP the plan will create; smaller parts are merged. */
 export const MIN_PART = 100;
-export const CUSHION_FUND: FundId = 'liquid1';
+/** The cushion part always points to this category (Stage 7a: a category, not a fund). */
+export const CUSHION_CATEGORY: PlanCategoryId = 'liquid';
 
 // ---------- labels (shared with the check-in screens) ----------
 export const INCOME_TYPE_LABEL: Record<IncomeType, string> = {
@@ -107,28 +108,28 @@ export function splitRule(a: Pick<CheckinAnswers, 'purpose' | 'horizon' | 'cushi
 
 // ---------- step B: grow category ----------
 export type Conflict = 'short_high' | 'long_low';
-export type GrowCategory = { fundId: FundId; alternativeFundId?: FundId; conflict?: Conflict };
+export type GrowCategory = { category: PlanCategoryId; alternativeCategory?: PlanCategoryId; conflict?: Conflict };
 
 const MATRIX: Record<Horizon, Record<RiskComfort, GrowCategory>> = {
   lt1: {
-    low: { fundId: 'liquid1' },
-    moderate: { fundId: 'liquid1' },
-    high: { fundId: 'liquid1', conflict: 'short_high' },
+    low: { category: 'liquid' },
+    moderate: { category: 'liquid' },
+    high: { category: 'liquid', conflict: 'short_high' },
   },
   '1to3': {
-    low: { fundId: 'shortdebt1' },
-    moderate: { fundId: 'shortdebt1' },
-    high: { fundId: 'shortdebt1', alternativeFundId: 'balanced1' },
+    low: { category: 'short_debt' },
+    moderate: { category: 'short_debt' },
+    high: { category: 'short_debt', alternativeCategory: 'balanced' },
   },
   '3to5': {
-    low: { fundId: 'shortdebt1' },
-    moderate: { fundId: 'balanced1' },
-    high: { fundId: 'balanced1', alternativeFundId: 'index50' },
+    low: { category: 'short_debt' },
+    moderate: { category: 'balanced' },
+    high: { category: 'balanced', alternativeCategory: 'index50' },
   },
   '5plus': {
-    low: { fundId: 'balanced1', conflict: 'long_low' },
-    moderate: { fundId: 'index50' },
-    high: { fundId: 'index50', alternativeFundId: 'flexi1' },
+    low: { category: 'balanced', conflict: 'long_low' },
+    moderate: { category: 'index50' },
+    high: { category: 'index50', alternativeCategory: 'flexi' },
   },
 };
 
@@ -136,17 +137,22 @@ export function growCategory(horizon: Horizon, comfort: RiskComfort): GrowCatego
   return MATRIX[horizon][comfort];
 }
 
+/** Funds the user can pick from in a category: 2–3 of them, sorted by name. */
+export function candidateFundIds(category: PlanCategoryId) {
+  return fundsInPlanCategory(category).map((f) => f.id);
+}
+
 export const CONFLICT_NOTES: Record<Conflict, string> = {
   short_high:
     "You're fine with ups and downs, but you need this within a year. Shares could be down exactly when you withdraw, so we're starting you steadier.",
   long_low:
-    'You have lots of time, but a big fall would worry you. A balanced fund grows with a smoother ride.',
+    'You have time on your side, but a big fall would rattle you. Balanced funds swing less, so that’s where we start.',
 };
 
 export const SPLIT_NOTES = {
-  less: 'Less cushion means a surprise bill could force you to sell.',
-  more: 'More cushion is steadier, but grows more slowly.',
-  liquid: 'You need this within a year, so all of it stays in a liquid fund.',
+  less: 'With less cushion, a surprise ₹5,000 bill could force you to sell some of your grow money.',
+  more: 'A bigger cushion is steadier. The catch: less of your money is growing.',
+  liquid: 'You need this within a year, so all of it stays in liquid funds.',
 } as const;
 
 // ---------- validation and rounding ----------
@@ -240,8 +246,8 @@ const DIP_PHRASE: Record<DipReaction, string> = {
 function cushionReason(a: CheckinAnswers, rule: PlanRule): { reason: string; cited: AnswerKey[] } {
   const close =
     a.purpose === 'goal'
-      ? 'Your goal money stays steady in a liquid fund, ready when you need it.'
-      : 'A liquid fund keeps it steady and quick to withdraw.';
+      ? 'Your goal money stays steady in liquid funds, ready when you need it.'
+      : 'Liquid funds keep it steady and quick to withdraw.';
   switch (rule) {
     case 'A1':
       return { reason: `${PURPOSE_PHRASE.cushion}. ${HORIZON_PHRASE[a.horizon]}. ${close}`, cited: ['purpose', 'horizon'] };
@@ -266,25 +272,25 @@ function cushionReason(a: CheckinAnswers, rule: PlanRule): { reason: string; cit
   }
 }
 
-function growReason(a: CheckinAnswers, fundId: FundId): { reason: string; cited: AnswerKey[] } {
-  const name = getFund(fundId)?.name ?? 'This fund';
+function growReason(a: CheckinAnswers, category: PlanCategoryId): { reason: string; cited: AnswerKey[] } {
+  const name = PLAN_CATEGORIES[category].label;
   const cited: AnswerKey[] = ['horizon', 'dipReaction'];
   let close: string;
   switch (a.purpose) {
     case 'goal':
-      close = `${name} works toward your goal at a pace that suits your time frame.`;
+      close = `${name} work toward your goal at a pace that suits your time frame.`;
       cited.push('purpose');
       break;
     case 'exploring':
-      close = `${name} is a simple way to start and learn as you go.`;
+      close = `${name} are a simple way to start and learn as you go.`;
       cited.push('purpose');
       break;
     case 'cushion':
-      close = `${name} lets this part grow while your cushion builds.`;
+      close = `${name} let this part grow while your cushion builds.`;
       cited.push('purpose');
       break;
     default:
-      close = `${name} aims to grow your money over that time.`;
+      close = `${name} aim to grow your money over that time.`;
   }
   return { reason: `${HORIZON_PHRASE[a.horizon]}. ${DIP_PHRASE[a.dipReaction]}. ${close}`, cited };
 }
@@ -313,7 +319,8 @@ export function buildFactors(a: CheckinAnswers): PlanFactor[] {
 
 // ---------- plan ----------
 /**
- * Builds the Starter plan. `cushionPctOverride` comes from the Adjust split
+ * Builds the Starter plan. It names a category for each part and lists the funds
+ * the user can pick from; it never chooses a fund (Stage 7a). `cushionPctOverride` comes from the Adjust split
  * slider (PLAN item 9); rounding and merge rules re-run on every change.
  */
 export function buildPlan(answers: CheckinAnswers, today: ISODate, cushionPctOverride?: number): StarterPlan {
@@ -328,8 +335,8 @@ export function buildPlan(answers: CheckinAnswers, today: ISODate, cushionPctOve
   if (cushionPct < suggested) splitNote = SPLIT_NOTES.less;
   else if (cushionPct > suggested) splitNote = SPLIT_NOTES.more;
 
-  // Grow category is Liquid: both parts land in the same fund and become one bucket.
-  if (grow.fundId === CUSHION_FUND && growAmt > 0) {
+  // Grow category is Liquid: both parts land in the same category and become one bucket.
+  if (grow.category === CUSHION_CATEGORY && growAmt > 0) {
     cushion = answers.monthly;
     growAmt = 0;
     mergeNote = undefined;
@@ -339,11 +346,25 @@ export function buildPlan(answers: CheckinAnswers, today: ISODate, cushionPctOve
   const buckets: PlanBucket[] = [];
   if (cushion > 0) {
     const r = cushionReason(answers, rule);
-    buckets.push({ role: 'cushion', fundId: CUSHION_FUND, amount: cushion, reason: r.reason, citedAnswers: r.cited });
+    buckets.push({
+      role: 'cushion',
+      category: CUSHION_CATEGORY,
+      candidateFundIds: candidateFundIds(CUSHION_CATEGORY),
+      amount: cushion,
+      reason: r.reason,
+      citedAnswers: r.cited,
+    });
   }
   if (growAmt > 0) {
-    const r = growReason(answers, grow.fundId);
-    buckets.push({ role: 'grow', fundId: grow.fundId, amount: growAmt, reason: r.reason, citedAnswers: r.cited });
+    const r = growReason(answers, grow.category);
+    buckets.push({
+      role: 'grow',
+      category: grow.category,
+      candidateFundIds: candidateFundIds(grow.category),
+      amount: growAmt,
+      reason: r.reason,
+      citedAnswers: r.cited,
+    });
   }
 
   const hasGrow = growAmt > 0;
@@ -368,7 +389,7 @@ export function buildPlan(answers: CheckinAnswers, today: ISODate, cushionPctOve
     label: PLAN_LABEL,
     createdAt: today,
   };
-  if (hasGrow && grow.alternativeFundId) plan.alternativeFundId = grow.alternativeFundId;
+  if (hasGrow && grow.alternativeCategory) plan.alternativeCategory = grow.alternativeCategory;
   if (conflictNote) plan.conflictNote = conflictNote;
   if (overCeilingNote) plan.overCeilingNote = overCeilingNote;
   if (mergeNote) plan.mergeNote = mergeNote;
