@@ -104,15 +104,15 @@ describe('goal form (README 8.8: past date asks to update)', () => {
     const small = validateGoalInput({ name: 'X', target: '499', byDate: '2027-01-01' }, TODAY);
     expect(small.ok).toBe(false);
   });
-  it('the Emergency cushion suggestion prefills 3 × income and a year; others only the name', () => {
-    expect(suggestionPrefill('Emergency cushion', 112500, TODAY)).toEqual({
-      name: 'Emergency cushion',
+  it('the Emergency fund suggestion prefills 3 × income and a year; others only the name', () => {
+    expect(suggestionPrefill('Emergency fund', 112500, TODAY)).toEqual({
+      name: 'Emergency fund',
       target: 112500,
       byDate: '2027-10-07',
       isCushion: true,
     });
     expect(suggestionPrefill('Laptop', 112500, TODAY)).toEqual({ name: 'Laptop', isCushion: false });
-    expect(GOAL_SUGGESTIONS).toEqual(['Emergency cushion', 'Laptop', 'Trip', 'Course fees']);
+    expect(GOAL_SUGGESTIONS).toEqual(['Emergency fund', 'Laptop', 'Trip', 'Course fees']);
   });
 });
 

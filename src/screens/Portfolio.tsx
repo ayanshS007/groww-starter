@@ -172,7 +172,7 @@ export function Portfolio() {
             Goals
           </h2>
           {state.goals.length === 0 ? (
-            <p className="mt-2 text-base text-ink-muted">Saving for a laptop, a trip or a cushion? A goal shows what a month takes.</p>
+            <p className="mt-2 text-base text-ink-muted">Saving for a laptop, a trip or an emergency fund? A goal shows what a month takes.</p>
           ) : (
             <ul className="mt-3 space-y-3">
               {state.goals.map((g) => (

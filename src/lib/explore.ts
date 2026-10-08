@@ -2,7 +2,7 @@
 import { COLLECTIONS, PLAN_CATEGORIES, type CollectionId } from '../data/funds';
 import type { DipReaction, Fund, FundCategory, FundId, PlanBucket, State, Stock } from '../state/types';
 import { horizonRank } from './market';
-import { HORIZON_LABEL } from './planner';
+import { HORIZON_LABEL, ROLE_WORD } from './planner';
 import { bucketForFund, bucketFundId, hasLiveSip } from './planStatus';
 
 export const FUND_CATEGORIES: FundCategory[] = ['Liquid', 'Debt', 'Hybrid', 'Index', 'Equity', 'Gold'];
@@ -82,9 +82,9 @@ export type FundFit = {
 const RISK_WORD: Record<number, string> = { 1: 'low', 2: 'low to moderate', 3: 'moderate', 4: 'moderately high', 5: 'high' };
 
 const DIP_PHRASE: Record<DipReaction, string> = {
-  sell: 'probably sell if it fell 10%',
-  wait: 'wait it out if it fell 10%',
-  stay: 'stay, maybe add, if it fell 10%',
+  sell: 'sell to stop the loss if it fell 10% in a month',
+  wait: 'wait and watch if it fell 10% in a month',
+  stay: 'invest more while it’s low if it fell 10% in a month',
 };
 
 export type From = 'search' | 'collection' | 'plan' | 'portfolio' | 'link';
@@ -100,8 +100,6 @@ const HOW: Record<From, string> = {
   portfolio: 'You opened this fund from your portfolio',
   link: 'You opened this fund from a link',
 };
-
-const ROLE_WORD = { cushion: 'cushion', grow: 'grow' } as const;
 
 export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit {
   const bucket = bucketForFund(state.plan, fund.id);

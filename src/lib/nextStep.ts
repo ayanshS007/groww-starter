@@ -8,6 +8,7 @@ import { addDays, daysBetween, nextDateForDay } from './dates';
 import { dateLabel, formatINR } from './format';
 import { simToday } from './market';
 import { timeOfDay } from './mood';
+import { ROLE_WORD } from './planner';
 import { bucketFundId, bucketHasLiveSip, bucketInvestPath } from './planStatus';
 import { buildPath } from './routes';
 
@@ -89,8 +90,6 @@ export function quietRestart(state: Pick<State, 'plan' | 'sips' | 'market'>): Qu
     to: parts.length === 1 ? bucketInvestPath(state.sips, parts[0]) : '/invest/plan',
   };
 }
-
-const ROLE_WORD = { cushion: 'cushion', grow: 'grow' } as const;
 
 export function nextStep(state: State): NextStep {
   if (!state.plan || !state.checkin) {

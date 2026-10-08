@@ -95,7 +95,7 @@ describe('allocation and plan split', () => {
   });
   it('without a plan it shows only the actual split', () => {
     const s = oneTime(fresh(), 'liquid1', 500);
-    expect(splitLine(s)).toBe('Actual: 100 / 0 (cushion / grow)');
+    expect(splitLine(s)).toBe('Actual: 100 / 0 (emergency fund / long-term investing)');
   });
 });
 
@@ -146,7 +146,7 @@ describe('plan health links go to the screen that fixes each check', () => {
   it('cushion → Payday Split, stocks → Stock budget, and every link resolves to a screen', () => {
     const s = riya();
     const [cushion, horizon, stocks, sips] = planHealth(s);
-    expect(healthLink(cushion)).toEqual({ to: '/payday', label: 'Top up cushion' });
+    expect(healthLink(cushion)).toEqual({ to: '/payday', label: 'Top up emergency fund' });
     expect(healthLink(stocks)).toEqual({ to: '/you/trading', label: 'Stock budget' });
     expect(healthLink(horizon)).toEqual({ to: '/plan', label: 'See my plan' });
     // QA #30: Riya's cushion SIP was never set up, so the SIPs row points to it.

@@ -71,9 +71,9 @@ export type AllocationId = 'cushion' | 'goals' | 'grow' | 'stocks' | 'gold';
 export type AllocationSlice = { id: AllocationId; label: string; value: number; pct: number };
 
 export const ALLOCATION_LABEL: Record<AllocationId, string> = {
-  cushion: 'Cushion',
+  cushion: 'Emergency fund',
   goals: 'Goal savings',
-  grow: 'Grow funds',
+  grow: 'Long-term investing',
   stocks: 'Stocks',
   gold: 'Gold',
 };
@@ -118,7 +118,7 @@ export function splitLine(state: Pick<State, 'plan' | 'holdings' | 'market'> & P
   const liquid = cushionValue(state) + goalSavingsValue(state);
   const actual = split(total > 0 ? (liquid / total) * 100 : 0);
   const actualText = `Actual: ${actual[0]} / ${actual[1]}`;
-  if (!state.plan) return `${actualText} (cushion / grow)`;
+  if (!state.plan) return `${actualText} (emergency fund / long-term investing)`;
   const plan = split(state.plan.cushionPct);
   return `Plan split: ${plan[0]} / ${plan[1]} · ${actualText}`;
 }

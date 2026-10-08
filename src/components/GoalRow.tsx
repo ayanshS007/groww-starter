@@ -30,7 +30,7 @@ export function GoalRow({ goal, state, tone = 'surface2' }: { goal: Goal; state:
           <span className="flex items-baseline justify-between gap-2">
             <span className="flex min-w-0 items-center gap-2 font-semibold text-ink">
               <span className="truncate">{goal.name}</span>
-              {goal.isCushion && <span className="shrink-0 rounded-full bg-sky px-2 py-0.5 text-xs font-medium text-ink">Cushion</span>}
+              {goal.isCushion && <span className="shrink-0 rounded-full bg-sky px-2 py-0.5 text-xs font-medium text-ink">Emergency fund</span>}
             </span>
             <Icon name="chevronRight" size={16} className="shrink-0 text-ink-muted" />
           </span>

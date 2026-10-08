@@ -274,7 +274,7 @@ function MoneyCard({ state }: { state: State }) {
       </div>
       <p className="mt-4 rounded-card-sm bg-surface2 px-4 py-3 text-sm text-ink">
         {splitLine(state)}
-        <span className="block text-xs text-ink-muted">Cushion / grow, in %. As in your plan, liquid funds count as cushion here.</span>
+        <span className="block text-xs text-ink-muted">Emergency fund / long-term investing, in %. As in your plan, liquid funds count as emergency fund here.</span>
       </p>
     </Card>
   );

@@ -81,7 +81,7 @@ describe('Stage 3a screens render without crashing', () => {
 describe('screen acceptance checks (README 9)', () => {
   it('Home has exactly one Next-step card and no market banners', () => {
     const t = text(renderAt('#/home', buildPersona('riya', TODAY)));
-    expect(t).toContain('Set up your cushion SIP');
+    expect(t).toContain('Set up your emergency fund SIP');
     expect(t.match(/Your next step/g)).toHaveLength(1);
     for (const banned of ['IPO', 'F&O', 'gainers', 'losers', 'Nifty 50 today']) expect(t).not.toContain(banned);
   });
@@ -264,7 +264,7 @@ describe('screen acceptance checks (README 9, Stage 3b)', () => {
     expect(t).toContain('Your first SIP is set.');
     expect(t).toContain('What happens next');
     expect(t).toContain('Go to portfolio');
-    expect(t).toContain('Set up your cushion SIP');
+    expect(t).toContain('Set up your emergency fund SIP');
     expect(text(renderAt('#/invest/success/ord_1', oneTime(planned, 'liquid1', 750)))).toContain('₹750 invested.');
     for (const s of [plan2, single]) {
       const lower = text(renderAt('#/invest/success/ord_1', s)).toLowerCase();
@@ -577,8 +577,8 @@ describe('Home after a stop: quiet, not pushy (owner decision)', () => {
 
   it('Riya has her cushion SIP missing, so the card is not asked to restart anything for the stopped part', () => {
     // Riya's cushion part was never set up, so that card is still the one she sees; the stopped grow part is not offered.
-    expect(home).toContain('Set up your cushion SIP');
-    expect(home).not.toContain('Set up your grow SIP');
+    expect(home).toContain('Set up your emergency fund SIP');
+    expect(home).not.toContain('Set up your long-term investing SIP');
     expect(home).not.toContain('Restart my plan');
   });
   it('shows the one quiet line with a Restart link to that fund', () => {
@@ -590,7 +590,7 @@ describe('Home after a stop: quiet, not pushy (owner decision)', () => {
     const both = run(startSip(withCheckin(fresh()), 'liquid1', 2000), { type: 'startInvestDraft', draft: { mode: 'single', fundId: 'index50', type: 'sip', amount: 2000, dayOfMonth: 10, step: 'review', riskAck: true } }, { type: 'placeInvestOrder' }, { type: 'stopSip', sipId: 'sip_2', reason: 'none' });
     const t = text(renderAt('#/home', both));
     expect(t).toMatch(/You’re set\. Next SIP on /);
-    expect(t).not.toContain('Set up your grow SIP');
+    expect(t).not.toContain('Set up your long-term investing SIP');
     expect(t).toContain('One part of your plan isn’t running. Restart any time.');
   });
   it('after 5 weeks the card is back and the line is gone', () => {
@@ -629,7 +629,7 @@ describe('Stage 3d-1: Dashboard (README 9 item 21)', () => {
       'Where your money is',
       'Plan split: 50 / 50 · Actual: 0 / 100',
       'Plan health',
-      'Cushion',
+      'Emergency fund',
       'Time frame match',
       'Stock budget',
       'SIPs running',
@@ -764,14 +764,14 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
 
   it('Payday Split: the three lines and the top-up CTA for Riya’s ₹28,000', () => {
     const t = text(renderAt('#/payday?pay=28000', riya));
-    for (const s of ['Already going to SIPs', 'Cushion top-up', 'Yours to spend', 'A suggestion, not a rule. Change any number.']) expect(t).toContain(s);
+    for (const s of ['Already going to SIPs', 'Emergency fund top-up', 'Yours to spend', 'A suggestion, not a rule. Change any number.']) expect(t).toContain(s);
     expect(t).toContain('₹2,000');
     expect(t).toContain('₹23,200');
     // Riya hasn't picked a cushion fund, and the app doesn't pick one for her (Stage 7a).
-    expect(t).toContain('Pick a cushion fund first');
-    expect(t).not.toContain('Top up cushion with');
+    expect(t).toContain('Pick an emergency fund first');
+    expect(t).not.toContain('Top up emergency fund with');
     const picked = text(renderAt('#/payday?pay=28000', run(riya, { type: 'pickPlanFund', role: 'cushion', fundId: 'liquid2' })));
-    expect(picked).toContain('Top up cushion with ₹2,800');
+    expect(picked).toContain('Top up emergency fund with ₹2,800');
     expect(picked).toContain('Liquid Fund – B');
     expect(picked).toContain('What is this?');
   });
@@ -889,7 +889,7 @@ describe('Stage 5 polish', () => {
     expect(levels[0]).toBe(1);
     levels.slice(1).forEach((l, i) => expect(l - levels[i]).toBeLessThanOrEqual(1));
     expect(text(html)).toContain('Categories in your plan');
-    // every category heading (h3) comes after the "Categories in your plan" h2, not after "Cushion vs Grow"
+    // every category heading (h3) comes after the "Categories in your plan" h2, not after "Emergency fund vs Long-term investing"
     expect(html.indexOf('Categories in your plan')).toBeLessThan(html.indexOf('<h3'));
   });
   it('the sidebar plan card is not a heading, so no h2 can come before the page h1', () => {
@@ -923,9 +923,9 @@ describe('Stage 5 polish', () => {
     );
     expect(html).not.toContain('Start my plan');
   });
-  it('Home plan card has no second Cushion / Grow legend under the bar', () => {
+  it('Home plan card has no second Emergency fund / Long-term investing legend under the bar', () => {
     const html = renderAt('#/home', riyaState);
-    expect(html).not.toMatch(/<dt[^>]*>Cushion<\/dt>/);
+    expect(html).not.toMatch(/<dt[^>]*>Emergency fund<\/dt>/);
     expect(text(html)).toContain('Liquid funds');
   });
 });
@@ -966,7 +966,7 @@ describe('Stage 7a: the plan names categories, you pick the fund', () => {
   it('Fund detail for a fund in a plan category explains the category, not a personal pick', () => {
     const f = text(renderAt('#/fund/index50b?from=plan', planned));
     expect(f).toContain('This is one of the Nifty 50 index funds in your starter plan');
-    expect(f).toContain('Its category, Nifty 50 index funds, is the grow part of your starter plan');
+    expect(f).toContain('Its category, Nifty 50 index funds, is the long-term investing part of your starter plan');
     expect(f).toContain('In your plan’s category');
   });
 });
@@ -1173,5 +1173,80 @@ describe('Stage 6b: earned Pro', () => {
     const t = text(renderAt('#/review', calm));
     expect(t).toContain('Unlock Pro');
     expect(t).toContain('Lock Pro');
+  });
+});
+
+describe('Stage 8: wording clarity', () => {
+  const riya = buildPersona('riya', TODAY);
+  const planned = withCheckin(fresh());
+  const t = (route: string, state: State) => text(renderAt(route, state));
+
+  it('check-in step 2 asks about an emergency fund and explains it', () => {
+    const s = t('#/checkin/2', planned);
+    expect(s).toContain('Do you have an emergency fund?');
+    expect(s).toContain('Money you can use right away if something goes wrong. Usually 3–6 months of expenses.');
+    expect(s).not.toContain('money set aside for emergencies');
+  });
+  it('check-in step 3 puts the standard term first and a plain line under it', () => {
+    const s = t('#/checkin/3', planned);
+    const pairs: [string, string][] = [
+      ['Long-term wealth', 'Returns earn more returns over time (compounding)'],
+      ['Emergency fund', 'A safety net for sudden costs, like a hospital bill or a broken phone'],
+      ['Save for something', 'A laptop, a trip, a course'],
+      ['Not sure yet', 'I want to learn first'],
+    ];
+    for (const [title, line] of pairs) expect(s).toMatch(new RegExp(`${title} ${line.replace(/[()]/g, '\\$&')}`));
+    for (const old of ['Grow wealth', 'Build a cushion', 'A specific goal', 'Just exploring', 'Money for surprises first']) expect(s).not.toContain(old);
+  });
+  it('check-in steps 4, 5 and 6 use the new questions and options', () => {
+    expect(t('#/checkin/4', planned)).toContain('When will you need this money?');
+    const five = t('#/checkin/5', planned);
+    expect(five).toContain('Your investment falls 10% in a month. What would you do?');
+    for (const o of ['Sell to stop the loss', 'Wait and watch', 'Invest more while it’s low']) expect(five).toContain(o);
+    for (const old of ['Probably sell', 'Wait it out', 'Stay, maybe add']) expect(five).not.toContain(old);
+    const six = t('#/checkin/6', planned);
+    expect(six).toContain('How much can you invest each month?');
+    expect(six).toContain('Pick an amount you won’t miss. You can change it any time.');
+  });
+  it('the plan shows Emergency fund and Long-term investing, plus Risk comfort as Low, Medium or High', () => {
+    const s = t('#/plan', riya);
+    expect(s).toContain('Emergency fund vs Long-term investing');
+    expect(s).toContain('Long-term investing');
+    // Riya would wait and watch, which is Medium. The stored value stays `moderate`.
+    expect(riya.plan!.riskComfort).toBe('moderate');
+    expect(s).toMatch(/Risk comfort\s*:\s*Medium/);
+    for (const [dip, label] of [['sell', 'Low'], ['wait', 'Medium'], ['stay', 'High']] as const) {
+      expect(t('#/plan', withCheckin(fresh(), { dipReaction: dip }))).toMatch(new RegExp(`Risk comfort\\s*:\\s*${label}`));
+    }
+  });
+  it('no screen still labels a part "Cushion" or "Grow"', () => {
+    const goals = run(riya, { type: 'createGoal', name: 'Emergency fund', target: 60000, byDate: '2027-10-07', isCushion: true });
+    const routes: [string, State][] = [
+      ['#/', fresh()],
+      ['#/checkin/1', planned],
+      ['#/checkin/3', planned],
+      ['#/plan', riya],
+      ['#/plan', withCheckin(fresh(), { monthly: 250, incomeType: 'salary' })],
+      ['#/home', riya],
+      ['#/home', planned],
+      ['#/dashboard', riya],
+      ['#/portfolio', riya],
+      ['#/payday?pay=28000', riya],
+      ['#/portfolio/goals', goals],
+      ['#/learn/glossary', fresh()],
+      ['#/review', riya],
+    ];
+    for (const [route, state] of routes) {
+      const s = t(route, state);
+      expect(s, route).not.toMatch(/cushion/i);
+      expect(s, route).not.toMatch(/\bGrow\b/);
+      expect(s, route).not.toMatch(/\bgrow (funds|money|part)\b/);
+    }
+  });
+  it('the glossary explains Emergency fund, Compounding and Risk comfort, each with an example', () => {
+    const s = t('#/learn/glossary', fresh());
+    for (const term of ['Emergency fund', 'Compounding', 'Risk comfort']) expect(s).toContain(term);
+    expect(s).toContain('Like a snowball');
+    expect(s).toContain('hospital bill or a broken phone');
   });
 });

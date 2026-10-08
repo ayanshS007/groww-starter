@@ -32,7 +32,7 @@ export const PERSONA_SEEDS: PersonaSeed[] = [
   {
     id: 'riya',
     label: 'Riya, 22, first job',
-    summary: 'Salary ₹25–50k, no cushion, 5+ yrs. Index SIP ₹2,000 after two sharp dips.',
+    summary: 'Salary ₹25–50k, no emergency fund, 5+ yrs. Index SIP ₹2,000 after two sharp dips.',
     name: 'Riya',
     mobile: '9876543210',
     kycDone: true,
@@ -56,7 +56,7 @@ export const PERSONA_SEEDS: PersonaSeed[] = [
   {
     id: 'kabir',
     label: 'Kabir, 21, student',
-    summary: 'Stipend < ₹10k, no cushion, 1–3 yrs, would sell on a dip. Nothing invested yet.',
+    summary: 'Stipend < ₹10k, no emergency fund, 1–3 yrs, would sell to stop a loss. Nothing invested yet.',
     name: 'Kabir',
     mobile: '9123456780',
     kycDone: false,
@@ -98,7 +98,7 @@ export const PERSONA_SEEDS: PersonaSeed[] = [
   {
     id: 'arjun',
     label: 'Arjun, 24, curious about stocks',
-    summary: 'Salary ₹50k+, cushion in place, 5+ yrs. Index SIP ₹5,000 and 3 stocks saved.',
+    summary: 'Salary ₹50k+, emergency fund in place, 5+ yrs. Index SIP ₹5,000 and 3 stocks saved.',
     name: 'Arjun',
     mobile: '9000011111',
     kycDone: true,

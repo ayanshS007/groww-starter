@@ -45,7 +45,7 @@ export function Goals() {
       {state.goals.length === 0 ? (
         <EmptyState
           title="No goals yet"
-          body="A laptop, a trip, course fees or an emergency cushion. Pick one and see what it takes each month."
+          body="A laptop, a trip, course fees or an emergency fund. Pick one and see what it takes each month."
           action={
             <Button className="mt-2" onClick={() => setCreating(true)} aria-haspopup="dialog">
               Create a goal
@@ -137,7 +137,7 @@ export function GoalDetail({ id }: { id: string }) {
           <h1 className="text-3xl font-bold text-ink">{goal.name}</h1>
           <p className="mt-1 text-base text-ink-muted">
             {formatINR(goal.target)} by {dateLabel(goal.byDate)}
-            {goal.isCushion ? ' · your emergency cushion' : ''}
+            {goal.isCushion ? ' · your emergency fund' : ''}
           </p>
         </header>
 

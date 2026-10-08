@@ -45,7 +45,7 @@ describe('fundFit (PLAN items 6, 30)', () => {
       'This is one of the Nifty 50 index funds in your starter plan. The plan names the category. Which fund you pick is up to you.',
     ]);
     // "Why am I seeing this?" is about the category, and the other fund in it reads the same way.
-    expect(fit.why).toContain('Its category, Nifty 50 index funds, is the grow part of your starter plan');
+    expect(fit.why).toContain('Its category, Nifty 50 index funds, is the long-term investing part of your starter plan');
     expect(fundFit(getFund('index50b')!, planned).bucket?.category).toBe('index50');
     expect(fit.bucket!.citedAnswers.length).toBeGreaterThanOrEqual(2);
   });
@@ -53,11 +53,11 @@ describe('fundFit (PLAN items 6, 30)', () => {
     const fit = fundFit(getFund('index50')!, kabir, 'search');
     const text = fit.banners.map((b) => b.text).join(' ');
     expect(text).toContain('Your time frame is 1–3 yrs; this fund suits 5+ yrs');
-    expect(text).toContain('probably sell');
+    expect(text).toContain('sell to stop the loss');
     expect(fit.banners.some((b) => b.text.includes('isn’t part of your starter plan'))).toBe(true);
     expect(fit.why).toContain('found this fund by searching');
     expect(fit.why).toMatch(/time frame/);
-    expect(fit.why).toMatch(/probably sell/);
+    expect(fit.why).toMatch(/sell to stop the loss/);
   });
   it('a shorter-horizon fund is not a caution, but the text says it may grow slowly', () => {
     const fit = fundFit(getFund('arb1')!, planned);

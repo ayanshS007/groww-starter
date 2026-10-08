@@ -4,7 +4,7 @@ import type { State } from '../state/types';
 import { addDays } from './dates';
 import { dateLabel, formatINR, formatPct } from './format';
 import { cushionValue, heldFunds, HORIZON_TEXT, horizonRank, portfolioValue, stockValue } from './market';
-import { cushionStep, cushionTarget } from './planner';
+import { cushionStep, cushionTarget, ROLE_WORD } from './planner';
 import { bucketInvestPath, missingBuckets } from './planStatus';
 
 export type HealthStatus = 'good' | 'watch' | 'todo';
@@ -26,13 +26,13 @@ export const STATUS_TEXT: Record<HealthStatus, string> = { good: 'On track', wat
 type HealthState = Pick<State, 'checkin' | 'holdings' | 'market' | 'sips' | 'prefs'> & Partial<Pick<State, 'plan' | 'goals'>>;
 
 export function cushionCheck(state: HealthState): HealthCheck {
-  const base = { id: 'cushion' as const, label: 'Cushion' };
+  const base = { id: 'cushion' as const, label: 'Emergency fund' };
   if (!state.checkin) {
-    return { ...base, status: 'todo', detail: 'Take the check-in to set a cushion target.', fixRoute: '/checkin/1', fixLabel: 'Take the check-in' };
+    return { ...base, status: 'todo', detail: 'Take the check-in to set an emergency fund target.', fixRoute: '/checkin/1', fixLabel: 'Take the check-in' };
   }
   // The user's own answer wins: no cushion target is pushed on someone who has one (QA #16).
   if (state.checkin.cushion === 'yes') {
-    return { ...base, status: 'good', detail: 'You said you have a cushion.', fixRoute: '/plan', fixLabel: 'See my plan' };
+    return { ...base, status: 'good', detail: 'You said you have an emergency fund.', fixRoute: '/plan', fixLabel: 'See my plan' };
   }
   const target = cushionTarget(state.checkin.incomeBand);
   const value = cushionValue(state);
@@ -48,7 +48,7 @@ export function cushionCheck(state: HealthState): HealthCheck {
     status,
     detail,
     fixRoute: '/payday',
-    fixLabel: status === 'good' ? 'See cushion' : 'Top up cushion',
+    fixLabel: status === 'good' ? 'See emergency fund' : 'Top up emergency fund',
   };
 }
 
@@ -107,7 +107,7 @@ export function sipCheck(state: HealthState): HealthCheck {
     return {
       ...base,
       status: 'watch',
-      detail: `${n - missing.length} of ${n} SIPs in your plan running. Your ${b.role} part isn’t set up yet.`,
+      detail: `${n - missing.length} of ${n} SIPs in your plan running. Your ${ROLE_WORD[b.role]} part isn’t set up yet.`,
       fixRoute: bucketInvestPath(state.sips, b),
       fixLabel: 'Set it up',
     };

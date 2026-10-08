@@ -104,7 +104,7 @@ export function buildInsight({ weekChange: week, overallChange: overall, horizon
   }
   const steady = grow[0];
   const body = steady
-    ? `Your grow money is in ${steady.name}, a steadier type of fund, because you may need it in ${h}. It moves less than shares, so dips stay smaller.`
+    ? `Your long-term investing money is in ${steady.name}, a steadier type of fund, because you may need it in ${h}. It moves less than shares, so dips stay smaller.`
     : `Your money is in a liquid fund, built for money you may need soon. Its moves are tiny, so a week like this stays small.`;
   return { branch: 'steadier', headline: head, body, actionNeeded: false, tone: 'neutral' };
 }

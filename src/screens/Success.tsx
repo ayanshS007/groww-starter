@@ -10,9 +10,9 @@ import { LetterAvatar } from '../components/LetterAvatar';
 import { formatAmount, ordinal } from '../lib/format';
 import { successInfo } from '../lib/invest';
 import { nextStep } from '../lib/nextStep';
+import { ROLE_LABEL } from '../lib/planner';
 import { useStore } from '../state/store';
 
-const ROLE = { cushion: 'Cushion', grow: 'Grow' } as const;
 
 /**
  * Back from here goes to Portfolio, never into payment or the buy flow.
@@ -60,7 +60,7 @@ export function Success({ orderId }: { orderId: string }) {
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-ink">{r.name}</p>
                 <p className="text-sm text-ink-muted">
-                  {r.role ? `${ROLE[r.role]} · ` : ''}
+                  {r.role ? `${ROLE_LABEL[r.role]} · ` : ''}
                   {monthly && r.day
                     ? `on the ${ordinal(r.day)} of each month`
                     : info.kind === 'buy' && r.units

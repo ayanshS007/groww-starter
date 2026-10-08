@@ -11,7 +11,7 @@ Groww Starter is a prototype. This file checks every feature against technical, 
 - **Skips need a cutoff.** A real debit can't be changed at the last minute. The prototype uses about 3 business days (secondary source, confirm with Groww). The 24-hour pre-debit notice is sourced (see Sources). Inside the cutoff, Skip, Pause and Edit are off, with one line saying why.
 - **Fund-house pauses have their own rules.** The pause options in the app (1–3 months) are a simplification. Each fund house sets its own limits, such as minimums and tenure (sourced, see Sources).
 - **Payday Split works manually today.** The user types the pay amount. Detecting a salary credit on its own would need Account Aggregator consent.
-- **Plan health only sees money held on Groww.** A cushion kept in a bank account is invisible to it. Seeing more would need Account Aggregator consent.
+- **Plan health only sees money held on Groww.** An emergency fund kept in a bank account is invisible to it. Seeing more would need Account Aggregator consent.
 - **Beginner stock mode has a revenue trade-off.** It hides intraday and F&O, and those products earn brokers money. Groww would trade some of that revenue for retention. This is a business decision, not a technical one. Under-30 F&O losses are the reason for the guardrail (sourced, see Sources).
 - **The Stop coach must avoid dark patterns.** That is why "Stop anyway" is always visible and the same size as the other options, and why the coach is one screen. Success is measured by users choosing what they meant to, not by stops prevented.
 
@@ -58,7 +58,7 @@ Groww Starter is a prototype. This file checks every feature against technical, 
 | Fund detail | Static facts plus a sparkline. | Past-performance display rules apply to any return figure. To confirm with Groww compliance. | Where the buy decision happens. | Ship with changes | Real NAV and returns, with the required disclaimers. |
 | Tap-to-explain glossary | Content only. | Definitions should match official wording. | Cuts jargon, one of the top pain points. | Ship | Content review. |
 | Goals and monthly amount needed | Maths on target, date and current value. | The amount is shown "without counting returns", so no return is promised. | Gives a reason to stay invested. | Ship with changes | In real life one fund can back several goals. The prototype allows one goal per fund. |
-| Plan health | Four checks on holdings and SIPs. | None expected. | Points to the next fix. | Ship with changes | It only sees money held on Groww. Label it that way. Seeing a bank-held cushion would need Account Aggregator consent. |
+| Plan health | Four checks on holdings and SIPs. | None expected. | Points to the next fix. | Ship with changes | It only sees money held on Groww. Label it that way. Seeing a bank-held emergency fund would need Account Aggregator consent. |
 | Dashboard (own money only) | Reads the user's own data. | Personal data rules. | One place to see what you own and whether the plan is on track. | Ship | Real portfolio data. |
 | Withdraw | Redeem order. | Settlement time depends on the fund. "1–3 working days" is a sample figure. To confirm with Groww compliance. | Easy exit builds trust. | Needs partner or data | Real redemption and exit-load rules. |
 

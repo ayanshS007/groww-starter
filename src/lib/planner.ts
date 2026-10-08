@@ -43,13 +43,32 @@ export const INCOME_BAND_LABEL: Record<IncomeBand, string> = {
 };
 export const CUSHION_LABEL: Record<CushionAnswer, string> = { yes: 'Yes, a few months', some: 'Some', no: 'Not yet' };
 export const PURPOSE_LABEL: Record<Purpose, string> = {
-  wealth: 'Grow wealth',
-  goal: 'A specific goal',
-  cushion: 'Build a cushion',
-  exploring: 'Just exploring',
+  wealth: 'Long-term wealth',
+  goal: 'Save for something',
+  cushion: 'Emergency fund',
+  exploring: 'Not sure yet',
+};
+/** The plain one-line explanation under each purpose title (Stage 8). */
+export const PURPOSE_HINT: Record<Purpose, string> = {
+  wealth: 'Returns earn more returns over time (compounding)',
+  goal: 'A laptop, a trip, a course',
+  cushion: 'A safety net for sudden costs, like a hospital bill or a broken phone',
+  exploring: 'I want to learn first',
 };
 export const HORIZON_LABEL: Record<Horizon, string> = { lt1: '< 1 yr', '1to3': '1–3 yrs', '3to5': '3–5 yrs', '5plus': '5+ yrs' };
-export const DIP_LABEL: Record<DipReaction, string> = { sell: 'Probably sell', wait: 'Wait it out', stay: 'Stay, maybe add' };
+export const DIP_LABEL: Record<DipReaction, string> = {
+  sell: 'Sell to stop the loss',
+  wait: 'Wait and watch',
+  stay: 'Invest more while it’s low',
+};
+
+/** What a plan part is called on screen. The state keys stay `cushion` and `grow` (Stage 8). */
+export const ROLE_LABEL: Record<'cushion' | 'grow', string> = { cushion: 'Emergency fund', grow: 'Long-term investing' };
+/** The same labels inside a sentence ("your emergency fund SIP"). */
+export const ROLE_WORD: Record<'cushion' | 'grow', string> = { cushion: 'emergency fund', grow: 'long-term investing' };
+
+/** Risk comfort as shown to the user: Low, Medium or High. The stored value stays `moderate`. */
+export const RISK_COMFORT_LABEL: Record<RiskComfort, string> = { low: 'Low', moderate: 'Medium', high: 'High' };
 
 // ---------- derived values ----------
 export function riskComfort(d: DipReaction): RiskComfort {
@@ -150,8 +169,8 @@ export const CONFLICT_NOTES: Record<Conflict, string> = {
 };
 
 export const SPLIT_NOTES = {
-  less: 'With less cushion, a surprise ₹5,000 bill could force you to sell some of your grow money.',
-  more: 'A bigger cushion is steadier. The catch: less of your money is growing.',
+  less: 'With a smaller emergency fund, a surprise ₹5,000 bill could force you to sell some of your long-term investments.',
+  more: 'A bigger emergency fund is steadier. The catch: less of your money goes into long-term investing.',
   liquid: 'You need this within a year, so all of it stays in liquid funds.',
 } as const;
 
@@ -193,21 +212,21 @@ export function splitAmounts(monthly: number, cushionPct: number): SplitAmounts 
     return {
       cushion: monthly,
       grow: 0,
-      mergeNote: `Both parts are under the ${min} SIP minimum, so all ${formatINR(monthly)} goes to your cushion.`,
+      mergeNote: `Both parts are under the ${min} SIP minimum, so all ${formatINR(monthly)} goes to your emergency fund.`,
     };
   }
   if (cushion < MIN_PART) {
     const part = cushion > 0 ? cushion : Math.round((monthly * cushionPct) / 100);
     cushion = 0;
     grow = monthly;
-    return { cushion, grow, mergeNote: `The cushion part (${formatINR(part)}) is under the ${min} SIP minimum, so it joins the grow part.` };
+    return { cushion, grow, mergeNote: `The emergency fund part (${formatINR(part)}) is under the ${min} SIP minimum, so it joins the long-term investing part.` };
   }
   if (grow < MIN_PART) {
     const part = grow;
     return {
       cushion: monthly,
       grow: 0,
-      mergeNote: `The grow part (${formatINR(part)}) is under the ${min} SIP minimum, so it joins your cushion.`,
+      mergeNote: `The long-term investing part (${formatINR(part)}) is under the ${min} SIP minimum, so it joins your emergency fund.`,
     };
   }
   return { cushion, grow };
@@ -221,15 +240,15 @@ const INCOME_PHRASE: Record<IncomeType, string> = {
   none: 'You’re not earning yet',
 };
 const CUSHION_PHRASE: Record<CushionAnswer, string> = {
-  yes: 'You already have a few months set aside',
-  some: 'You have some money set aside',
-  no: 'You don’t have emergency money yet',
+  yes: 'You already have an emergency fund of a few months',
+  some: 'You have some emergency money set aside',
+  no: 'You don’t have an emergency fund yet',
 };
 const PURPOSE_PHRASE: Record<Purpose, string> = {
-  wealth: 'You want to grow wealth',
-  goal: 'You’re saving for a specific goal',
-  cushion: 'You want to build a cushion',
-  exploring: 'You’re exploring for now',
+  wealth: 'You want long-term wealth',
+  goal: 'You’re saving for something',
+  cushion: 'You want to build an emergency fund',
+  exploring: 'You’re not sure yet what it’s for',
 };
 const HORIZON_PHRASE: Record<Horizon, string> = {
   lt1: 'You may need this within a year',
@@ -238,9 +257,9 @@ const HORIZON_PHRASE: Record<Horizon, string> = {
   '5plus': 'You can leave this for 5+ years',
 };
 const DIP_PHRASE: Record<DipReaction, string> = {
-  sell: 'A 10% fall might make you sell',
-  wait: 'You’d wait out a 10% fall',
-  stay: 'You’d stay, maybe add, if it fell 10%',
+  sell: 'If it fell 10% in a month, you’d sell to stop the loss',
+  wait: 'If it fell 10% in a month, you’d wait and watch',
+  stay: 'If it fell 10% in a month, you’d invest more while it’s low',
 };
 
 function cushionReason(a: CheckinAnswers, rule: PlanRule): { reason: string; cited: AnswerKey[] } {
@@ -256,12 +275,12 @@ function cushionReason(a: CheckinAnswers, rule: PlanRule): { reason: string; cit
     case 'A3':
     case 'A4':
       return {
-        reason: `${CUSHION_PHRASE.no}. ${INCOME_PHRASE[a.incomeType]}. So part of each month builds a cushion first. ${close}`,
+        reason: `${CUSHION_PHRASE.no}. ${INCOME_PHRASE[a.incomeType]}. So part of each month builds your emergency fund first. ${close}`,
         cited: ['cushion', 'incomeType'],
       };
     case 'A5':
       return {
-        reason: `${CUSHION_PHRASE.some}. ${INCOME_PHRASE[a.incomeType]}. A smaller part tops up your cushion. ${close}`,
+        reason: `${CUSHION_PHRASE.some}. ${INCOME_PHRASE[a.incomeType]}. A smaller part tops up your emergency fund. ${close}`,
         cited: ['cushion', 'incomeType'],
       };
     case 'A6':
@@ -286,7 +305,7 @@ function growReason(a: CheckinAnswers, category: PlanCategoryId): { reason: stri
       cited.push('purpose');
       break;
     case 'cushion':
-      close = `${name} let this part grow while your cushion builds.`;
+      close = `${name} let this part grow while your emergency fund builds.`;
       cited.push('purpose');
       break;
     default:
@@ -296,23 +315,23 @@ function growReason(a: CheckinAnswers, category: PlanCategoryId): { reason: stri
 }
 
 export function buildFactors(a: CheckinAnswers): PlanFactor[] {
-  const dipWords: Record<DipReaction, string> = { sell: 'probably sell', wait: 'wait it out', stay: 'stay, maybe add' };
+  const dipWords: Record<DipReaction, string> = { sell: 'sell to stop the loss', wait: 'wait and watch', stay: 'invest more while it’s low' };
   const cushionWords: Record<CushionAnswer, string> = { yes: 'a few months', some: 'some', no: 'not yet' };
   const purposeWords: Record<Purpose, string> = {
-    wealth: 'growing wealth',
-    goal: 'a specific goal',
-    cushion: 'building a cushion',
-    exploring: 'exploring',
+    wealth: 'long-term wealth',
+    goal: 'something specific',
+    cushion: 'an emergency fund',
+    exploring: 'not sure yet',
   };
   return [
     { answer: 'horizon', text: `Time frame: ${HORIZON_TEXT[a.horizon]}` },
-    { answer: 'dipReaction', text: `If it fell 10%, you’d ${dipWords[a.dipReaction]}` },
-    { answer: 'cushion', text: `Emergency money set aside: ${cushionWords[a.cushion]}` },
+    { answer: 'dipReaction', text: `If it fell 10% in a month, you’d ${dipWords[a.dipReaction]}` },
+    { answer: 'cushion', text: `Emergency fund: ${cushionWords[a.cushion]}` },
     {
       answer: 'incomeType',
       text: `Income: ${INCOME_TYPE_LABEL[a.incomeType].toLowerCase()}, ${INCOME_BAND_LABEL[a.incomeBand]} a month`,
     },
-    { answer: 'purpose', text: `This money is for ${purposeWords[a.purpose]}` },
+    { answer: 'purpose', text: `What it’s for: ${purposeWords[a.purpose]}` },
     { answer: 'monthly', text: `Monthly amount: ${formatINR(a.monthly)}` },
   ];
 }

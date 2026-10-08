@@ -14,22 +14,22 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 
 ## 1. Riya, 22, first job (primary persona)
 
-**Check-in (seeded):** Salary · ₹25–50k · emergency money: not yet · grow wealth · 5+ yrs · "wait it out" · ₹4,000 a month. Payday 1st.
+**Check-in (seeded):** Salary · ₹25–50k · emergency fund: not yet · long-term wealth · 5+ yrs · "wait and watch" (risk comfort: Medium) · ₹4,000 a month. Payday 1st.
 
-**Seeded state:** Nifty 50 Index Fund SIP ₹2,000 on the 16th, 3 instalments; 12 weeks of history with two `dip_sharp` weeks (one mid-history, one the latest); next scenario `dip_sharp`. No cushion SIP yet.
+**Seeded state:** Nifty 50 Index Fund SIP ₹2,000 on the 16th, 3 instalments; 12 weeks of history with two `dip_sharp` weeks (one mid-history, one the latest); next scenario `dip_sharp`. No emergency fund SIP yet.
 
 **Expected plan (README 8.1):**
-- Rule **A4** (no cushion, salary) → 50 / 50.
-- The plan names categories and lists funds to pick from; nothing is preselected (Stage 7a). Cushion: **Liquid funds, ₹2,000** (Liquid Fund – A, Liquid Fund – B). Grow: **Nifty 50 index funds, ₹2,000** (Nifty 50 Index Fund, Nifty 50 Index Fund – B) (5+ yrs × Moderate).
+- Rule **A4** (no emergency fund, salary) → 50 / 50.
+- The plan names categories and lists funds to pick from; nothing is preselected (Stage 7a). Emergency fund: **Liquid funds, ₹2,000** (Liquid Fund – A, Liquid Fund – B). Long-term investing: **Nifty 50 index funds, ₹2,000** (Nifty 50 Index Fund, Nifty 50 Index Fund – B) (5+ yrs × Medium).
 - No conflict note, no ceiling note (₹4,000 ≤ ₹10,000), no merge note.
 - Suggested SIP date: the **4th** (payday + 3).
 - Each bucket reason cites ≥ 2 answers; factors list ≥ 3.
 
 **Expected insight branch:** **big dip** (overall ≤ −10% and horizon ≥ 3 yrs). Headline about "This week: −₹458 (−8.0%). Overall: −₹732 (−12.2%) on what you put in." Optional "Review my plan". Caution tone (amber), never red.
 
-**Expected Home next step:** "Set up your cushion SIP" → ₹2,000 a month into liquid funds, "You pick the fund next."
+**Expected Home next step:** "Set up your emergency fund SIP" → ₹2,000 a month into liquid funds, "You pick the fund next."
 
-**Expected plan health:** Cushion **To do** (₹0 of a first ₹10,000; full target ₹1,12,500) · Time frame match **On track** · Stock budget **On track** (0% of 10%) · SIPs running **Keep an eye** (1 of 2 SIPs in the plan running; the cushion SIP isn't set up yet).
+**Expected plan health:** Emergency fund **To do** (₹0 of a first ₹10,000; full target ₹1,12,500) · Time frame match **On track** · Stock budget **On track** (0% of 10%) · SIPs running **Keep an eye** (1 of 2 SIPs in the plan running; the emergency fund part isn't set up yet).
 
 | # | Step | Checkpoint | Result |
 |---|---|---|---|
@@ -37,14 +37,14 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 | R2 | Home → Your money | Value, "You put in", change shown amber with an arrow and text, not red | |
 | R3 | Open Portfolio | Insight card under the numbers is the big-dip branch; "Review my plan" is optional | |
 | R4 | Open Plan | Plan matches the expected plan above; label "Starter shortlist based on your answers. Not investment advice." | |
-| R5 | Home → "Set up ₹2,000 a month" | Plan flow opens on "Pick a fund for each part" with only the cushion list, nothing preselected and Continue disabled until one is picked; then the date step and review for ₹2,000; KYC already done so no verification step | |
+| R5 | Home → "Set up ₹2,000 a month" | Plan flow opens on "Pick a fund for each part" with only the emergency fund list, nothing preselected and Continue disabled until one is picked; then the date step and review for ₹2,000; KYC already done so no verification step | |
 | R6 | Portfolio → SIP → Skip next instalment | Undo toast; Undo restores the instalment. If the next debit is within 3 business days, Skip, Pause and Edit are unavailable with "Too close to the debit date to change this one. You can change the next." | |
 | R7 | SIP → Pause 1, 2 or 3 months → 1 month | Status Paused, resume date shown; Home and Dashboard reflect it | |
 | R8 | SIP → Stop SIP | Stop coach is one screen; "Keep my SIP" and "Stop anyway" equal size from first render | |
 | R9 | Stop coach → "Money is tight" | "Skipping is free and keeps your plan alive." Options in order, "Stop anyway" last | |
 | R10 | Stop coach → "Market fell" | Current move in plain numbers; continuing buys more units at lower prices | |
-| R11 | Home → "Got paid? Split it" | Pay ₹28,000; SIPs ₹2,000 · cushion top-up ₹2,800 · yours to spend ₹23,200 | |
-| R12 | Payday → "Top up cushion with ₹2,800" | With no cushion fund picked the button reads "Pick a cushion fund first" and opens the plan; after picking one there, the top-up is a one-time draft into that fund at the amount step | |
+| R11 | Home → "Got paid? Split it" | Pay ₹28,000; SIPs ₹2,000 · emergency fund top-up ₹2,800 · yours to spend ₹23,200 | |
+| R12 | Payday → "Top up emergency fund with ₹2,800" | With no emergency fund pick the button reads "Pick an emergency fund first" and opens the plan; after picking one there, the top-up is a one-time draft into that fund at the amount step | |
 | R13 | Open Dashboard | KPI tiles, value vs invested chart with down-week dots and "You stayed invested", donut, plan health as above | |
 | R14 | Reviewer tools → Advance one week ×3, back to Dashboard | Tiles, chart end date, This month's SIPs and activity all change | |
 | R15 | Portfolio → Goals → Create a goal (Laptop, date 8 months out, link the index SIP) | Short-goal-in-equity warning with "Switch to a steadier fund" | |
@@ -53,13 +53,13 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 
 ## 2. Kabir, 21, student
 
-**Check-in (seeded):** Stipend or pocket money · < ₹10k · emergency money: not yet · just exploring · 1–3 yrs · "probably sell" · ₹500 a month.
+**Check-in (seeded):** Stipend or pocket money · < ₹10k · emergency fund: not yet · not sure yet · 1–3 yrs · "sell to stop the loss" (risk comfort: Low) · ₹500 a month.
 
 **Seeded state:** signed up, KYC **not done**, nothing invested. 8 weeks of history; next scenario `normal`.
 
 **Expected plan (README 8.1):**
-- Rule **A3** (no cushion, income not salary) → 70 / 30.
-- Cushion: **Liquid funds, ₹350**. Grow: **Short duration debt funds, ₹150** (1–3 yrs × Low). Each part lists 2 funds to pick from; nothing is preselected.
+- Rule **A3** (no emergency fund, income not salary) → 70 / 30.
+- Emergency fund: **Liquid funds, ₹350**. Long-term investing: **Short duration debt funds, ₹150** (1–3 yrs × Low). Each part lists 2 funds to pick from; nothing is preselected.
 - No conflict note; no ceiling note (₹500 ≤ ₹1,500); no merge (both parts ≥ ₹100).
 - Suggested SIP date: the **10th** with "Skip any month, free." (irregular income).
 
@@ -86,14 +86,14 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 
 ## 3. Meera, 23, part-timer
 
-**Check-in (seeded):** Part-time or freelance · ₹10–25k · emergency money: some · a specific goal · < 1 yr · "wait it out" · ₹1,500 a month.
+**Check-in (seeded):** Part-time or freelance · ₹10–25k · emergency fund: some · save for something · < 1 yr · "wait and watch" (risk comfort: Medium) · ₹1,500 a month.
 
 **Seeded state:** Liquid Fund – A SIP ₹1,500 on the 9th, 2 instalments; goal **Laptop** ₹45,000, about 10 months out, linked to that SIP. 10 weeks of history; next scenario `normal`.
 
 **Expected plan (README 8.1):**
 - Rule **A2** (horizon < 1 yr) → 100 / 0.
 - One bucket: **Liquid funds, ₹1,500** (her SIP is in Liquid Fund – A). Moving the Adjust split slider below 100% keeps one liquid bucket and shows: "You need this within a year, so all of it stays in liquid funds."
-- No conflict note (Moderate comfort), no ceiling note (₹1,500 ≤ ₹4,000).
+- No conflict note (Medium risk comfort), no ceiling note (₹1,500 ≤ ₹4,000).
 - Suggested SIP date: the **10th** (irregular income).
 
 **Expected insight branch:** as loaded, **calm** (this week ≥ 0): "One week isn’t a trend. Nothing to do." Under `dip_sharp` + Advance one week: **down, horizon < 3 yrs**, liquid-fund wording with no alarming words ("crash", "alert", "sell now").
@@ -112,18 +112,18 @@ These are **scripts**, not results. Each persona is a demo state for reviewers, 
 | M6 | Create a goal with a date in the past | Refused on the form: "Pick a date after today." | |
 | M7 | Reviewer tools → Sharp dip → Advance one week → Portfolio | Liquid-only insight stays calm; no red; no alarming words | |
 | M8 | Reviewer tools → Advance 5 weeks | Next instalment posts; a milestone card shows once on Home; "Got it" hides it after reload | |
-| M9 | Dashboard | Donut shows all cushion; plan split vs actual line; goals row links to goal detail | |
+| M9 | Dashboard | Donut shows all emergency fund; plan split vs actual line; goals row links to goal detail | |
 
 ---
 
 ## 4. Arjun, 24, curious about stocks
 
-**Check-in (seeded):** Salary · ₹50k+ · emergency money: a few months · grow wealth · 5+ yrs · "stay, maybe add" · ₹5,000 a month. Payday 1st.
+**Check-in (seeded):** Salary · ₹50k+ · emergency fund: a few months · long-term wealth · 5+ yrs · "invest more while it’s low" (risk comfort: High) · ₹5,000 a month. Payday 1st.
 
 **Seeded state:** Nifty 50 Index Fund SIP ₹5,000, 3 instalments; watchlist of 3 sample stocks. 10 weeks of history; next scenario `normal`.
 
 **Expected plan (README 8.1):**
-- Rule **A6** (cushion yes) → 0 / 100.
+- Rule **A6** (emergency fund yes) → 0 / 100.
 - One bucket: **Nifty 50 index funds, ₹5,000** (5+ yrs × High; his SIP is in Nifty 50 Index Fund); alternative category **Flexi cap funds**.
 - No conflict or ceiling note (₹5,000 ≤ ₹25,000).
 - Suggested SIP date: the **4th** (payday + 3).

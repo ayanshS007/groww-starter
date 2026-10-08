@@ -209,9 +209,9 @@ describe('reasons and factors', () => {
     const plan = buildPlan(answers(), TODAY);
     const grow = plan.buckets.find((b) => b.role === 'grow')!;
     expect(grow.reason).toContain('5+ years');
-    expect(grow.reason).toContain('10% fall');
+    expect(grow.reason).toContain('10% in a month');
     const cushion = plan.buckets.find((b) => b.role === 'cushion')!;
-    expect(cushion.reason).toContain('emergency money');
+    expect(cushion.reason).toContain('emergency fund');
     expect(cushion.reason).toContain('salary');
   });
   it('factors list ≥ 3 items, each citing one answer', () => {
@@ -249,12 +249,12 @@ describe('rounding and merge', () => {
     const m = splitAmounts(250, 70); // 175 → 200, grow 50 → merge
     expect(m.cushion).toBe(250);
     expect(m.grow).toBe(0);
-    expect(m.mergeNote).toContain('grow part (₹50)');
+    expect(m.mergeNote).toContain('long-term investing part (₹50)');
   });
   it('merges a cushion part under ₹100 into grow', () => {
     const m = splitAmounts(500, 10); // 50 → 50 < 100
     expect(m).toMatchObject({ cushion: 0, grow: 500 });
-    expect(m.mergeNote).toContain('cushion part (₹50)');
+    expect(m.mergeNote).toContain('emergency fund part (₹50)');
   });
   it('both parts under ₹100 merge into the cushion (ties go to the cushion)', () => {
     const m = splitAmounts(100, 50);

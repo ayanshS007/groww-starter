@@ -27,7 +27,7 @@ describe('Next-step card (PLAN C6)', () => {
     const riya = buildPersona('riya', TODAY);
     const n = nextStep(riya);
     expect(n.kind).toBe('second_bucket');
-    expect(n.title).toBe('Set up your cushion SIP');
+    expect(n.title).toBe('Set up your emergency fund SIP');
     // Riya hasn't picked a cushion fund, so the plan flow asks her to (Stage 7a).
     expect(n.to).toBe('/invest/plan');
     expect(n.body).toBe('₹2,000 a month into liquid funds completes your plan. You pick the fund next.');
@@ -91,7 +91,7 @@ describe('after a stop: 30 quiet simulated days (owner decision)', () => {
     expect(nextStep(d29).kind).toBe('set');
     expect(quietRestart(d29)).not.toBeNull();
     const d30 = stoppedDaysAgo(s, 'sip_2', QUIET_AFTER_STOP_DAYS);
-    expect(nextStep(d30)).toMatchObject({ kind: 'second_bucket', title: 'Set up your grow SIP' });
+    expect(nextStep(d30)).toMatchObject({ kind: 'second_bucket', title: 'Set up your long-term investing SIP' });
     expect(quietRestart(d30)).toBeNull();
   });
   it('real weeks: still quiet after 4 weeks (28 days), back after 5 (35 days)', () => {
@@ -110,7 +110,7 @@ describe('after a stop: 30 quiet simulated days (owner decision)', () => {
     let s = startSip(withCheckin(fresh()), 'index50', 2000);
     s = run(s, { type: 'stopSip', sipId: 'sip_1', reason: 'none' });
     const n = nextStep(s);
-    expect(n).toMatchObject({ kind: 'second_bucket', title: 'Set up your cushion SIP' });
+    expect(n).toMatchObject({ kind: 'second_bucket', title: 'Set up your emergency fund SIP' });
     expect(quietRestart(s)!.text).toBe('One part of your plan isn’t running. Restart any time.');
   });
   it('both parts stopped: no restart card at all, a plural quiet line pointing at the whole plan', () => {

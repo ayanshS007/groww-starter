@@ -1,7 +1,8 @@
-// Cushion vs Grow bar with ₹ labels (README 9 item 4). Labels carry the meaning.
+// Emergency fund vs Long-term investing bar with ₹ labels (README 9 item 4). Labels carry the meaning.
 // `animate` fills each part in from the left on mount (Stage 6a plan reveal).
 import type { CSSProperties } from 'react';
 import { formatINR } from '../lib/format';
+import { ROLE_LABEL } from '../lib/planner';
 import type { StarterPlan } from '../state/types';
 
 export function SplitBar({ plan, size = 'md', labels = true, animate = false }: { plan: StarterPlan; size?: 'sm' | 'md'; labels?: boolean; animate?: boolean }) {
@@ -26,12 +27,12 @@ export function SplitBar({ plan, size = 'md', labels = true, animate = false }: 
       {labels && <dl className={`mt-2 flex ${size === 'sm' ? 'flex-col gap-1 text-xs' : 'justify-between gap-3 text-sm'}`}>
         <div className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-brand/35" />
-          <dt className="text-ink-muted">Cushion</dt>
+          <dt className="text-ink-muted">{ROLE_LABEL.cushion}</dt>
           <dd className="font-semibold tabular-nums text-ink">{formatINR(cushion)}</dd>
         </div>
         <div className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-brand" />
-          <dt className="text-ink-muted">Grow</dt>
+          <dt className="text-ink-muted">{ROLE_LABEL.grow}</dt>
           <dd className="font-semibold tabular-nums text-ink">{formatINR(grow)}</dd>
         </div>
       </dl>}

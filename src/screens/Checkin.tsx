@@ -16,6 +16,7 @@ import {
   HORIZON_LABEL,
   INCOME_BAND_LABEL,
   INCOME_TYPE_LABEL,
+  PURPOSE_HINT,
   PURPOSE_LABEL,
   validateMonthly,
 } from '../lib/planner';
@@ -67,16 +68,22 @@ type MonthlyValue = (typeof MONTHLY_PRESETS)[number] | 'custom';
 
 const QUESTION: Record<number, string> = {
   1: 'How does money come in, and roughly how much a month?',
-  2: 'Do you have money set aside for emergencies?',
+  2: 'Do you have an emergency fund?',
   3: 'What is this money for?',
-  4: 'When might you need it?',
-  5: 'If it fell 10% for a while, you’d…',
-  6: 'How much a month feels easy?',
+  4: 'When will you need this money?',
+  5: 'Your investment falls 10% in a month. What would you do?',
+  6: 'How much can you invest each month?',
+};
+
+/** An optional plain line under the question (Stage 8). */
+const HELPER: Partial<Record<number, string>> = {
+  2: 'Money you can use right away if something goes wrong. Usually 3–6 months of expenses.',
+  6: 'Pick an amount you won’t miss. You can change it any time.',
 };
 
 const WHY: Record<number, ReactNode> = {
-  1: 'A steady salary and a freelance income need different cushions and SIP dates.',
-  2: 'Without a cushion, a surprise ₹8,000 bill can force you to sell at a bad time.',
+  1: 'A steady salary and a freelance income need different emergency funds and SIP dates.',
+  2: 'Without an emergency fund, a surprise ₹8,000 bill can force you to sell at a bad time.',
   3: 'It shapes how your plan is split and how we explain it.',
   4: 'Money you need soon shouldn’t ride the ups and downs.',
   5: 'There’s no right answer. Most people feel a fall more than they expect.',
@@ -116,8 +123,12 @@ export function Checkin({ step }: { step: number }) {
 
   const onBack = () => (step > 1 ? navigate(`/checkin/${step - 1}`) : goBack('/home'));
 
+  const helper = HELPER[step];
   const legend = (
-    <h1 className="text-2xl font-bold leading-snug text-ink md:text-3xl">{QUESTION[step]}</h1>
+    <>
+      <h1 className="text-2xl font-bold leading-snug text-ink md:text-3xl">{QUESTION[step]}</h1>
+      {helper && <span className="mt-2 block text-base font-normal text-ink-muted">{helper}</span>}
+    </>
   );
 
   let body: ReactNode = null;
@@ -163,12 +174,7 @@ export function Checkin({ step }: { step: number }) {
           name="purpose"
           legend={legend}
           legendClassName="mb-6"
-          options={opts(PURPOSE_LABEL, {
-            wealth: 'Let it grow over the years',
-            goal: 'A laptop, a trip, course fees…',
-            cushion: 'Money for surprises first',
-            exploring: 'Learn how it works with a small amount',
-          })}
+          options={opts(PURPOSE_LABEL, PURPOSE_HINT)}
           value={d.purpose}
           onChange={(v) => save({ purpose: v })}
         />
