@@ -29,7 +29,7 @@ T4 (Eval #6) Still Riya.
 Record: did they find "Got paid? Split it"?
 
 T5 (Eval #10) Still Riya → Dashboard.
-"Where is most of your money right now, and is your cushion on track?"
+"Where is most of your money right now, and is your emergency fund on track?"
 Record: both answered correctly?
 
 T6 (Eval #8) Explore → Stocks.

@@ -4,9 +4,9 @@ Groww Starter is checked in three layers. They are kept apart on purpose, becaus
 
 | Layer | What it is | Evidence | Status |
 |---|---|---|---|
-| 1. Automated tests | Code checks that run on every change | 1,354 tests in 42 files, all passing | Done |
+| 1. Automated tests | Code checks that run on every change | 1,365 tests in 42 files, all passing | Done |
 | 2. Agent-simulated QA | Claude Code walked the app and reported issues | 37 issues found, all 37 fixed | Done. Not user research. |
-| 3. Real-user tests | People outside the project use the app | Template and script ready | Results to be added by the author |
+| 3. Human feedback | Real people used the live app | 4 people gave written feedback on the live app; see [EVALS.md](EVALS.md) | Done. Written feedback only, not timed tasks. |
 
 ## 1. Automated tests
 
@@ -21,7 +21,7 @@ The last run on this branch, on 8 October 2026, printed:
 
 ```
 Test Files  42 passed (42)
-     Tests  1354 passed (1354)
+     Tests  1365 passed (1365)
 ```
 
 The build (`npm run build`) also type-checks the code and confirms the single-file output.
@@ -35,9 +35,9 @@ Examples of what is covered:
 | [`src/lib/sipCoach.test.ts`](../src/lib/sipCoach.test.ts) | 20 | Each reason's options, "Stop anyway" always last |
 | [`src/lib/insight.test.ts`](../src/lib/insight.test.ts) | 26 | Every dip insight branch, no alarming words |
 | [`src/lib/planHealth.test.ts`](../src/lib/planHealth.test.ts) | 21 | Every plan health threshold |
-| [`src/lib/contrast.test.ts`](../src/lib/contrast.test.ts) | 172 | Text contrast in light and dark, for every mood |
-| [`src/copy.test.tsx`](../src/copy.test.tsx) | 437 | Banned words, em dashes and exclamation marks on every route |
-| [`src/App.test.tsx`](../src/App.test.tsx) | 176 | Screens, flows and acceptance checks |
+| [`src/lib/contrast.test.ts`](../src/lib/contrast.test.ts) | 174 | Text contrast in light and dark, for every mood |
+| [`src/copy.test.tsx`](../src/copy.test.tsx) | 438 | Banned words, em dashes and exclamation marks on every route |
+| [`src/App.test.tsx`](../src/App.test.tsx) | 184 | Screens, flows and acceptance checks |
 
 Tests do not cover how the app looks or feels. Visual checks were done by hand with Playwright screenshots, and the screens are in [`../docs/screenshots/`](../docs/screenshots/).
 
@@ -51,11 +51,9 @@ Tests do not cover how the app looks or feels. Visual checks were done by hand w
 - Each fix and its reason is one line in [`../CHANGELOG.md`](../CHANGELOG.md). Search the file for `QA #`.
 - The persona scripts the agent walked are in [`PERSONAS.md`](PERSONAS.md). Their Result column is blank.
 
-## 3. Real-user tests
+## 3. Human feedback
 
-This layer needs real people. It is not done by the agent.
+4 people gave written feedback on the live app; see [EVALS.md](EVALS.md). They used the app on their own and sent comments, which are copied there exactly as received. These were not timed task sessions, so there are no completion or time numbers.
 
-- [`EVALS.md`](EVALS.md): the success metrics and a 12-task test template, with a Result and an Iteration column for each task.
-- [`SESSION_SCRIPT.md`](SESSION_SCRIPT.md): the 15-minute session script for the person running the test.
-
-**Results: to be added by the author.** No results, participants or quotes are recorded in this repository.
+- [`EVALS.md`](EVALS.md): the feedback, what we learned, what we changed, the limits, and the metrics planned for after launch.
+- [`SESSION_SCRIPT.md`](SESSION_SCRIPT.md): the 15-minute script for the next round, timed tasks with 5 first-time investors. That round has not been run yet.

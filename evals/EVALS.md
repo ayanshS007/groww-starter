@@ -1,55 +1,89 @@
-# Evals — Groww Starter
+# Evals
 
-Source: README section 13.1 (success metrics) and 13.3 (human eval template).
+Groww Starter was tested in three layers.
 
-This file is a template. **No sessions have been run.** There are no participants, results or quotes here, and none may be added by the coding agent. The product owner fills in the Result and Iteration columns after real sessions.
-
-Agent walkthroughs live in `PERSONAS.md` and are labelled **agent-simulated**. They are not user research and must not be copied into this file as results.
-
----
-
-## 1. Success metrics (README 13.1, NPD step 6)
-
-| Type | Metric | Window |
+| Layer | What it checks | Result |
 |---|---|---|
-| **North star** | % of new 20–26 investors whose first SIP is active or paused (not stopped) at day 90, vs a control cohort | First 3 months post-launch |
-| Supporting | Stop attempts that end in skip, pause or lower amount | 3 months |
-| Supporting | First investments whose fund horizon matches the user's stated horizon | 3 months |
-| Supporting | Comprehension: can explain why they hold it (in-app 2-question check) | 3 months |
-| Guardrail | Re-stop within 7 days after the coach; complaint rate about stopping | Continuous |
-| Guardrail | Share of new users trading intraday/F&O in first 90 days | Continuous |
-| Guardrail | Notification opt-out rate | Continuous |
-
-Usage numbers (opens, time in app, Learn views) are deliberately not success metrics.
+| Automated tests | Planner rules, insight copy, Stop coach, contrast, wording rules | 1,365 tests passing (`npm test`) |
+| Agent QA (simulated) | Every screen and edge case at phone, tablet and laptop sizes | 37 issues found, all fixed (see CHANGELOG, Stages 4–5) |
+| Human feedback | Real people using the live app | 4 people, below |
 
 ---
 
-## 2. Human eval template (README 13.3)
+## Human feedback
 
-Leave **Result** and **Iteration made** blank until real sessions have been run.
+**How:** Each person used the live app on their own (https://ayanshs007.github.io/groww-starter/) and sent written feedback. These were not timed task sessions. Feedback is copied exactly as received.
 
-| # | Cluster | Task / question | Metric | Success criterion | Result | Iteration made |
-|---|---|---|---|---|---|---|
-| 1 | B Start | "You earn ₹28k and want to start. Use the app." | completion, time to first SIP, wrong turns | ≥ 80% unaided, median < 4 min | | |
-| 2 | B Start | "Why did the app suggest this?" | % citing ≥ 2 of their answers | ≥ 70% | | |
-| 3 | B Start | "What is the main risk of this fund?" | % correct | ≥ 70% | | |
-| 4 | A Stay | Portfolio −8% this week. "What would you do?" | % choosing an unnecessary stop/sell | ≤ 20% | | |
-| 5 | A Stay | "Rent is due and money is tight. Handle your SIP." | % who skip/pause/lower instead of stop | ≥ 70% | | |
-| 6 | A Stay | "You just got paid ₹28,000. What would you do in the app?" | % who find and use Payday Split | ≥ 60% | | |
-| 7 | A Stay | "Are you on track for your laptop goal?" | % reading monthly-needed correctly | ≥ 70% | | |
-| 8 | Safety | "A friend says buy stock X today." | % who check before buying | ≥ 60% | | |
-| 9 | Safety | "Did the stop screen feel like it was trying to trap you?" 1–5 | mean | ≤ 2 | | |
-| 10 | Visibility | On Dashboard: "Where is most of your money, and is your cushion on track?" | % answering both correctly | ≥ 70% | | |
-| 11 | Overall | Confidence to invest, 1–5, before vs after | mean change | ≥ +1 with no drop in Q3 | | |
-| 12 | Overall | "Does this feel like Groww?" 1–5 | mean | ≥ 4 | | |
+| # | Person | Role | Age | Relation to me |
+|---|---|---|---|---|
+| 1 | [ARCHITECT NAME] | UI architect, [ROLE/COMPANY] | [AGE] | [RELATION] |
+| 2 | Nishant Tripathi | Ex-PM, Zupee | 24 | [RELATION] |
+| 3 | Akansh Shankar | 2nd-year PGP student, IIM Indore (Accenture PPO) | 25 | [RELATION] |
+| 4 | Mantra Jain | Student, IIT Kanpur | 21 | [RELATION] |
 
-### Session set-up notes (for whoever runs the sessions)
+### 1. [ARCHITECT NAME], UI architect
+Comments sent on screenshots of the onboarding screens:
+> On "Grow wealth / Let it grow over the years": "compounding"
+> On "Build a cushion / Money for surprises first": "security fund ( safety net )"
+> "explore Et money"
+> "sor questions"
+> On "How much a month feels easy?": "wording feels off"
+> "indmoney"
 
-- Tasks 1–3: start from a reset prototype (Reviewer tools → Reset) so the participant goes through Landing, sign-up and the check-in.
-- Task 4: load **Riya** (two sharp-dip weeks; overall about −12%).
-- Task 5: load **Riya** and start on Portfolio.
-- Task 6: load **Riya** and start on Home (the "Got paid? Split it" card is there), or use Reviewer tools → Simulate pay credit.
-- Task 7: load **Meera** (Laptop goal, liquid SIP).
-- Task 8: load **Arjun** or **Kabir** and start on Explore.
-- Task 10: load **Riya** and open Dashboard.
-- Reviewer tools are not part of the user experience; the facilitator sets state before handing over.
+**What we learned:** Our own labels ("cushion", "grow", "feels easy") were unclear. Other Indian investing apps use standard terms people already know.
+**What we changed (Stage 8, PR #14):**
+- "Build a cushion" → **Emergency fund**, explained as a safety net for sudden costs
+- "Grow wealth" → **Long-term wealth**, with a one-line explanation of compounding
+- "How much a month feels easy?" → **How much can you invest each month?**
+- Risk result now shown on the plan as **Risk comfort: Low / Medium / High**
+
+### 2. Nishant Tripathi, ex-PM Zupee, 24
+> "Interected with the app but was confused with the wordings in the onboarding stage like cushion and where does money come from .
+> UI is nice and scenario simulation is a plus . Liked how pro and starter are separated by a quiz game which makes the user learn more before diving deep into exploration of stock window.
+> overall , app felt smooth but some jargons still present"
+
+**What we learned:** He confirmed the wording problem independently ("cushion"). He liked earning Pro through the quick check, which supports keeping it.
+**What we changed:**
+- "Cushion" → "Emergency fund" (Stage 8)
+- "How does money come in?" → **How do you earn?**, with clear options and "Your monthly income, after tax" (Stage 9)
+- **Still to do:** a pass to find remaining jargon
+
+### 3. Akansh Shankar, PGP student, IIM Indore, 25
+> "Hi,
+> This is Akansh, 2nd year PGP Student at IIM Indore and i have used groww-starter and i have found it really useful and easy to understand how to invest my funds, money etc. it's features like cushion & grow helped me a good understanding on how to keep my money safe and also grow. I would recommend this others also. It gave me a good understanding on portfolio diversification, and keeps up to date information about the funds that i invest in and about the potential high active returns (i.eAlpha) generating funds."
+
+**What we learned:** The idea of splitting money into "safe" and "growth" made sense to him, so we kept the idea and only renamed the labels. He also described the app as keeping "up to date information" and showing "alpha generating funds". The app uses sample data and does not rank funds by alpha, so a user can mistake sample data for real data.
+**What we changed:** Kept the two-part plan. Added a visible "Sample data" label on Fund detail, Stock detail and the fund list (Stage 9).
+
+### 4. Mantra Jain, student, IIT Kanpur, 21
+> "The onboarding was very nice and it gave a good suggestion from my finances. I really like the features and ux of the dashboard and the features of the pro version are very useful . As a new user starting to invest, I found it really easy to understand and it is perfectly made for a finance newbie."
+
+**What we learned:** A first-time investor found onboarding, the Dashboard and Pro easy to use. She described the plan as "a good suggestion", which fits our approach: guidance from her own answers, while she still picks the fund.
+**What we changed:** Nothing; this confirms the current design.
+
+---
+
+## Summary
+
+| | |
+|---|---|
+| **What worked** | Clean UI, market scenarios, Dashboard, earning Pro through the quick check, easy for beginners |
+| **What didn't** | Unclear onboarding words ("cushion", "grow", "where money comes from"), some jargon left, sample data mistaken for real data |
+| **Changed** | Standard terms with plain explanations (Stage 8); clearer income question and visible "Sample data" labels (Stage 9) |
+| **Still to do** | A jargon pass across the app |
+
+**Limits:** 4 people, all chosen by me, mostly peers. They gave written feedback rather than completing timed tasks, so there are no completion or time numbers.
+
+## Next round (planned, not run yet)
+Timed tasks with 5 first-time investors using `evals/SESSION_SCRIPT.md`:
+- Can they set up a first SIP without help, and how long does it take?
+- Can they explain why the app suggested their plan?
+- In a bad week, do they choose skip or pause instead of stop?
+
+## What we'd measure after launch
+| Metric | Type |
+|---|---|
+| Share of first SIPs still active or paused at day 90 | North star |
+| Users who stop again within 7 days of the Stop coach | Guardrail |
+| New users trying intraday or F&O in their first 90 days | Guardrail |
+| Notification opt-outs | Guardrail |
