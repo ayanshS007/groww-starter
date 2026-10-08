@@ -2,6 +2,7 @@
 import { getFund, PLAN_CATEGORIES } from '../data/funds';
 import { dateLabel, formatINR } from '../lib/format';
 import { upcomingSips } from '../lib/nextStep';
+import { ROLE_LABEL } from '../lib/planner';
 import { bucketFundId } from '../lib/planStatus';
 import { buildPath } from '../lib/routes';
 import { Link } from '../router';
@@ -82,7 +83,7 @@ export function PlanSummaryCard({ state, compact = false }: { state: State; comp
             <span>
               <span className="block font-semibold text-ink">{PLAN_CATEGORIES[b.category].label}</span>
               <span className="text-ink-muted">
-                {b.role === 'cushion' ? 'Cushion' : 'Grow'} · {getFund(bucketFundId(state.sips, b) ?? '')?.name ?? 'You pick the fund'}
+                {ROLE_LABEL[b.role]} · {getFund(bucketFundId(state.sips, b) ?? '')?.name ?? 'You pick the fund'}
               </span>
             </span>
             <span className="font-semibold tabular-nums text-ink">{formatINR(b.amount)}</span>

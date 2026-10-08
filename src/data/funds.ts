@@ -34,7 +34,7 @@ export const FUNDS: Fund[] = [
     whatItIs:
       'It lends money for a few days to weeks to large, steady borrowers. Its value moves very little. Money you withdraw reaches your bank in 1–3 working days.',
     mainRisk: 'Returns are modest and can trail rising prices over many years.',
-    goodFor: 'An emergency cushion or money you may need within a year.',
+    goodFor: 'An emergency fund or money you may need within a year.',
     notIdealFor: 'Long-term growth over five years or more.',
     illustrativeRange1y: { low: 5, high: 7 },
     expenseRatio: 0.2,
@@ -63,7 +63,7 @@ export const FUNDS: Fund[] = [
     whatItIs:
       'Like Liquid Fund – A, it lends money for very short periods. Its value moves very little. Money you withdraw reaches your bank in 1–3 working days.',
     mainRisk: 'Returns are modest and can trail rising prices over many years.',
-    goodFor: 'An emergency cushion or money you may need within a year.',
+    goodFor: 'An emergency fund or money you may need within a year.',
     notIdealFor: 'Long-term growth over five years or more.',
     illustrativeRange1y: { low: 5, high: 7 },
     expenseRatio: 0.25,

@@ -2,6 +2,7 @@
 // the rule's suggestion. One plain trade-off line; it never blocks.
 import { useId } from 'react';
 import { formatINR } from '../lib/format';
+import { ROLE_LABEL } from '../lib/planner';
 import type { StarterPlan } from '../state/types';
 
 type Props = { plan: StarterPlan; onChange: (cushionPct: number) => void };
@@ -20,7 +21,7 @@ export function SplitSlider({ plan, onChange }: Props) {
           Adjust split
         </label>
         <span className="text-sm text-ink-muted">
-          Suggested: {plan.suggestedCushionPct}% cushion
+          Suggested: {plan.suggestedCushionPct}% {ROLE_LABEL.cushion.toLowerCase()}
         </span>
       </div>
       <input
@@ -31,13 +32,13 @@ export function SplitSlider({ plan, onChange }: Props) {
         step={10}
         value={plan.cushionPct}
         onChange={(e) => onChange(Number(e.target.value))}
-        aria-valuetext={`Cushion ${plan.cushionPct}%, ${formatINR(cushion)}. Grow ${growPct}%, ${formatINR(grow)}.`}
+        aria-valuetext={`${ROLE_LABEL.cushion} ${plan.cushionPct}%, ${formatINR(cushion)}. ${ROLE_LABEL.grow} ${growPct}%, ${formatINR(grow)}.`}
         className="split-range mt-3 w-full"
         style={{ ['--fill' as string]: `${plan.cushionPct}%` }}
       />
       <div className="mt-1 flex justify-between text-sm font-medium text-ink" aria-hidden>
-        <span>Cushion {plan.cushionPct}%</span>
-        <span>Grow {growPct}%</span>
+        <span>{ROLE_LABEL.cushion} {plan.cushionPct}%</span>
+        <span>{ROLE_LABEL.grow} {growPct}%</span>
       </div>
       <p aria-live="polite" className="mt-3 min-h-[1.5rem] text-sm text-ink">
         {plan.splitNote ?? ''}

@@ -29,7 +29,7 @@ describe('cushion check', () => {
   });
   it('QA #16: "Yes, a few months" is taken at its word', () => {
     const s = withCheckin(fresh(), { cushion: 'yes', incomeBand: 'gt50k' });
-    expect(cushionCheck(s)).toMatchObject({ status: 'good', detail: 'You said you have a cushion.' });
+    expect(cushionCheck(s)).toMatchObject({ status: 'good', detail: 'You said you have an emergency fund.' });
   });
   it('QA #17: liquid money behind a goal is not the cushion; an Emergency cushion goal still is', () => {
     const base = startSip(withHoldings([]), 'liquid1', 3000);
@@ -86,7 +86,7 @@ describe('SIPs running', () => {
     const c = sipCheck(buildPersona('riya', '2026-10-07'));
     // No cushion fund is picked yet, so the fix is the plan flow, which asks for the pick.
     expect(c).toMatchObject({ status: 'watch', fixRoute: '/invest/plan', fixLabel: 'Set it up' });
-    expect(c.detail).toBe('1 of 2 SIPs in your plan running. Your cushion part isn’t set up yet.');
+    expect(c.detail).toBe('1 of 2 SIPs in your plan running. Your emergency fund part isn’t set up yet.');
   });
   it('watch with the resume date when any is paused', () => {
     let s = startSip(startSip(fresh(), 'liquid1', 500), 'index50', 500);

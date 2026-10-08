@@ -53,7 +53,7 @@ import {
 } from '../lib/invest';
 import { simToday } from '../lib/market';
 import { missingBuckets, unpickedBuckets } from '../lib/planStatus';
-import { defaultSipDay } from '../lib/planner';
+import { defaultSipDay, ROLE_LABEL } from '../lib/planner';
 import { buildPath } from '../lib/routes';
 import { goBack, navigate } from '../router';
 import { nextOrderId } from '../state/reducer';
@@ -111,7 +111,7 @@ function PickStep({ onContinue }: { onContinue: () => void }) {
       {buckets.map((b) => (
         <Card key={b.role} pad="md" className="space-y-4">
           <div>
-            <p className="text-sm font-semibold text-ink-muted">{b.role === 'cushion' ? 'Cushion' : 'Grow'} · {formatINR(b.amount)} a month</p>
+            <p className="text-sm font-semibold text-ink-muted">{ROLE_LABEL[b.role]} · {formatINR(b.amount)} a month</p>
             <h2 className="text-xl font-bold text-ink">{PLAN_CATEGORIES[b.category].label}</h2>
           </div>
           <FundPicker

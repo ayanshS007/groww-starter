@@ -104,14 +104,14 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
             <div className="flex items-start justify-between gap-4">
               <dt>
                 <span className="block font-semibold text-ink">
-                  <Term id="cushion">Cushion</Term> top-up
+                  <Term id="cushion">Emergency fund</Term> top-up
                 </span>
                 <span className="block text-sm text-ink-muted">
                   {split.saidHasCushion
-                    ? 'You said you have a cushion, so nothing extra.'
+                    ? 'You said you have an emergency fund, so nothing extra.'
                     : split.cushionGap > 0
-                      ? '10% of pay, up to what your cushion still needs.'
-                      : 'Your cushion is at its target, so nothing extra.'}
+                      ? '10% of pay, up to what your emergency fund still needs.'
+                      : 'Your emergency fund is at its target, so nothing extra.'}
                 </span>
               </dt>
               <dd className="text-xl font-bold tabular-nums text-ink">{formatINR(topUp)}</dd>
@@ -157,27 +157,27 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
       <Card pad="lg" tint="sky" aria-labelledby="cushion-title">
         <div className="flex items-center justify-between gap-3">
           <h2 id="cushion-title" className="text-lg font-semibold text-ink">
-            Your cushion
+            Your emergency fund
           </h2>
           <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-ink-muted">Illustrative values</span>
         </div>
         {split.saidHasCushion ? (
-          <p className="mt-2 text-base text-ink">You said you have a cushion. No top-up is suggested.</p>
+          <p className="mt-2 text-base text-ink">You said you have an emergency fund. No top-up is suggested.</p>
         ) : (
           <>
             <p className="mt-2 text-base tabular-nums text-ink">
               {formatINR(split.cushionValue)} of {step.first ? 'a first ' : ''}
               {formatINR(step.main)} ({formatPct(cushionPct, 0)})
             </p>
-            <ProgressBar className="mt-2" value={Math.round(cushionPct)} label={`Cushion: ${Math.round(cushionPct)}% of ${step.first ? 'the first step' : 'target'}`} />
+            <ProgressBar className="mt-2" value={Math.round(cushionPct)} label={`Emergency fund: ${Math.round(cushionPct)}% of ${step.first ? 'the first step' : 'target'}`} />
             {step.first && <p className="mt-2 text-sm tabular-nums text-ink-muted">Full target: {formatINR(step.full)}</p>}
           </>
         )}
-        <p className="mt-2 text-sm text-ink-muted">Cushion means money in liquid funds not saved for a goal, for surprise bills.</p>
+        <p className="mt-2 text-sm text-ink-muted">Emergency fund means money in liquid funds not saved for a goal, kept for sudden costs.</p>
         {split.saidHasCushion ? null : editTarget ? (
           <div className="mt-3">
             <AmountInput
-              label="Cushion target"
+              label="Emergency fund target"
               value={targetText}
               onChange={(v) => {
                 setTargetText(v);
@@ -202,19 +202,19 @@ export function Payday({ query = {} }: { query?: Record<string, string> }) {
         <ConfidenceBlock
           compact
           what={<>A one-time top-up into {fund ? fund.name : 'the liquid fund you pick'}, a steady fund for money you may need soon.</>}
-          why="You told us pay came in. A cushion means a surprise bill doesn’t force you to sell your grow funds."
-          next={<>You review the amount, then pay. Units arrive in 1–2 working days and show as cushion in Portfolio. Withdraw any time; money reaches your bank in 1–3 working days.</>}
+          why="You told us pay came in. An emergency fund means a surprise bill doesn’t force you to sell your long-term investments."
+          next={<>You review the amount, then pay. Units arrive in 1–2 working days and show as emergency fund in Portfolio. Withdraw any time; money reaches your bank in 1–3 working days.</>}
         />
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         {!fund && topUp > 0 ? (
           <Button className="sm:flex-1" onClick={() => navigate('/plan')}>
-            Pick a cushion fund first
+            Pick an emergency fund first
           </Button>
         ) : canTopUp ? (
           <Button className="sm:flex-1" onClick={topUpNow}>
-            Top up cushion with {formatINR(topUp)}
+            Top up emergency fund with {formatINR(topUp)}
           </Button>
         ) : (
           <p className="flex items-center gap-2 rounded-card-sm bg-surface2 p-4 text-sm text-ink sm:flex-1">

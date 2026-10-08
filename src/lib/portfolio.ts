@@ -3,6 +3,7 @@ import { getFund } from '../data/funds';
 import { getStock } from '../data/stocks';
 import type { Holding, State } from '../state/types';
 import { formatINR } from './format';
+import { ROLE_LABEL } from './planner';
 import { cushionValue, currentNav, goalSavingsValue, holdingValue, isProcessing, portfolioValue, stockValue, type Change } from './market';
 
 export type HoldingRow = {
@@ -64,9 +65,9 @@ export function assetSplit(state: Pick<State, 'holdings' | 'market'> & Partial<P
   const stocks = stockValue(state);
   const grow = Math.max(0, total - cushion - goals - stocks);
   const raw: [SliceId, string, number][] = [
-    ['cushion', 'Cushion', cushion],
+    ['cushion', ROLE_LABEL.cushion, cushion],
     ['goals', 'Goal savings', goals],
-    ['grow', 'Grow funds', grow],
+    ['grow', ROLE_LABEL.grow, grow],
     ['stocks', 'Stocks', stocks],
   ];
   return raw.filter(([, , v]) => v > 0.005).map(([id, label, value]) => ({ id, label, value, pct: (value / total) * 100 }));

@@ -3,6 +3,7 @@
 import { getFund } from '../data/funds';
 import { formatINR } from '../lib/format';
 import { scheduleLine, type ReviewRow } from '../lib/invest';
+import { ROLE_LABEL } from '../lib/planner';
 import { Icon } from './Icon';
 import { LetterAvatar } from './LetterAvatar';
 import { RiskMeter } from './RiskMeter';
@@ -17,7 +18,6 @@ type Props = {
   onChangeDate?: () => void;
 };
 
-const ROLE = { cushion: 'Cushion', grow: 'Grow' } as const;
 const link = 'inline-flex min-h-tap items-center font-semibold text-brand-text underline-offset-4 hover:underline';
 
 export function ReviewList({ rows, monthly, day, acked, onAck, onChangeAmount, onChangeDate }: Props) {
@@ -34,7 +34,7 @@ export function ReviewList({ rows, monthly, day, acked, onAck, onChangeAmount, o
                 <LetterAvatar name={fund.name} />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-ink">{fund.name}</p>
-                  {r.role && <p className="text-sm text-ink-muted">{ROLE[r.role]} part of your plan</p>}
+                  {r.role && <p className="text-sm text-ink-muted">{ROLE_LABEL[r.role]} part of your plan</p>}
                 </div>
                 <p className="text-right text-lg font-bold tabular-nums text-ink">
                   {formatINR(r.amount)}

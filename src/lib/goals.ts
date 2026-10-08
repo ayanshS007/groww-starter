@@ -4,7 +4,7 @@ import type { FundId, Goal, ISODate, Sip, State } from '../state/types';
 import { addYears, monthsBetweenCeil } from './dates';
 import { holdingValue } from './market';
 
-export const GOAL_SUGGESTIONS = ['Emergency cushion', 'Laptop', 'Trip', 'Course fees'] as const;
+export const GOAL_SUGGESTIONS = ['Emergency fund', 'Laptop', 'Trip', 'Course fees'] as const;
 export const WITHOUT_RETURNS = 'Without counting returns';
 export const GOAL_THRESHOLDS = [25, 50, 75, 100] as const;
 
@@ -92,13 +92,13 @@ export function validateGoalInput(
   return { ok: true, value: { name, target: raw, byDate: input.byDate } };
 }
 
-/** Prefill for a suggestion chip. Only the cushion has a known target: 3 × income midpoint. */
+/** Prefill for a suggestion chip. Only the emergency fund has a known target: 3 × income midpoint. */
 export function suggestionPrefill(
   name: (typeof GOAL_SUGGESTIONS)[number],
   cushionTarget: number | undefined,
   today: ISODate,
 ): { name: string; target?: number; byDate?: ISODate; isCushion: boolean } {
-  if (name === 'Emergency cushion') {
+  if (name === 'Emergency fund') {
     return { name, target: cushionTarget || undefined, byDate: addYears(today, 1), isCushion: true };
   }
   return { name, isCushion: false };

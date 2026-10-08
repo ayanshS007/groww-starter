@@ -25,6 +25,7 @@ import { getFund } from '../data/funds';
 import { fundFit, parseFrom } from '../lib/explore';
 import { formatINR } from '../lib/format';
 import { singleDraft, type InvestType } from '../lib/invest';
+import { ROLE_LABEL } from '../lib/planner';
 import { bucketFundId } from '../lib/planStatus';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
@@ -85,7 +86,7 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
             </p>
             {fit.bucket && (
               <p className="mt-2 inline-flex rounded-full bg-mint px-3 py-1 text-sm font-semibold text-ink">
-                {pickedFundId === fund.id ? 'Your pick' : 'In your plan’s category'} · {fit.bucket.role === 'cushion' ? 'Cushion' : 'Grow'}
+                {pickedFundId === fund.id ? 'Your pick' : 'In your plan’s category'} · {ROLE_LABEL[fit.bucket.role]}
               </p>
             )}
           </div>

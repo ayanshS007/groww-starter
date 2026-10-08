@@ -14,6 +14,7 @@ import { FundPicker } from '../components/FundPicker';
 import { WhyDrawer } from '../components/WhyDrawer';
 import { fundsInPlanCategory, getFund, PLAN_CATEGORIES } from '../data/funds';
 import { formatINR } from '../lib/format';
+import { ROLE_LABEL, RISK_COMFORT_LABEL } from '../lib/planner';
 import { bucketFundId, planAction } from '../lib/planStatus';
 import { Link } from '../router';
 import { useStore } from '../state/store';
@@ -39,8 +40,8 @@ export function PlanCategoryLabel({ category }: { category: PlanCategoryId }) {
 }
 
 const ROLE: Record<PlanBucket['role'], { title: string; sub: ReactNode; tint: Tint; icon: IconName }> = {
-  cushion: { title: 'Cushion', sub: <>Money for surprises, quick to <Term id="redemption">withdraw</Term></>, tint: 'sky', icon: 'shield' },
-  grow: { title: 'Grow', sub: 'Money you can leave alone to grow', tint: 'mint', icon: 'arrowUp' },
+  cushion: { title: ROLE_LABEL.cushion, sub: <>A safety net for sudden costs, quick to <Term id="redemption">withdraw</Term></>, tint: 'sky', icon: 'shield' },
+  grow: { title: ROLE_LABEL.grow, sub: 'Money you can leave alone for years to grow', tint: 'mint', icon: 'arrowUp' },
 };
 
 function BucketCard({ bucket, plan }: { bucket: PlanBucket; plan: StarterPlan }) {
@@ -151,12 +152,16 @@ export function Plan() {
             <span className="text-xl font-semibold text-ink-muted"> a month</span>
           </h1>
           <p className="mt-2 inline-flex rounded-full bg-surface2 px-3 py-1 text-sm text-ink">{plan.label}</p>
+          <p className="mt-2 text-sm text-ink-muted">
+            <Term id="risk-comfort">Risk comfort</Term>: <span className="font-semibold text-ink">{RISK_COMFORT_LABEL[plan.riskComfort]}</span>
+            , from your answer about a 10% fall.
+          </p>
         </header>
 
         <Card pad="lg">
-          <h2 className="text-lg font-semibold text-ink">Cushion vs Grow</h2>
+          <h2 className="text-lg font-semibold text-ink">{ROLE_LABEL.cushion} vs {ROLE_LABEL.grow}</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            A <Term id="cushion">cushion</Term> covers surprises, so you never have to sell your grow money in a hurry.
+            An <Term id="cushion">emergency fund</Term> covers surprises, so you never have to sell your long-term investments in a hurry.
           </p>
           <div className="mt-4">
             <SplitBar plan={plan} animate />

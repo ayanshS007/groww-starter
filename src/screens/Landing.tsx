@@ -39,7 +39,7 @@ const WhyArt = () => (
 const BENTO: Bento[] = [
   {
     title: 'A plan in 2 minutes',
-    body: 'Six questions, about two minutes. You get a starter shortlist based on your answers, with a cushion for surprises and a part to grow.',
+    body: 'Six questions, about two minutes. You get a starter shortlist based on your answers, with an emergency fund for surprises and a part for long-term investing.',
     tint: 'bg-mint',
     art: <StepsArt />,
     className: 'md:col-span-2 lg:col-span-2',
@@ -84,17 +84,17 @@ function HomeMock() {
           <div className="w-1/2 rounded-full bg-brand" />
         </div>
         <div className="mt-2 flex justify-between text-[11px] text-ink-muted">
-          <span>Cushion ₹2,000</span>
-          <span>Grow ₹2,000</span>
+          <span>Emergency fund ₹2,000</span>
+          <span>Long-term investing ₹2,000</span>
         </div>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div className="rounded-card bg-sky p-3">
-          <p className="text-[11px] text-ink-muted">Cushion</p>
+          <p className="text-[11px] text-ink-muted">Emergency fund</p>
           <p className="text-sm font-semibold text-ink">Liquid fund</p>
         </div>
         <div className="rounded-card bg-lavender p-3">
-          <p className="text-[11px] text-ink-muted">Grow</p>
+          <p className="text-[11px] text-ink-muted">Long-term investing</p>
           <p className="text-sm font-semibold text-ink">Index fund</p>
         </div>
       </div>

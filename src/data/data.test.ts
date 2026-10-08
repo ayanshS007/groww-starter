@@ -88,7 +88,7 @@ describe('glossary (README 7.3, PLAN item 40)', () => {
     for (const term of [
       'sip', 'nav', 'units', 'expense ratio', 'exit load', 'lump sum', 'redemption', 'index', 'nifty 50', 'equity',
       'debt fund', 'liquid fund', 'kyc', 'upi autopay', 'delivery vs intraday', 'f&o', 'xirr',
-      'stocks vs funds', 'average nav', 'mandate', 'step-up', 'cushion',
+      'stocks vs funds', 'average nav', 'mandate', 'step-up', 'emergency fund', 'compounding', 'risk comfort',
     ]) {
       expect(names).toContain(term);
     }

@@ -124,9 +124,21 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
   {
     id: 'cushion',
-    term: 'Cushion',
-    meaning: 'Money kept aside for surprises, usually about 3 months of income.',
-    analogy: 'Like a spare tyre: you hope not to need it, but you’re glad it’s there.',
+    term: 'Emergency fund',
+    meaning: 'Money you can use right away if something goes wrong. Usually 3–6 months of expenses.',
+    analogy: 'Like a spare tyre: you hope not to need it, but you’re glad it’s there. Think a hospital bill or a broken phone.',
+  },
+  {
+    id: 'compounding',
+    term: 'Compounding',
+    meaning: 'Returns earn more returns over time, so growth builds on itself.',
+    analogy: 'Like a snowball rolling downhill: it picks up more snow the bigger it gets.',
+  },
+  {
+    id: 'risk-comfort',
+    term: 'Risk comfort',
+    meaning: 'How much ups and downs you can sit through without panicking. Low, Medium or High.',
+    analogy: 'Like how you feel on a roller coaster: some people love the drops, some close their eyes.',
   },
   {
     id: 'stocks-vs-funds',

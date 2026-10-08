@@ -28,7 +28,7 @@ Reviewer tools is also a tab on the right edge on desktop. Use **Advance one wee
 
 **Start**
 - Money check-in: six questions, one per screen, with a "Why we ask" line.
-- Starter plan: a cushion part and a grow part, shown as fund categories. The user picks the fund.
+- Starter plan: an Emergency fund part and a Long-term investing part, shown as fund categories. The user picks the fund.
 - Adjust split slider and a one-pass setup for both SIPs, from ₹100.
 
 **Stay invested**

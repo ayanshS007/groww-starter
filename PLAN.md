@@ -154,6 +154,7 @@ PLAN.md overrides `README.md` at each point below. Everything not listed follows
 | C28 | 8.6 Stop coach; 9 item 12 SIP detail; 1.1 item 25 | Skip, pause and edit are available any time | **Real autopay cutoff** (Stage 7a): when the next debit is within 3 business days (Mon–Fri) on the simulated calendar, Skip, Pause and Edit for that instalment are unavailable, with one line. Undo works only before the cutoff of the skipped debit. The Stop coach shows only the options still possible; "Stop anyway" stays. |
 | C29 | 4.3 missing-state toast; 8.5 insight; 11 Copy | Quoted strings such as "Let's set up your account first" and "one week is not a trend" | UI copy is rewritten (Stage 7a): contractions, short sentences, concrete ₹ examples, a banned-word list, at most one `!` per screen, no em dashes. Compliance labels, disclaimers and "not a recommendation" wording are kept. README-quoted product copy (Landing headline and sub, check-in questions and options, Stop coach option labels, plan label) is unchanged. |
 | C30 | 8.3 Payday Split | CTA invests in `liquid1` | The top-up goes to the liquid fund the user picked or already holds. With none, the button reads "Pick a cushion fund first" and opens the plan. |
+| C31 | 8.1 check-in questions and options; 11 Terminology ("starter plan, cushion, grow, …"); 9 items 4, 21 "Cushion" and "Grow" labels | Check-in copy such as "Grow wealth", "Build a cushion", "Probably sell"; part labels Cushion and Grow | **Wording only** (Stage 8): the standard term is the title and a plain line sits under it. Part labels are **Emergency fund** and **Long-term investing**; the risk result shows as **Risk comfort: Low / Medium / High**. Code identifiers, state keys and routes (`cushion`, `grow`, `moderate`) are unchanged. Full list in the Stage 8 section. |
 
 ---
 
@@ -892,3 +893,38 @@ Owner request on 2026-10-08. Goal: fix two things that would not survive contact
 
 ### 7a.4 Tests and verification
 `planner.test.ts` (categories, 2–3 sorted candidates, shared risk/time frame, never a chosen fund), `planStatus.test.ts`, `invest.test.ts` (pick step, picks survive a split change), `storage.test.ts` (old saved plan), `cutoff.test.ts` (business days, window, reducer, undo), `sipCoach.test.ts` (only possible options), `copy.test.tsx`, App tests for the Plan, pick step, Payday, SIP detail, Home and Dashboard. Screenshots of changed screens at 390 and 1280 px only.
+
+---
+
+## Stage 8 — Wording clarity
+
+Owner request on 2026-10-08, after a UI architect review said several labels were unclear. Goal: use the standard investing term people see in other Indian apps as the title, and a plain one-line explanation under it. **User-facing wording only.** No renamed identifiers, state keys or routes (`cushion`, `grow`, `moderate` stay in code), so logic and saved state are unaffected. README change is C31 above.
+
+### 8.1 Terminology (replaces the list in README 11)
+| Use on screen | Never as a label | Notes |
+|---|---|---|
+| Emergency fund | Cushion, safety net | "A safety net for sudden costs" is allowed only as an explanation |
+| Long-term investing | Grow (bucket), Grow funds | the second plan part and the Dashboard, Portfolio and Donut slice |
+| Risk comfort: Low / Medium / High | Moderate (risk comfort) | stored value stays `low`, `moderate`, `high`. Shown on the Starter plan |
+| Long-term wealth · Save for something · Not sure yet | Grow wealth · A specific goal · Just exploring (as a purpose) | the Landing "Just exploring" link is a different thing and stays |
+| Compounding | | new glossary entry |
+Unchanged: starter plan, SIP (explained once), one-time, portfolio, holding, skip, pause, stop, withdraw. Product names stay (Starter plan, Stop coach, Steady mode, Pro).
+
+### 8.2 Check-in
+- Step 2: "Do you have an emergency fund?" + "Money you can use right away if something goes wrong. Usually 3–6 months of expenses."
+- Step 3 options (title / line): Long-term wealth / "Returns earn more returns over time (compounding)"; Emergency fund / "A safety net for sudden costs, like a hospital bill or a broken phone"; Save for something / "A laptop, a trip, a course"; Not sure yet / "I want to learn first".
+- Step 4: "When will you need this money?"
+- Step 5: "Your investment falls 10% in a month. What would you do?" with Sell to stop the loss · Wait and watch · Invest more while it's low.
+- Step 6: "How much can you invest each month?" + "Pick an amount you won't miss. You can change it any time."
+
+### 8.3 Where the new labels show
+Plan (part cards, split bar, Adjust split slider, merge and trade-off notes, "Why" lines and factors), Home plan card and Next-step ("Set up your emergency fund SIP"), Landing mock, Invest pick step and review, Success, Fund detail tag, Portfolio asset bar, Dashboard donut, split line and plan-health rows, Payday Split, Goals (suggestion "Emergency fund", chip, detail line), Learn glossary, persona summaries in Reviewer tools. "Risk comfort: Low / Medium / High" is a new one-line result under the plan label.
+
+### 8.4 Glossary
+"Cushion" becomes **Emergency fund** (id `cushion` kept so links still work). New: **Compounding** and **Risk comfort**. Each has a one-line meaning and an everyday example.
+
+### 8.5 Rules kept from 7a
+No banned words, no em dashes, at most one `!` per screen (`copy.test.tsx` still runs on every route). Compliance labels, "not a recommendation" lines and the plan label are unchanged.
+
+### 8.6 Tests and verification
+Tests that quoted old copy were updated. New App tests cover the check-in wording, Risk comfort for each answer, a scan of 13 route and state pairs for "Cushion" or "Grow" labels, and the glossary entries. Screenshots of changed screens at 390 and 1280 px only.
