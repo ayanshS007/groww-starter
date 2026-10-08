@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getFund } from '../data/funds';
 import { FIRST_WEEK_INSIGHT, insightFromState } from '../lib/insight';
 import { currentNav, isProcessing, portfolioValue, simToday, totalInvested } from '../lib/market';
-import { advance, fresh, oneTime, RIYA_ANSWERS, run, startSip, TODAY, withCheckin } from '../test/fixtures';
+import { advance, fresh, oneTime, RIYA_ANSWERS, run, startSip, TODAY, withCheckin, withPicks } from '../test/fixtures';
 import { createInitialState } from './initialState';
 import { nextOrderId, reducer } from './reducer';
 import type { State } from './types';
@@ -86,7 +86,7 @@ describe('placeInvestOrder', () => {
     expect(s.activity.at(-1)).toMatchObject({ kind: 'one_time', amount: 500, week: 1 });
   });
   it('plan mode sets up both SIPs in one pass with one batch (PLAN C4, C11)', () => {
-    const planned = withCheckin(fresh());
+    const planned = withPicks(withCheckin(fresh()));
     const s = run(
       planned,
       {
@@ -94,7 +94,7 @@ describe('placeInvestOrder', () => {
         draft: {
           mode: 'plan',
           type: 'sip',
-          planAmounts: planned.plan!.buckets.map((b) => ({ fundId: b.fundId, amount: b.amount, role: b.role })),
+          planAmounts: planned.plan!.buckets.map((b) => ({ fundId: b.fundId!, amount: b.amount, role: b.role })),
           dayOfMonth: 4,
           step: 'review',
           riskAck: true,

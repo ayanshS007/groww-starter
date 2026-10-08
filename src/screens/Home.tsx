@@ -15,6 +15,7 @@ import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { useAmbience } from '../components/useAmbience';
 import { getFund } from '../data/funds';
+import { sipChangeWindow } from '../lib/cutoff';
 import { dateLabel, formatINR } from '../lib/format';
 import { insightFromState } from '../lib/insight';
 import { overallChange, portfolioValue, totalInvested } from '../lib/market';
@@ -113,6 +114,7 @@ function UpcomingSip() {
         {group.map((next) => {
           const fund = getFund(next.sip.fundId);
           const sipId = next.sip.id;
+          const win = sipChangeWindow(state, next.sip);
           return (
             <li key={sipId} className="flex flex-wrap items-center gap-4">
               <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-card-sm bg-peach text-ink">
@@ -123,7 +125,9 @@ function UpcomingSip() {
                 <p className="font-semibold tabular-nums text-ink">{formatINR(next.sip.amount)}</p>
                 <p className="text-sm text-ink-muted">{fund?.name}</p>
               </div>
-              {next.skippedDate ? (
+              {win.line ? (
+                <p className="w-full text-sm text-ink-muted sm:w-auto sm:max-w-[16rem] lg:w-full lg:max-w-none">{win.line}</p>
+              ) : next.skippedDate ? (
                 <Button variant="quiet" className="w-full sm:w-auto lg:w-full" onClick={() => dispatch({ type: 'undoSkip', sipId })}>
                   Undo skip<span className="sr-only">, {fund?.name}</span>
                 </Button>
@@ -146,7 +150,7 @@ function UpcomingSip() {
         })}
       </ul>
       <p className="mt-3 text-sm text-ink-muted">
-        {skipped ? `${dateLabel(skipped, { short: true })} is skipped. Skipping is free.` : 'Skip any month, free. Nothing resets.'}
+        {skipped ? `${dateLabel(skipped, { short: true })} is skipped. Skipping is free.` : 'Skip a month, free, up to 3 working days before the debit. Nothing resets.'}
       </p>
     </Card>
   );
@@ -172,7 +176,7 @@ function PaydayCard({ glow }: { glow: boolean }) {
       <h2 id="payday-title" className="flex items-center gap-2 text-lg font-semibold text-ink">
         <Icon name="wallet" size={20} /> Got paid? Split it
       </h2>
-      <p className="mt-2 text-base text-ink">See what’s already going to SIPs, a small cushion top-up, and what’s yours to spend.</p>
+      <p className="mt-2 text-base text-ink">Pay just landed? See what goes to your SIPs and what’s left for you.</p>
       <ButtonLink to="/payday" variant="secondary" className="mt-4 w-full sm:w-auto">
         Split my pay
       </ButtonLink>

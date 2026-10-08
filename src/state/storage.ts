@@ -1,6 +1,7 @@
 // Safe localStorage access (PLAN section 4): one key, every access in
 // try/catch, and the app keeps working in memory if storage throws.
 import { isISODate } from '../lib/dates';
+import { buildPlan } from '../lib/planner';
 import { createInitialState, STATE_VERSION } from './initialState';
 import type { ISODate, State } from './types';
 
@@ -63,9 +64,19 @@ export function parseSavedState(raw: string | null, today: ISODate): State | nul
   // Stage 6b: Pro is earned. Someone who already passed the quick check keeps it;
   // a saved "Pro view" without it goes back to Starter.
   const proUnlocked = prefs.proUnlocked === true || (prefs.proUnlocked === undefined && prefs.readinessPassed === true);
+  // Stage 7a: a plan saved before the category change has one chosen fund per part. Rebuild it from
+  // the check-in (same split) so it names categories; nothing is preselected. No check-in: drop it.
+  const savedPlan = data.plan as State['plan'] | undefined;
+  const plan =
+    savedPlan && !savedPlan.buckets?.every((b) => Array.isArray(b?.candidateFundIds))
+      ? isObject(data.checkin)
+        ? buildPlan(data.checkin as unknown as NonNullable<State['checkin']>, savedPlan.createdAt ?? today, savedPlan.cushionPct)
+        : undefined
+      : savedPlan;
   return {
     ...fresh,
     ...(data as Partial<State>),
+    plan,
     user: { ...fresh.user, ...(data.user as Partial<State['user']>) },
     prefs: {
       ...fresh.prefs,

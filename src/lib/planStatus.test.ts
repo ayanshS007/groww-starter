@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildPersona } from '../data/personas';
-import { hasRunningPlanSip, planAction } from './planStatus';
+import { bucketForFund, bucketFundId, bucketHasLiveSip, bucketInvestPath, cushionFundId, hasRunningPlanSip, planAction, unpickedBuckets } from './planStatus';
 
 const today = '2026-10-07';
 
@@ -32,5 +32,39 @@ describe('planAction (QA #8: the plan screen says what is already running)', () 
   it('no plan: nothing to show', () => {
     const s = buildPersona('riya', today);
     expect(planAction({ ...s, plan: undefined })).toBeNull();
+  });
+});
+
+describe('plan parts and the user’s own picks (Stage 7a)', () => {
+  const riya = buildPersona('riya', today);
+  const cushion = riya.plan!.buckets.find((b) => b.role === 'cushion')!;
+  const grow = riya.plan!.buckets.find((b) => b.role === 'grow')!;
+
+  it('a part with no pick and no SIP has no fund, so the plan flow asks for one', () => {
+    expect(bucketFundId(riya.sips, cushion)).toBeUndefined();
+    expect(unpickedBuckets(riya).map((b) => b.role)).toEqual(['cushion']);
+    expect(bucketInvestPath(riya.sips, cushion)).toBe('/invest/plan');
+  });
+  it('a running SIP in the category counts as the part’s fund, whichever fund it is', () => {
+    expect(bucketFundId(riya.sips, grow)).toBe('index50');
+    expect(bucketHasLiveSip(riya.sips, grow)).toBe(true);
+    expect(bucketHasLiveSip(riya.sips, cushion)).toBe(false);
+  });
+  it('a pick sends the part straight to that fund', () => {
+    const picked = { ...cushion, fundId: 'liquid2' as const };
+    expect(bucketInvestPath(riya.sips, picked)).toBe('/invest/liquid2?amount=2000');
+    expect(unpickedBuckets({ plan: { ...riya.plan!, buckets: [picked, grow] }, sips: riya.sips })).toEqual([]);
+  });
+  it('finds the part whose category lists a fund, and none for other funds', () => {
+    expect(bucketForFund(riya.plan, 'liquid2')?.role).toBe('cushion');
+    expect(bucketForFund(riya.plan, 'index50b')?.role).toBe('grow');
+    expect(bucketForFund(riya.plan, 'gold1')).toBeUndefined();
+  });
+  it('a cushion top-up goes to the liquid fund the user picked or holds, never one chosen for them', () => {
+    expect(cushionFundId(riya)).toBeUndefined();
+    const picked = { ...riya, plan: { ...riya.plan!, buckets: riya.plan!.buckets.map((b) => (b.role === 'cushion' ? { ...b, fundId: 'liquid2' as const } : b)) } };
+    expect(cushionFundId(picked)).toBe('liquid2');
+    const holds = { ...riya, holdings: [...riya.holdings, { id: 'h_liquid1', kind: 'fund' as const, assetId: 'liquid1', units: 3, invested: 100, createdAt: today, createdWeek: 0 }] };
+    expect(cushionFundId(holds)).toBe('liquid1');
   });
 });

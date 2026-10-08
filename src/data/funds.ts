@@ -1,5 +1,5 @@
 // Sample funds from README 7.1. Generic names only; every number is illustrative.
-import type { Fund, FundId } from '../state/types';
+import type { Fund, FundId, PlanCategoryId } from '../state/types';
 
 /** Deterministic 24-point walk (mulberry32), so sparklines never change between loads. */
 export function sampleSparkline(seed: number, vol: number, drift = 0.004, start = 100): number[] {
@@ -23,6 +23,7 @@ export const FUNDS: Fund[] = [
     id: 'liquid1',
     name: 'Liquid Fund – A',
     category: 'Liquid',
+    planCategory: 'liquid',
     oneLiner: 'A parking spot for money you may need soon',
     risk: 1,
     horizon: 'lt1',
@@ -51,6 +52,7 @@ export const FUNDS: Fund[] = [
     id: 'liquid2',
     name: 'Liquid Fund – B',
     category: 'Liquid',
+    planCategory: 'liquid',
     oneLiner: 'Same idea, different fund house',
     risk: 1,
     horizon: 'lt1',
@@ -79,6 +81,7 @@ export const FUNDS: Fund[] = [
     id: 'shortdebt1',
     name: 'Short Duration Debt Fund',
     category: 'Debt',
+    planCategory: 'short_debt',
     oneLiner: 'Lends for short periods; steadier than shares',
     risk: 2,
     horizon: '1to3',
@@ -135,6 +138,7 @@ export const FUNDS: Fund[] = [
     id: 'balanced1',
     name: 'Balanced Advantage Fund',
     category: 'Hybrid',
+    planCategory: 'balanced',
     oneLiner: 'Shares and bonds mix that shifts with markets',
     risk: 3,
     horizon: '3to5',
@@ -163,6 +167,7 @@ export const FUNDS: Fund[] = [
     id: 'index50',
     name: 'Nifty 50 Index Fund',
     category: 'Index',
+    planCategory: 'index50',
     oneLiner: "A slice of India's 50 largest companies",
     risk: 4,
     horizon: '5plus',
@@ -219,6 +224,7 @@ export const FUNDS: Fund[] = [
     id: 'flexi1',
     name: 'Flexi Cap Fund',
     category: 'Equity',
+    planCategory: 'flexi',
     oneLiner: 'A manager picks shares across company sizes',
     risk: 5,
     horizon: '5plus',
@@ -257,7 +263,7 @@ export const FUNDS: Fund[] = [
     whatItIs:
       'A manager picks shares of mid-sized companies. They can grow fast but also fall hard. It needs a long time to smooth out the swings.',
     mainRisk: 'It can fall 30–40% in a bad year and stay down for a long time.',
-    goodFor: 'Money you will not touch for 7+ years, alongside a steadier fund.',
+    goodFor: 'Money you won’t touch for 7+ years, alongside a steadier fund.',
     notIdealFor: 'Your first fund, or money you may need within 7 years.',
     illustrativeRange1y: { low: -28, high: 50 },
     expenseRatio: 0.9,
@@ -299,6 +305,124 @@ export const FUNDS: Fund[] = [
     sparkline: sampleSparkline(20, 0.4, 0.004),
     illustrativeReturns: { y1: 9.8, y3: 11.2, y5: 10.1 },
   },
+  // Stage 7a: a second fund in each category the planner uses, so the plan can list 2–3 to pick from.
+  // Same shape as the others; every number is illustrative.
+  {
+    id: 'shortdebt2',
+    name: 'Short Duration Debt Fund – B',
+    category: 'Debt',
+    planCategory: 'short_debt',
+    oneLiner: 'Lends for short periods; a second fund of the same type',
+    risk: 2,
+    horizon: '1to3',
+    horizonLabel: '1–3 yrs',
+    minSip: 100,
+    minOneTime: 500,
+    vol: 0.17,
+    whatItIs:
+      'Like Short Duration Debt Fund, it lends to companies and the government for one to three years. Interest builds your value slowly. Prices move a little when interest rates change.',
+    mainRisk: 'If interest rates rise or a borrower struggles, the value can dip for a while.',
+    goodFor: 'Money you need in 1–3 years, with a steadier ride than shares.',
+    notIdealFor: 'Money you may need next month, or growth over 5+ years.',
+    illustrativeRange1y: { low: 4, high: 9 },
+    expenseRatio: 0.4,
+    exitLoad: 'No fee to withdraw, at any time.',
+    whatHappensNext: [
+      'Your money buys units at the next day’s price (NAV).',
+      'Units arrive in your portfolio in 1–2 working days.',
+      'Withdraw any time; money reaches your bank in 1–3 working days.',
+    ],
+    baseNav: 58,
+    sparkline: sampleSparkline(21, 0.17, 0.002),
+    illustrativeReturns: { y1: 7.2, y3: 6.5, y5: 6.7 },
+  },
+  {
+    id: 'balanced2',
+    name: 'Balanced Advantage Fund – B',
+    category: 'Hybrid',
+    planCategory: 'balanced',
+    oneLiner: 'Shares and bonds mix; a second fund of the same type',
+    risk: 3,
+    horizon: '3to5',
+    horizonLabel: '3–5 yrs',
+    minSip: 100,
+    minOneTime: 500,
+    vol: 0.62,
+    whatItIs:
+      'Like Balanced Advantage Fund, it holds shares and bonds and shifts the mix as markets move. It usually swings less than a pure share fund, but it can still fall.',
+    mainRisk: 'It can fall 10–20% in a bad year, and the manager’s mix may not help.',
+    goodFor: 'Money for 3–5 years that you want to grow with a smoother ride.',
+    notIdealFor: 'Money you may need within 3 years.',
+    illustrativeRange1y: { low: -10, high: 22 },
+    expenseRatio: 0.75,
+    exitLoad: '1% fee if you withdraw within 1 year. None after that.',
+    whatHappensNext: [
+      'Your money buys units at the next day’s price (NAV).',
+      'Units arrive in your portfolio in 1–2 working days.',
+      'Withdraw any time; money reaches your bank in 1–3 working days.',
+    ],
+    baseNav: 31,
+    sparkline: sampleSparkline(22, 0.62, 0.004),
+    illustrativeReturns: { y1: 10.4, y3: 9.6, y5: 10.8 },
+  },
+  {
+    id: 'index50b',
+    name: 'Nifty 50 Index Fund – B',
+    category: 'Index',
+    planCategory: 'index50',
+    oneLiner: 'A slice of India’s 50 largest companies; a second fund of the same type',
+    risk: 4,
+    horizon: '5plus',
+    horizonLabel: '5+ yrs',
+    minSip: 100,
+    minOneTime: 500,
+    vol: 1.0,
+    whatItIs:
+      'Like Nifty 50 Index Fund, it holds the same 50 large companies as the index, in the same proportions. No manager picks shares, so costs stay low.',
+    mainRisk: 'It can fall 20–30% in a bad year and take years to recover.',
+    goodFor: 'Long-term growth over 5+ years without choosing shares yourself.',
+    notIdealFor: 'Money you may need within 5 years.',
+    illustrativeRange1y: { low: -15, high: 30 },
+    expenseRatio: 0.2,
+    exitLoad: '0.25% fee if you withdraw within 30 days. None after that.',
+    whatHappensNext: [
+      'Your money buys units at the next day’s price (NAV).',
+      'Units arrive in your portfolio in 1–2 working days.',
+      'Withdraw any time; money reaches your bank in 1–3 working days.',
+    ],
+    baseNav: 39,
+    sparkline: sampleSparkline(23, 1.0, 0.006),
+    illustrativeReturns: { y1: 12.2, y3: 12.5, y5: 13.3 },
+  },
+  {
+    id: 'flexi2',
+    name: 'Flexi Cap Fund – B',
+    category: 'Equity',
+    planCategory: 'flexi',
+    oneLiner: 'A manager picks shares across company sizes; a second fund of the same type',
+    risk: 5,
+    horizon: '5plus',
+    horizonLabel: '5+ yrs',
+    minSip: 100,
+    minOneTime: 500,
+    vol: 1.18,
+    whatItIs:
+      'Like Flexi Cap Fund, a manager picks shares of large, mid and small companies and changes the mix as they see fit. Costs are higher than an index fund.',
+    mainRisk: 'It can fall 25–35% in a bad year, and the manager may do worse than the index.',
+    goodFor: 'Long-term growth over 5+ years with a manager choosing shares.',
+    notIdealFor: 'Money you may need within 5 years.',
+    illustrativeRange1y: { low: -18, high: 35 },
+    expenseRatio: 0.85,
+    exitLoad: '1% fee if you withdraw within 1 year. None after that.',
+    whatHappensNext: [
+      'Your money buys units at the next day’s price (NAV).',
+      'Units arrive in your portfolio in 1–2 working days.',
+      'Withdraw any time; money reaches your bank in 1–3 working days.',
+    ],
+    baseNav: 64,
+    sparkline: sampleSparkline(24, 1.18, 0.006),
+    illustrativeReturns: { y1: 14.1, y3: 13.0, y5: 14.4 },
+  },
 ];
 
 const BY_ID = new Map<string, Fund>(FUNDS.map((f) => [f.id, f]));
@@ -325,3 +449,20 @@ export const COLLECTIONS: { id: CollectionId; label: string; fundIds: FundId[] }
     fundIds: FUNDS.filter((f) => (f.category === 'Index' || f.category === 'Liquid') && f.expenseRatio <= 0.3).map((f) => f.id),
   },
 ];
+
+/** Plan categories (Stage 7a): the planner names one of these, never a single fund. */
+export const PLAN_CATEGORIES: Record<
+  PlanCategoryId,
+  { label: string; /** Short noun for sentences, e.g. "liquid funds". */ plural: string; oneLiner: string; term?: { id: string; text: string } }
+> = {
+  liquid: { label: 'Liquid funds', plural: 'liquid funds', oneLiner: 'A parking spot for money you may need soon', term: { id: 'liquid-fund', text: 'Liquid fund' } },
+  short_debt: { label: 'Short duration debt funds', plural: 'short duration debt funds', oneLiner: 'Lends for short periods; steadier than shares', term: { id: 'debt-fund', text: 'Debt fund' } },
+  balanced: { label: 'Balanced advantage funds', plural: 'balanced advantage funds', oneLiner: 'A shares and bonds mix that shifts with markets', term: { id: 'hybrid-fund', text: 'Hybrid fund' } },
+  index50: { label: 'Nifty 50 index funds', plural: 'Nifty 50 index funds', oneLiner: 'A slice of India’s 50 largest companies', term: { id: 'index', text: 'Index fund' } },
+  flexi: { label: 'Flexi cap funds', plural: 'flexi cap funds', oneLiner: 'A manager picks shares across company sizes', term: { id: 'equity', text: 'Equity fund' } },
+};
+
+/** The funds in a plan category, sorted by name (never by return or cost). */
+export function fundsInPlanCategory(id: PlanCategoryId): Fund[] {
+  return FUNDS.filter((f) => f.planCategory === id).sort((a, b) => a.name.localeCompare(b.name));
+}

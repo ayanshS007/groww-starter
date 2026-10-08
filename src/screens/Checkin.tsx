@@ -75,10 +75,10 @@ const QUESTION: Record<number, string> = {
 };
 
 const WHY: Record<number, ReactNode> = {
-  1: 'A steady salary and uneven income need different cushions and different SIP dates.',
-  2: 'Without a cushion, a surprise bill can force you to sell at a bad time.',
+  1: 'A steady salary and a freelance income need different cushions and SIP dates.',
+  2: 'Without a cushion, a surprise ₹8,000 bill can force you to sell at a bad time.',
   3: 'It shapes how your plan is split and how we explain it.',
-  4: 'Money you need soon should not ride big ups and downs.',
+  4: 'Money you need soon shouldn’t ride the ups and downs.',
   5: 'There’s no right answer. Most people feel a fall more than they expect.',
   6: (
     <>

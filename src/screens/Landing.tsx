@@ -39,21 +39,21 @@ const WhyArt = () => (
 const BENTO: Bento[] = [
   {
     title: 'A plan in 2 minutes',
-    body: 'Six quick questions. You get a starter shortlist based on your answers, split into a cushion and a grow part.',
+    body: 'Six questions, about two minutes. You get a starter shortlist based on your answers, with a cushion for surprises and a part to grow.',
     tint: 'bg-mint',
     art: <StepsArt />,
     className: 'md:col-span-2 lg:col-span-2',
   },
   {
     title: 'Skip any month, free',
-    body: 'Rent due? Skip or pause your SIP. Nothing resets and nothing is locked in.',
+    body: 'Rent due? Skip a month or pause your SIP, free. Just do it 3 working days before the debit.',
     tint: 'bg-peach',
     art: <SkipArt />,
     className: 'lg:row-span-2 lg:flex lg:flex-col lg:justify-between',
   },
   {
     title: 'Always see why',
-    body: 'Every fund says what it is, why you’re seeing it, and what happens next. Every word, explained.',
+    body: 'Every fund page says what it is and why it’s there. Tap any word you don’t know.',
     tint: 'bg-lavender',
     art: <WhyArt />,
     className: 'lg:col-span-2',

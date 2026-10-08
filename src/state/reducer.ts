@@ -11,6 +11,7 @@ import {
   nextId,
   postInstalment,
 } from '../lib/activity';
+import { sipChangeWindow } from '../lib/cutoff';
 import { addMonths, addYears } from '../lib/dates';
 import { formatINR, ordinal } from '../lib/format';
 import { currentNav, simToday } from '../lib/market';
@@ -30,6 +31,8 @@ import type {
   Order,
   PersonaId,
   PickReason,
+  PlanBucket,
+  StarterPlan,
   Scenario,
   Sip,
   State,
@@ -42,6 +45,7 @@ export type Action =
   | { type: 'saveCheckinAnswer'; answers: Partial<CheckinAnswers> }
   | { type: 'completeCheckin' }
   | { type: 'setPlanSplit'; cushionPct: number }
+  | { type: 'pickPlanFund'; role: PlanBucket['role']; fundId: FundId }
   | { type: 'kycAdvance'; progress: Partial<KycProgress> }
   | { type: 'kycComplete' }
   | { type: 'startInvestDraft'; draft: Omit<InvestDraft, 'startedAt'> }
@@ -92,6 +96,18 @@ const clampDay = (d: number) => Math.min(28, Math.max(1, Math.round(d)));
 
 function pushActivity(state: State, item: Omit<ActivityItem, 'id'>): State {
   return { ...state, activity: [...state.activity, { id: nextId('act', state.activity), ...item }] };
+}
+
+/** A rebuilt plan keeps the user's picks where the category is still the same. */
+function keepPicks(prev: StarterPlan | undefined, next: StarterPlan): StarterPlan {
+  if (!prev) return next;
+  return {
+    ...next,
+    buckets: next.buckets.map((b) => {
+      const old = prev.buckets.find((x) => x.role === b.role && x.category === b.category);
+      return old?.fundId && b.candidateFundIds.includes(old.fundId) ? { ...b, fundId: old.fundId } : b;
+    }),
+  };
 }
 
 function patchSip(state: State, sipId: string, patch: Partial<Sip>): State {
@@ -289,12 +305,22 @@ export function reducer(state: State, action: Action): State {
     case 'completeCheckin': {
       const d = state.checkinDraft;
       if (!isCompleteCheckin(d)) return state;
-      return { ...state, checkin: { ...d }, plan: buildPlan(d, today) };
+      return { ...state, checkin: { ...d }, plan: keepPicks(state.plan, buildPlan(d, today)) };
     }
 
     case 'setPlanSplit':
       if (!state.checkin) return state;
-      return { ...state, plan: buildPlan(state.checkin, state.plan?.createdAt ?? today, action.cushionPct) };
+      return { ...state, plan: keepPicks(state.plan, buildPlan(state.checkin, state.plan?.createdAt ?? today, action.cushionPct)) };
+
+    case 'pickPlanFund': {
+      const plan = state.plan;
+      const bucket = plan?.buckets.find((b) => b.role === action.role);
+      if (!plan || !bucket || !bucket.candidateFundIds.includes(action.fundId)) return state;
+      return {
+        ...state,
+        plan: { ...plan, buckets: plan.buckets.map((b) => (b === bucket ? { ...b, fundId: action.fundId } : b)) },
+      };
+    }
 
     case 'kycAdvance': {
       const prev: KycProgress = state.kycProgress ?? { step: 1, panOk: false, aadhaarOk: false, selfieOk: false };
@@ -326,15 +352,23 @@ export function reducer(state: State, action: Action): State {
     case 'skipNext': {
       const sip = state.sips.find((s) => s.id === action.sipId);
       if (!sip || sip.status !== 'active') return state;
+      // Real autopay rules: the next debit can't be changed inside the cutoff.
+      if (!sipChangeWindow(state, sip).canSkip) return state;
       return patchSip(state, sip.id, { skipNext: true });
     }
 
-    case 'undoSkip':
+    case 'undoSkip': {
+      const sip = state.sips.find((s) => s.id === action.sipId);
+      if (!sip) return state;
+      // Undo works only before the cutoff of the skipped instalment.
+      if (sip.skipNext && sip.status === 'active' && !sipChangeWindow(state, sip).canUndo) return state;
       return patchSip(state, action.sipId, { skipNext: false });
+    }
 
     case 'pauseSip': {
       const sip = state.sips.find((s) => s.id === action.sipId);
       if (!sip || sip.status === 'stopped') return state;
+      if (!sipChangeWindow(state, sip).canPause) return state;
       const s = patchSip(state, sip.id, { status: 'paused', pausedUntil: addMonths(today, action.months) });
       return pushActivity(s, {
         at: today,
@@ -356,6 +390,7 @@ export function reducer(state: State, action: Action): State {
     case 'editSip': {
       const sip = state.sips.find((s) => s.id === action.sipId);
       if (!sip || sip.status === 'stopped') return state;
+      if (!sipChangeWindow(state, sip).canEdit) return state;
       const fund = getFund(sip.fundId);
       const patch: Partial<Sip> = {};
       const notes: string[] = [];

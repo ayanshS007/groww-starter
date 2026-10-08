@@ -22,6 +22,7 @@ import { useToast } from '../components/Toast';
 import { useAmbience } from '../components/useAmbience';
 import { getFund } from '../data/funds';
 import { activeSipTotal } from '../lib/activity';
+import { sipChangeWindow } from '../lib/cutoff';
 import {
   ACTIVITY_PREVIEW,
   activityRows,
@@ -94,6 +95,7 @@ function NextSipTile({ state }: { state: State }) {
   }
   const sipId = next.sip.id;
   const fund = getFund(next.sip.fundId);
+  const win = sipChangeWindow(state, next.sip);
   // Several SIPs on the same date: show them together, manage them in Portfolio (QA #29).
   const group = nextSipGroup(state);
   return (
@@ -118,6 +120,8 @@ function NextSipTile({ state }: { state: State }) {
         <Link to="/portfolio" className={`${textLink} self-start`}>
           Skip or manage in Portfolio <Icon name="chevronRight" size={16} />
         </Link>
+      ) : win.line ? (
+        <p className="mt-1 text-sm text-ink">{win.line}</p>
       ) : next.skippedDate ? (
         <p className="mt-1 text-sm text-ink">
           {dateLabel(next.skippedDate, { short: true })} skipped.{' '}
@@ -454,8 +458,8 @@ function ActivityCard({ state }: { state: State }) {
               <tr key={r.id}>
                 <td className="whitespace-nowrap py-3 pr-4 text-ink-muted">{dateLabel(r.date)}</td>
                 <td className="py-3 pr-4 font-medium text-ink">{r.what}</td>
-                <td className="py-3 pr-4 text-ink">{r.asset ?? '—'}</td>
-                <td className="py-3 pr-4 text-right font-semibold tabular-nums text-ink">{r.amount !== undefined ? formatAmount(r.amount) : '—'}</td>
+                <td className="py-3 pr-4 text-ink">{r.asset ?? '–'}</td>
+                <td className="py-3 pr-4 text-right font-semibold tabular-nums text-ink">{r.amount !== undefined ? formatAmount(r.amount) : '–'}</td>
                 <td className="py-3">
                   <ActivityPill row={r} />
                 </td>

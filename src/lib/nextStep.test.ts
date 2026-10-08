@@ -28,7 +28,17 @@ describe('Next-step card (PLAN C6)', () => {
     const n = nextStep(riya);
     expect(n.kind).toBe('second_bucket');
     expect(n.title).toBe('Set up your cushion SIP');
-    expect(n.to).toBe('/invest/liquid1?amount=2000');
+    // Riya hasn't picked a cushion fund, so the plan flow asks her to (Stage 7a).
+    expect(n.to).toBe('/invest/plan');
+    expect(n.body).toBe('₹2,000 a month into liquid funds completes your plan. You pick the fund next.');
+    // Once picked, the button goes straight to that fund.
+    const picked = run(riya, { type: 'pickPlanFund', role: 'cushion', fundId: 'liquid2' });
+    expect(nextStep(picked).to).toBe('/invest/liquid2?amount=2000');
+    expect(nextStep(picked).body).toBe('₹2,000 a month into Liquid Fund – B completes your plan.');
+  });
+  it('plan with one part, no SIPs → names the category, not a fund', () => {
+    const s = withCheckin(fresh(), { purpose: 'cushion' });
+    expect(nextStep(s).body).toBe('₹4,000 a month into liquid funds. You pick the fund next.');
   });
   it('all buckets running → You’re set with the next SIP date', () => {
     let s = withCheckin(fresh());
@@ -63,7 +73,7 @@ describe('after a stop: 30 quiet simulated days (owner decision)', () => {
 
   it('the Next-step card skips “Set up your … SIP” for the stopped part and moves on to the next item', () => {
     const s = stoppedOne();
-    expect(recentlyStopped(s).map((b) => b.fundId)).toEqual(['index50']);
+    expect(recentlyStopped(s).map((b) => b.category)).toEqual(['index50']);
     const n = nextStep(s);
     expect(n.kind).toBe('set');
     expect(n.title).not.toMatch(/Set up your/);

@@ -1,6 +1,6 @@
 // Home's single Next-step card and status line (README 9 item 5 as changed by
 // PLAN C6), plus the upcoming-SIP list used by Home and the sidebar plan card.
-import { getFund } from '../data/funds';
+import { getFund, PLAN_CATEGORIES } from '../data/funds';
 import type { ISODate, PlanBucket, Sip, State } from '../state/types';
 import { nextDueDate } from './activity';
 import { firstUnansweredStep, isCheckinStarted } from './checkin';
@@ -8,7 +8,7 @@ import { addDays, daysBetween, nextDateForDay } from './dates';
 import { dateLabel, formatINR } from './format';
 import { simToday } from './market';
 import { timeOfDay } from './mood';
-import { hasLiveSip } from './planStatus';
+import { bucketFundId, bucketHasLiveSip, bucketInvestPath } from './planStatus';
 import { buildPath } from './routes';
 
 export type NextStep =
@@ -64,8 +64,10 @@ export function recentlyStopped(state: Pick<State, 'plan' | 'sips' | 'market'>):
   if (!state.plan) return [];
   const today = simToday(state.market);
   return state.plan.buckets.filter((b) => {
-    if (hasLiveSip(state.sips, b.fundId)) return false;
-    const stops = state.sips.filter((s) => s.fundId === b.fundId && s.status === 'stopped' && s.stoppedAt).map((s) => s.stoppedAt!);
+    if (bucketHasLiveSip(state.sips, b)) return false;
+    const stops = state.sips
+      .filter((s) => b.candidateFundIds.includes(s.fundId) && s.status === 'stopped' && s.stoppedAt)
+      .map((s) => s.stoppedAt!);
     if (stops.length === 0) return false;
     const last = stops.reduce((a, c) => (c > a ? c : a));
     return daysBetween(last, today) < QUIET_AFTER_STOP_DAYS;
@@ -84,7 +86,7 @@ export function quietRestart(state: Pick<State, 'plan' | 'sips' | 'market'>): Qu
         ? 'One part of your plan isn’t running. Restart any time.'
         : 'Two parts of your plan aren’t running. Restart any time.',
     linkText: 'Restart',
-    to: parts.length === 1 ? buildPath(`/invest/${parts[0].fundId}`, { amount: String(parts[0].amount) }) : '/invest/plan',
+    to: parts.length === 1 ? bucketInvestPath(state.sips, parts[0]) : '/invest/plan',
   };
 }
 
@@ -107,10 +109,10 @@ export function nextStep(state: State): NextStep {
   }
 
   const buckets = state.plan.buckets;
-  const missing = buckets.filter((b) => !hasLiveSip(state.sips, b.fundId));
+  const missing = buckets.filter((b) => !bucketHasLiveSip(state.sips, b));
   // A part stopped in the last 30 days is not pushed: skip it and move on to the next item.
-  const quiet = new Set(recentlyStopped(state).map((b) => b.fundId));
-  const due = missing.filter((b) => !quiet.has(b.fundId));
+  const quiet = new Set(recentlyStopped(state).map((b) => b.role));
+  const due = missing.filter((b) => !quiet.has(b.role));
 
   if (due.length === buckets.length) {
     // Every SIP in the plan was stopped (and the quiet period is over): a restart, not a first SIP.
@@ -122,7 +124,7 @@ export function nextStep(state: State): NextStep {
         ? `What you already own stays invested. Set up ${formatINR(state.plan.monthly)} a month again, in one go.`
         : buckets.length > 1
           ? `Both parts of your plan, ${formatINR(state.plan.monthly)} a month, set up in one go.`
-          : `${formatINR(state.plan.monthly)} a month into ${getFund(buckets[0].fundId)?.name ?? 'your fund'}.`,
+          : `${formatINR(state.plan.monthly)} a month into ${PLAN_CATEGORIES[buckets[0].category].plural}. You pick the fund next.`,
       cta: restart ? 'Restart my plan' : 'Start my plan',
       to: '/invest/plan',
     };
@@ -130,13 +132,14 @@ export function nextStep(state: State): NextStep {
 
   if (due.length > 0) {
     const b = due[0];
-    const fund = getFund(b.fundId);
+    const fundId = bucketFundId(state.sips, b);
+    const fund = fundId ? getFund(fundId) : undefined;
     return {
       kind: 'second_bucket',
       title: `Set up your ${ROLE_WORD[b.role]} SIP`,
-      body: `${formatINR(b.amount)} a month into ${fund?.name ?? 'your fund'} completes your plan.`,
+      body: `${formatINR(b.amount)} a month into ${fund?.name ?? PLAN_CATEGORIES[b.category].plural} completes your plan.${fund ? '' : ' You pick the fund next.'}`,
       cta: `Set up ${formatINR(b.amount)} a month`,
-      to: buildPath(`/invest/${b.fundId}`, { amount: String(b.amount) }),
+      to: bucketInvestPath(state.sips, b),
       bucket: b,
     };
   }
@@ -160,7 +163,7 @@ export function nextStep(state: State): NextStep {
 export function statusLine(state: State): string {
   if (!state.user.signedUp && !state.plan) return 'You’re looking around. No account needed.';
   if (!state.plan) return 'Answer six quick questions to get your starter shortlist.';
-  const live = state.plan.buckets.filter((b) => hasLiveSip(state.sips, b.fundId)).length;
+  const live = state.plan.buckets.filter((b) => bucketHasLiveSip(state.sips, b)).length;
   const total = state.plan.buckets.length;
   if (live === 0 && state.sips.length > 0) return 'No SIP is running right now. What you own stays invested.';
   if (live === 0) return `Your starter plan is ready: ${formatINR(state.plan.monthly)} a month.`;

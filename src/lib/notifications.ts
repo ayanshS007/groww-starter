@@ -57,7 +57,7 @@ export function deriveNotifications(state: State): Notification[] {
         id: `sip_due:${sip.id}:${due}`,
         kind: 'sip_due',
         title: days === 0 ? 'SIP due today' : `SIP due in ${days} day${days === 1 ? '' : 's'}`,
-        body: `${formatINR(sip.amount)} into ${fundName(sip.fundId)} on ${dateLabel(due, { short: true })}. Skip it free if you need to.`,
+        body: `${formatINR(sip.amount)} into ${fundName(sip.fundId)} on ${dateLabel(due, { short: true })}. Too close to change this one. You can change the next.`,
         at: today,
         week,
         route: `/portfolio/sip/${sip.id}`,

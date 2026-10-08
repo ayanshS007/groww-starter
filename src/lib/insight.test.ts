@@ -89,7 +89,7 @@ describe('buildInsight branches (PLAN item 15, first match wins)', () => {
     for (const w of [ch(30, 2.4), ch(0, 0)]) {
       const i = buildInsight({ weekChange: w, overallChange: ch(10, 1), horizon: '1to3', holdings: debt });
       expect(i).toMatchObject({ branch: 'calm', actionNeeded: false, tone: 'calm' });
-      expect(i.body).toContain('One week is not a trend');
+      expect(i.body).toContain('One week isn’t a trend');
     }
   });
   it('3. down week, horizon ≥ 3 yrs: short-term move', () => {

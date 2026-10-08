@@ -23,7 +23,8 @@ import { SkeletonRow } from '../components/SkeletonRow';
 import { StepperInput } from '../components/StepperInput';
 import { Term } from '../components/Term';
 import { UpiChooser } from '../components/UpiChooser';
-import { getFund } from '../data/funds';
+import { FundPicker } from '../components/FundPicker';
+import { getFund, PLAN_CATEGORIES } from '../data/funds';
 import { fundFit } from '../lib/explore';
 import { dateLabel, formatINR, ordinal } from '../lib/format';
 import {
@@ -51,6 +52,7 @@ import {
   type StepContext,
 } from '../lib/invest';
 import { simToday } from '../lib/market';
+import { missingBuckets, unpickedBuckets } from '../lib/planStatus';
 import { defaultSipDay } from '../lib/planner';
 import { buildPath } from '../lib/routes';
 import { goBack, navigate } from '../router';
@@ -94,6 +96,44 @@ function FundBanner({ fundId }: { fundId: FundId }) {
 }
 
 // ---------- steps ----------
+/**
+ * Plan flow, before anything else: the plan names a category for each part and the
+ * user picks the fund (Stage 7a). Shown only for parts that have no pick yet.
+ */
+function PickStep({ onContinue }: { onContinue: () => void }) {
+  const { state, dispatch } = useStore();
+  const missing = missingBuckets(state).map((b) => b.role);
+  const buckets = (state.plan?.buckets ?? []).filter((b) => missing.includes(b.role));
+  const allPicked = unpickedBuckets(state).length === 0;
+  return (
+    <div className="space-y-6">
+      <StepTitle title="Pick a fund for each part" sub="Your plan names the category. You choose the fund." />
+      {buckets.map((b) => (
+        <Card key={b.role} pad="md" className="space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-ink-muted">{b.role === 'cushion' ? 'Cushion' : 'Grow'} · {formatINR(b.amount)} a month</p>
+            <h2 className="text-xl font-bold text-ink">{PLAN_CATEGORIES[b.category].label}</h2>
+          </div>
+          <FundPicker
+            bucket={b}
+            name={`pick-${b.role}`}
+            value={b.fundId}
+            onChange={(fundId) => dispatch({ type: 'pickPlanFund', role: b.role, fundId })}
+          />
+        </Card>
+      ))}
+      <div className="space-y-3">
+        <Button block disabled={!allPicked} aria-describedby="pick-hint" onClick={onContinue}>
+          Continue
+        </Button>
+        <p id="pick-hint" aria-live="polite" className="text-center text-sm text-ink-muted">
+          {allPicked ? 'You can change a pick later from your plan.' : 'Pick a fund in each list to continue.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 type StepProps = { d: InvestDraft; ctx: StepContext; patch: (p: Partial<InvestDraft>) => void };
 
 function AmountStep({ d, ctx, patch }: StepProps) {
@@ -126,7 +166,7 @@ function AmountStep({ d, ctx, patch }: StepProps) {
       noValidate
       className="space-y-6"
     >
-      <StepTitle title="How much?" sub={<>Start small. You can change it later, and skip any month, free.</>} />
+      <StepTitle title="How much?" sub={<>Start small, even ₹100. You can change it later and skip a month, free.</>} />
       <FundBanner fundId={fund.id} />
       <OptionTiles
         name="invest-type"
@@ -202,7 +242,7 @@ function DateStep({ d, ctx, patch }: StepProps) {
     >
       <StepTitle
         title={plan ? 'Pick one date for both SIPs' : 'Pick your SIP date'}
-        sub={salary ? 'Money is lightest on your plate just after payday.' : 'Money can come unevenly, so we start on the 10th.'}
+        sub={salary ? 'The days right after payday are the easiest time to spare money.' : 'Money can come unevenly, so we start on the 10th.'}
       />
       {d.mode === 'single' && d.fundId && <FundBanner fundId={d.fundId} />}
       {salary && (
@@ -216,7 +256,7 @@ function DateStep({ d, ctx, patch }: StepProps) {
             dispatch({ type: 'setPayday', day: v });
             patch({ dayOfMonth: defaultSipDay('salary', v) });
           }}
-          hint="We use this to suggest a date 3 days later."
+          hint="We’ll suggest a date 3 days after payday."
         />
       )}
       <StepperInput
@@ -477,6 +517,8 @@ function InvestFlow(props: FlowProps) {
     }
   }, [matches, mode, d, state, dispatch]);
 
+  // Plan flow: a part with no fund picked asks for one first. Stays up until Continue.
+  const [picking, setPicking] = useState(() => mode === 'plan' && unpickedBuckets(state).length > 0);
   const ctx: StepContext = { autopay: state.user.autopay, kycDone: state.user.kyc === 'done' };
   const step = resolveStep(d, ctx);
   const progress = stepProgress(d, ctx);
@@ -533,6 +575,17 @@ function InvestFlow(props: FlowProps) {
       break;
     default:
       body = <ProcessingStep />;
+  }
+
+  if (mode === 'plan' && picking) {
+    return (
+      <>
+        <FlowHeader onBack={() => goBack('/plan')} closeTo="/plan" closeLabel="Close, your picks are saved" title="Pick your funds" />
+        <Shell>
+          <PickStep onContinue={() => setPicking(false)} />
+        </Shell>
+      </>
+    );
   }
 
   return (

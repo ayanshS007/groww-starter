@@ -150,7 +150,7 @@ describe('plan health links go to the screen that fixes each check', () => {
     expect(healthLink(stocks)).toEqual({ to: '/you/trading', label: 'Stock budget' });
     expect(healthLink(horizon)).toEqual({ to: '/plan', label: 'See my plan' });
     // QA #30: Riya's cushion SIP was never set up, so the SIPs row points to it.
-    expect(healthLink(sips)).toEqual({ to: '/invest/liquid1?amount=2000', label: 'Set it up' });
+    expect(healthLink(sips)).toEqual({ to: '/invest/plan', label: 'Set it up' });
     for (const c of planHealth(s)) expect(resolveRoute(parseHash('#' + healthLink(c).to), s).kind).toBe('screen');
   });
 });

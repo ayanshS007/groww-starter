@@ -75,6 +75,6 @@ export const READINESS_QUESTIONS: ReadinessQuestion[] = [
     question: 'What is true about F&O for new investors?',
     options: ['Most lose money', 'It is the safest way to start', 'It needs no extra money'],
     correctIndex: 0,
-    explanation: 'Most individual F&O traders lose money. This prototype does not offer it.',
+    explanation: 'Most individual F&O traders lose money. This prototype doesn’t offer it.',
   },
 ];

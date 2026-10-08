@@ -1,9 +1,9 @@
 // Explore and Fund detail logic (README 9 items 7–8, PLAN items 6, 29, 30).
-import { COLLECTIONS, type CollectionId } from '../data/funds';
+import { COLLECTIONS, PLAN_CATEGORIES, type CollectionId } from '../data/funds';
 import type { DipReaction, Fund, FundCategory, FundId, PlanBucket, State, Stock } from '../state/types';
 import { horizonRank } from './market';
 import { HORIZON_LABEL } from './planner';
-import { hasLiveSip } from './planStatus';
+import { bucketForFund, bucketFundId, hasLiveSip } from './planStatus';
 
 export const FUND_CATEGORIES: FundCategory[] = ['Liquid', 'Debt', 'Hybrid', 'Index', 'Equity', 'Gold'];
 
@@ -104,7 +104,7 @@ const HOW: Record<From, string> = {
 const ROLE_WORD = { cushion: 'cushion', grow: 'grow' } as const;
 
 export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit {
-  const bucket = state.plan?.buckets.find((b) => b.fundId === fund.id);
+  const bucket = bucketForFund(state.plan, fund.id);
   const answers = state.checkin;
   const banners: FitBanner[] = [];
 
@@ -138,6 +138,13 @@ export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit 
       text: `You said you’d ${DIP_PHRASE[answers.dipReaction]}. This fund is ${RISK_WORD[fund.risk]} risk, so its falls can be bigger than that.`,
     });
   }
+  if (bucket) {
+    banners.push({
+      tone: 'info',
+      text: `This is one of the ${PLAN_CATEGORIES[bucket.category].plural} in your starter plan. The plan names the category. Which fund you pick is up to you.`,
+      cta: { label: 'See my plan', to: '/plan' },
+    });
+  }
   if (!bucket) {
     banners.push({
       tone: 'info',
@@ -155,7 +162,7 @@ export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit 
 
   let why: string;
   if (bucket) {
-    why = `It’s the ${ROLE_WORD[bucket.role]} part of your starter plan. ${bucket.reason}`;
+    why = `Its category, ${PLAN_CATEGORIES[bucket.category].plural}, is the ${ROLE_WORD[bucket.role]} part of your starter plan. ${bucket.reason}`;
   } else {
     const fit = longer
       ? 'longer than you said you need'
@@ -169,7 +176,10 @@ export function fundFit(fund: Fund, state: State, from: From = 'link'): FundFit 
   return { bucket, banners, why };
 }
 
-/** Funds in the plan, for "In your plan" tags. */
-export function planFundIds(state: Pick<State, 'plan'>): Set<FundId> {
-  return new Set(state.plan?.buckets.map((b) => b.fundId) ?? []);
+/** Funds the user picked (or already run a SIP in) for a plan part, for "In your plan" tags. */
+export function planFundIds(state: Pick<State, 'plan' | 'sips'>): Set<FundId> {
+  return new Set((state.plan?.buckets ?? []).flatMap((b) => {
+    const id = bucketFundId(state.sips, b);
+    return id ? [id] : [];
+  }));
 }

@@ -104,7 +104,7 @@ export function Signup({ query }: { query: Record<string, string> }) {
           {sub === 'mobile' && (
             <>
               <div>
-                <h1 className="text-3xl font-bold text-ink">Let’s get you started</h1>
+                <h1 className="text-3xl font-bold text-ink">Start with your number</h1>
                 <p className="mt-2 text-base text-ink-muted">No KYC needed to look around.</p>
               </div>
               <Field

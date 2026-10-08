@@ -84,8 +84,9 @@ describe('SIPs running', () => {
   });
   it('QA #30: a plan part never set up counts, like Home’s "1 of 2"', () => {
     const c = sipCheck(buildPersona('riya', '2026-10-07'));
-    expect(c).toMatchObject({ status: 'watch', fixRoute: '/invest/liquid1?amount=2000', fixLabel: 'Set it up' });
-    expect(c.detail).toBe('1 of 2 SIPs in your plan running. Liquid Fund – A isn’t set up yet.');
+    // No cushion fund is picked yet, so the fix is the plan flow, which asks for the pick.
+    expect(c).toMatchObject({ status: 'watch', fixRoute: '/invest/plan', fixLabel: 'Set it up' });
+    expect(c.detail).toBe('1 of 2 SIPs in your plan running. Your cushion part isn’t set up yet.');
   });
   it('watch with the resume date when any is paused', () => {
     let s = startSip(startSip(fresh(), 'liquid1', 500), 'index50', 500);

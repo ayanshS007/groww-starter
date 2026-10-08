@@ -11,7 +11,7 @@ import { StoreProvider } from './state/store';
 import { STORAGE_KEY } from './state/storage';
 import type { State } from './state/types';
 import { SCENARIOS } from './lib/market';
-import { advance, fresh, oneTime, run, startSip, TODAY, withCheckin } from './test/fixtures';
+import { advance, agedSip, fresh, oneTime, run, startSip, TODAY, withCheckin, withNextDebit, withPicks } from './test/fixtures';
 
 /** Renders one route for a given state through the same route table as the app. */
 function renderAt(hash: string, state: State): string {
@@ -185,7 +185,7 @@ describe('screen acceptance checks (README 9, Stage 3b)', () => {
     expect(t).toContain('Your time frame is 5+ yrs');
   });
   it('fund list has search, filters, collections, type chips, risk labels and no ranking words', () => {
-    const t = text(renderAt('#/explore/funds', planned));
+    const t = text(renderAt('#/explore/funds', withPicks(planned)));
     for (const w of ['Search funds', 'Filters', 'Start with ₹100', 'Money I may need this year', 'Long game, 5+ years', 'Saved', 'In your plan', 'risk']) {
       expect(t).toContain(w);
     }
@@ -205,17 +205,31 @@ describe('screen acceptance checks (README 9, Stage 3b)', () => {
     expect(t).toContain('Smallest SIP here: ₹100.');
   });
   it('invest plan opens on the shared date step with the payday question for a salary user', () => {
-    const t = text(renderAt('#/invest/plan', planned));
+    const t = text(renderAt('#/invest/plan', withPicks(planned)));
     expect(t).toContain('Pick one date for both SIPs');
     expect(t).toContain('Which day do you get paid?');
     expect(t).toContain('your first payment of ₹4,000');
   });
+  it('invest plan asks for a fund for each part first, with nothing preselected (Stage 7a)', () => {
+    const html = renderAt('#/invest/plan', planned);
+    const t = text(html);
+    expect(t).toContain('Pick a fund for each part');
+    expect(t).toContain("Funds in this category. Pick any. This isn't a recommendation.");
+    expect(t).not.toContain('Pick one date for both SIPs');
+    expect(t).toContain('Pick a fund in each list to continue.');
+    expect(html).not.toMatch(/<input[^>]*type="radio"[^>]*checked/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Continue<\/button>/);
+    // only the part that still lacks a pick is asked about
+    const half = renderAt('#/invest/plan', run(planned, { type: 'pickPlanFund', role: 'cushion', fundId: 'liquid2' }));
+    expect(text(half)).toContain('Nifty 50 index funds');
+    expect(half).toContain('Liquid Fund – B');
+  });
   it('a resumed draft opens at its saved step with the risk box as saved (never pre-ticked)', () => {
     const full = run(planned, {
       type: 'startInvestDraft',
-      draft: { mode: 'plan', type: 'sip', planAmounts: planned.plan!.buckets.map((b) => ({ fundId: b.fundId, amount: b.amount, role: b.role })), dayOfMonth: 4, step: 'review', riskAck: false },
+      draft: { mode: 'plan', type: 'sip', planAmounts: withPicks(planned).plan!.buckets.map((b) => ({ fundId: b.candidateFundIds[0], amount: b.amount, role: b.role })), dayOfMonth: 4, step: 'review', riskAck: false },
     });
-    const html = renderAt('#/invest/plan', full);
+    const html = renderAt('#/invest/plan', withPicks(full));
     expect(text(html)).toContain('Review and confirm');
     expect(html).toMatch(/<input[^>]*type="checkbox"(?![^>]*checked)/);
     expect(text(html)).toContain('Tick the box above to continue.');
@@ -242,7 +256,7 @@ describe('screen acceptance checks (README 9, Stage 3b)', () => {
   it('Success shows the right copy per order type', () => {
     const plan2 = run(planned, {
       type: 'startInvestDraft',
-      draft: { mode: 'plan', type: 'sip', planAmounts: planned.plan!.buckets.map((b) => ({ fundId: b.fundId, amount: b.amount, role: b.role })), dayOfMonth: 4, step: 'processing', riskAck: true },
+      draft: { mode: 'plan', type: 'sip', planAmounts: planned.plan!.buckets.map((b) => ({ fundId: b.candidateFundIds[0], amount: b.amount, role: b.role })), dayOfMonth: 4, step: 'processing', riskAck: true },
     }, { type: 'placeInvestOrder' });
     expect(text(renderAt('#/invest/success/ord_1', plan2))).toContain('Your plan is set. 2 SIPs, ₹4,000 a month.');
     const single = startSip(planned, 'index50', 2000);
@@ -419,6 +433,50 @@ describe('Stop coach (README 8.6, PLAN item 23)', () => {
   });
 });
 
+describe('Stage 7a: skip, pause and edit close 3 business days before the debit', () => {
+  const LINE = 'Too close to the debit date to change this one. You can change the next.';
+  const open = withNextDebit(agedSip(), false);
+  const closed = withNextDebit(agedSip(), true);
+  const sipPage = (state: State) => renderAt('#/portfolio/sip/sip_1', state);
+  const disabled = (html: string, label: string) => new RegExp(`<button[^>]* disabled=""[^>]*>${label}</button>`).test(html);
+
+  it('SIP detail, outside the cutoff: Skip, Pause and Edit work and there is no line', () => {
+    const html = sipPage(open);
+    expect(text(html)).not.toContain(LINE);
+    for (const l of ['Skip next instalment', 'Pause 1, 2 or 3 months', 'Edit amount or date']) expect(disabled(html, l)).toBe(false);
+  });
+  it('SIP detail, inside the cutoff: Skip, Pause and Edit are unavailable, with the one line; Stop SIP stays', () => {
+    const html = sipPage(closed);
+    expect(text(html)).toContain(LINE);
+    for (const l of ['Skip next instalment', 'Pause 1, 2 or 3 months', 'Edit amount or date']) expect(disabled(html, l)).toBe(true);
+    expect(html).toContain('href="#/portfolio/sip/sip_1/stop"');
+  });
+  it('Home swaps the Skip button for the line', () => {
+    const open_ = text(renderAt('#/home', open));
+    const closed_ = text(renderAt('#/home', closed));
+    expect(open_).toContain('Skip next instalment');
+    expect(open_).not.toContain(LINE);
+    expect(closed_).toContain(LINE);
+    expect(closed_).not.toContain('Skip next instalment');
+  });
+  it('Dashboard swaps the Skip link for the line', () => {
+    expect(text(renderAt('#/dashboard', closed))).toContain(LINE);
+    expect(text(renderAt('#/dashboard', open))).toContain('Skip next instalment');
+  });
+  it('an instalment skipped in time shows Undo; once it is that close, Undo goes and the line shows', () => {
+    const skipped = run(open, { type: 'skipNext', sipId: 'sip_1' });
+    const html = sipPage(skipped);
+    expect(disabled(html, 'Undo skip')).toBe(false);
+    expect(text(html)).not.toContain(LINE);
+    const skippedDate = [...text(html).matchAll(/(\d+ \w{3}) is skipped/g)][0]?.[1];
+    expect(skippedDate).toBeTruthy();
+  });
+  it('the Stop coach still opens with Keep my SIP and Stop anyway', () => {
+    const html = renderAt('#/portfolio/sip/sip_1/stop', closed);
+    expect(html.indexOf('Keep my SIP')).toBeLessThan(html.indexOf('Stop anyway'));
+  });
+});
+
 describe('weekly insight reacts to every scenario and to Advance one week (README 8.5, 17)', () => {
   const portfolioIn = (state: State) => text(renderAt('#/portfolio', state));
   const homeIn = (state: State) => text(renderAt('#/home', state));
@@ -464,9 +522,9 @@ describe('weekly insight reacts to every scenario and to Advance one week (READM
   });
   it('turns calm once the overall change is back above −10%', () => {
     const recovered = advance(riya, 3, 'up');
-    expect(portfolioIn(recovered)).toContain('One week is not a trend');
+    expect(portfolioIn(recovered)).toContain('One week isn’t a trend');
     expect(portfolioIn(recovered)).not.toContain('Review my plan');
-    expect(portfolioIn(advance(recovered, 1, 'flat'))).toContain('One week is not a trend');
+    expect(portfolioIn(advance(recovered, 1, 'flat'))).toContain('One week isn’t a trend');
   });
 
   it('a small dip once the overall change is above −10% is a short-term move for a long horizon', () => {
@@ -709,8 +767,13 @@ describe('Stage 3d-2 screens (README 8.3, 8.7–8.10, 9 items 14–17)', () => {
     for (const s of ['Already going to SIPs', 'Cushion top-up', 'Yours to spend', 'A suggestion, not a rule. Change any number.']) expect(t).toContain(s);
     expect(t).toContain('₹2,000');
     expect(t).toContain('₹23,200');
-    expect(t).toContain('Top up cushion with ₹2,800');
-    expect(t).toContain('What is this?');
+    // Riya hasn't picked a cushion fund, and the app doesn't pick one for her (Stage 7a).
+    expect(t).toContain('Pick a cushion fund first');
+    expect(t).not.toContain('Top up cushion with');
+    const picked = text(renderAt('#/payday?pay=28000', run(riya, { type: 'pickPlanFund', role: 'cushion', fundId: 'liquid2' })));
+    expect(picked).toContain('Top up cushion with ₹2,800');
+    expect(picked).toContain('Liquid Fund – B');
+    expect(picked).toContain('What is this?');
   });
 
   it('Goals list and detail: progress, monthly needed without counting returns, links', () => {
@@ -825,9 +888,9 @@ describe('Stage 5 polish', () => {
     const levels = headingLevels(html);
     expect(levels[0]).toBe(1);
     levels.slice(1).forEach((l, i) => expect(l - levels[i]).toBeLessThanOrEqual(1));
-    expect(text(html)).toContain('Funds in your plan');
-    // every fund heading (h3) comes after the "Funds in your plan" h2, not after "Cushion vs Grow"
-    expect(html.indexOf('Funds in your plan')).toBeLessThan(html.indexOf('<h3'));
+    expect(text(html)).toContain('Categories in your plan');
+    // every category heading (h3) comes after the "Categories in your plan" h2, not after "Cushion vs Grow"
+    expect(html.indexOf('Categories in your plan')).toBeLessThan(html.indexOf('<h3'));
   });
   it('the sidebar plan card is not a heading, so no h2 can come before the page h1', () => {
     const html = renderToString(
@@ -863,7 +926,48 @@ describe('Stage 5 polish', () => {
   it('Home plan card has no second Cushion / Grow legend under the bar', () => {
     const html = renderAt('#/home', riyaState);
     expect(html).not.toMatch(/<dt[^>]*>Cushion<\/dt>/);
-    expect(text(html)).toContain('Liquid Fund – A');
+    expect(text(html)).toContain('Liquid funds');
+  });
+});
+
+describe('Stage 7a: the plan names categories, you pick the fund', () => {
+  const planned = withCheckin(fresh());
+  const html = renderAt('#/plan', planned);
+  const t = text(html);
+
+  it('each part shows its category, not a fund, with a "Pick a fund" list of 2–3 funds', () => {
+    expect(t).toContain('Liquid funds');
+    expect(t).toContain('Nifty 50 index funds');
+    expect(t).toContain('Pick a fund');
+    expect(t).toContain("Funds in this category. Pick any. This isn't a recommendation.");
+    expect(t).toContain('Why this category?');
+    // both funds of each category are listed, plain, and nothing is picked
+    for (const name of ['Liquid Fund – A', 'Liquid Fund – B', 'Nifty 50 Index Fund', 'Nifty 50 Index Fund – B']) expect(t).toContain(name);
+    expect(html).not.toMatch(/<input[^>]*type="radio"[^>]*checked/);
+    expect(html.match(/type="radio"/g)).toHaveLength(4);
+  });
+  it('funds are listed alphabetically', () => {
+    expect(t.indexOf('Liquid Fund – A')).toBeLessThan(t.indexOf('Liquid Fund – B'));
+    expect(t.indexOf('Nifty 50 Index Fund ')).toBeLessThan(t.indexOf('Nifty 50 Index Fund – B'));
+  });
+  it('the plan card on Home names the category and says the user picks', () => {
+    const home = text(renderAt('#/home', planned));
+    expect(home).toContain('Liquid funds');
+    expect(home).toContain('You pick the fund');
+  });
+  it('a pick shows as selected and on Home', () => {
+    const picked = run(planned, { type: 'pickPlanFund', role: 'grow', fundId: 'index50b' });
+    expect(renderAt('#/plan', picked)).toMatch(/<input[^>]*type="radio"[^>]*checked/);
+    expect(text(renderAt('#/home', picked))).toContain('Nifty 50 Index Fund – B');
+  });
+  it('the plan says nothing a fund-picker would: no "best", no "recommended"', () => {
+    for (const w of ['best', 'recommended for you', 'top pick', 'we picked']) expect(t.toLowerCase()).not.toContain(w);
+  });
+  it('Fund detail for a fund in a plan category explains the category, not a personal pick', () => {
+    const f = text(renderAt('#/fund/index50b?from=plan', planned));
+    expect(f).toContain('This is one of the Nifty 50 index funds in your starter plan');
+    expect(f).toContain('Its category, Nifty 50 index funds, is the grow part of your starter plan');
+    expect(f).toContain('In your plan’s category');
   });
 });
 
@@ -1054,7 +1158,7 @@ describe('Stage 6b: earned Pro', () => {
   it('the quick check page puts the check first when arriving from "Unlock Pro"', () => {
     const from = text(renderAt('#/you/trading?focus=check', calm));
     expect(from.indexOf('Quick check: 5 questions')).toBeLessThan(from.indexOf('Stock budget'));
-    expect(from).toContain('Get 4 of 5 and Pro unlocks');
+    expect(from).toContain('Get 4 right and Pro unlocks');
     const plain = text(renderAt('#/you/trading', calm));
     expect(plain.indexOf('Stock budget')).toBeLessThan(plain.indexOf('Quick check: 5 questions'));
   });

@@ -13,7 +13,12 @@ export type FundId =
   | 'indexnext50'
   | 'flexi1'
   | 'midcap1'
-  | 'gold1';
+  | 'gold1'
+  // Stage 7a: a second fund for every category the planner uses.
+  | 'shortdebt2'
+  | 'balanced2'
+  | 'index50b'
+  | 'flexi2';
 export type StockId = string; // e.g. 'stk_tealeaf' (fictional, "(sample)")
 export type AssetId = FundId | StockId;
 
@@ -42,11 +47,18 @@ export type CheckinAnswers = {
 export type PlanRule = 'A1' | 'A2' | 'A3' | 'A4' | 'A5' | 'A6';
 export type AnswerKey = keyof Omit<CheckinAnswers, 'monthlyChoice'>;
 
+/** The categories the planner can point to (Stage 7a: it names a category, never a fund). */
+export type PlanCategoryId = 'liquid' | 'short_debt' | 'balanced' | 'index50' | 'flexi';
+
 export type PlanBucket = {
   role: 'cushion' | 'grow';
-  fundId: FundId;
+  category: PlanCategoryId;
+  /** 2–3 funds in the category, sorted by name. The user picks one. */
+  candidateFundIds: FundId[];
+  /** The user's own pick from `candidateFundIds`. The planner never sets it. */
+  fundId?: FundId;
   amount: number;
-  reason: string; // cites ≥ 2 answers
+  reason: string; // about the category; cites ≥ 2 answers
   citedAnswers: AnswerKey[]; // length ≥ 2
 };
 
@@ -61,7 +73,7 @@ export type StarterPlan = {
   suggestedCushionPct: number;
   cushionPct: number;
   buckets: PlanBucket[]; // 1 or 2
-  alternativeFundId?: FundId;
+  alternativeCategory?: PlanCategoryId;
   factors: PlanFactor[]; // length ≥ 3
   conflictNote?: string;
   overCeilingNote?: string;
@@ -263,6 +275,8 @@ export type Fund = {
   id: FundId;
   name: string;
   category: FundCategory;
+  /** Set when the planner can point to this fund's category. */
+  planCategory?: PlanCategoryId;
   oneLiner: string;
   risk: 1 | 2 | 3 | 4 | 5;
   /** Horizon bucket used for comparisons with the user's horizon. */

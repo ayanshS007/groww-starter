@@ -7,7 +7,7 @@ import { addDays } from './dates';
 import { dateLabel, formatINR, ordinal } from './format';
 import { simToday } from './market';
 import { comfortCeiling, defaultSipDay } from './planner';
-import { missingBuckets } from './planStatus';
+import { bucketFundId, bucketForFund, missingBuckets } from './planStatus';
 import { assetName } from './portfolio';
 
 export const MAX_INVEST = 100_000;
@@ -44,9 +44,9 @@ export function amountPresets(min: number, planAmount?: number): Preset[] {
   return [...map].map(([value, fromPlan]) => ({ value, fromPlan })).sort((a, b) => a.value - b.value);
 }
 
-/** The plan bucket for this fund, if the fund is in the plan. */
+/** The plan part whose category lists this fund, if any. */
 export function planBucketFor(state: Pick<State, 'plan'>, fundId: FundId): PlanBucket | undefined {
-  return state.plan?.buckets.find((b) => b.fundId === fundId);
+  return bucketForFund(state.plan, fundId);
 }
 
 /**
@@ -62,7 +62,7 @@ export function ceilingNote(state: Pick<State, 'checkin' | 'sips'>, add: number,
     .reduce((sum, s) => sum + s.amount, 0);
   const total = existing + add;
   if (total <= ceiling) return undefined;
-  return `With this, your monthly SIPs add up to ${formatINR(total)}. That is above the ${formatINR(ceiling)} that usually feels easy at your income. It’s a note, not a rule.`;
+  return `Your monthly SIPs would add up to ${formatINR(total)}. That’s more than the ${formatINR(ceiling)} that usually feels easy on your income. Just a heads-up, not a rule.`;
 }
 
 /**
@@ -101,9 +101,15 @@ export function singleDraft(fundId: FundId, opts: { type?: InvestType; amount?: 
   return d;
 }
 
-/** The parts of the plan that still need a SIP (a part with a running SIP is left out). */
+/**
+ * The parts of the plan that still need a SIP and have a fund picked (a part with
+ * a running SIP is left out; a part with no pick yet waits for the pick step).
+ */
 export function planParts(state: Pick<State, 'plan' | 'sips'>): { fundId: FundId; amount: number; role: PlanBucket['role'] }[] {
-  return missingBuckets(state).map((b) => ({ fundId: b.fundId, amount: b.amount, role: b.role }));
+  return missingBuckets(state).flatMap((b) => {
+    const fundId = bucketFundId(state.sips, b);
+    return fundId ? [{ fundId, amount: b.amount, role: b.role }] : [];
+  });
 }
 
 export function planDraft(state: Pick<State, 'plan' | 'sips'>): NewDraft {
@@ -230,7 +236,7 @@ export function successInfo(state: State, orderId: string): SuccessInfo | null {
   const group: Order[] = order.batchId ? state.orders.filter((o) => o.batchId === order.batchId) : [order];
   const total = group.reduce((sum, o) => sum + o.amount, 0);
   const today = simToday(state.market);
-  const bucketRole = (id: string) => state.plan?.buckets.find((b) => b.fundId === id)?.role;
+  const bucketRole = (id: string) => state.plan?.buckets.find((b) => b.candidateFundIds.includes(id as FundId))?.role;
   const name = (id: string) => getFund(id)?.name ?? 'Your fund';
 
   if (order.type === 'sip_first') {
@@ -259,7 +265,7 @@ export function successInfo(state: State, orderId: string): SuccessInfo | null {
         next
           ? `Your next payment is on ${dateLabel(next, { short: true })}, then on the same day each month.`
           : 'Your next payment follows on your SIP date each month.',
-        'Skip a month, pause or stop from Portfolio any time. Skipping is free.',
+        'Skip a month, pause or stop from Portfolio. Skipping is free if you do it 3 working days before the debit.',
       ],
       processing: order.status === 'processing',
       single: !order.batchId,

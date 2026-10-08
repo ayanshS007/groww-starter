@@ -14,6 +14,7 @@ import { PauseSheet } from '../components/PauseSheet';
 import { Term } from '../components/Term';
 import { useToast } from '../components/Toast';
 import { FUNDS, getFund } from '../data/funds';
+import { sipChangeWindow } from '../lib/cutoff';
 import { dateLabel, formatINR, ordinal } from '../lib/format';
 import { weekChange } from '../lib/market';
 import { COACH_REASONS, coachFor, stopToast, type CoachOption, type CoachReason } from '../lib/sipCoach';
@@ -45,7 +46,14 @@ export function StopCoach({ id }: { id: string }) {
   const fund = getFund(sip.fundId);
   const detail = `/portfolio/sip/${sip.id}`;
   const compareId = otherId ?? defaultCompareFund(state, sip);
-  const coaching = coachFor(reason, sip, { weekChange: weekChange(state), otherFundId: compareId });
+  // Real autopay rules: only options that can still change the next debit are shown.
+  const win = sipChangeWindow(state, sip);
+  const coaching = coachFor(reason, sip, {
+    weekChange: weekChange(state),
+    otherFundId: compareId,
+    can: { skip: win.canSkip, pause: win.canPause, edit: win.canEdit },
+    cutoffLine: win.line,
+  });
   const paused = sip.status === 'paused';
 
   // After any choice we land back on SIP detail, replacing the coach entry so Back doesn't return here.

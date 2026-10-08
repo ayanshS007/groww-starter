@@ -5,7 +5,7 @@ export const GLOSSARY: GlossaryTerm[] = [
   {
     id: 'sip',
     term: 'SIP',
-    meaning: 'A Systematic Investment Plan: a fixed amount invested automatically every month.',
+    meaning: 'A Systematic Investment Plan: you put in a fixed amount, say ₹500, automatically every month.',
     analogy: 'Like a monthly phone recharge, but the money stays yours and can grow.',
   },
   {
@@ -101,13 +101,13 @@ export const GLOSSARY: GlossaryTerm[] = [
   {
     id: 'kyc',
     term: 'KYC',
-    meaning: 'Know Your Customer: a one-time identity check that every investment app must do.',
+    meaning: 'Know Your Customer: a one-time ID check every investment app has to do.',
     analogy: 'Like showing ID once to open a bank account.',
   },
   {
     id: 'upi-autopay',
     term: 'UPI autopay',
-    meaning: 'A permission that lets your SIP be paid from your bank by UPI each month.',
+    meaning: 'Your OK for your bank to pay your SIP by UPI each month.',
     analogy: 'Like auto-renew on a subscription, which you can cancel any time.',
   },
   {
