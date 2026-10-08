@@ -2,17 +2,17 @@
 
 Groww Starter is a prototype. This file checks every feature against technical, regulatory and business reality, and says what would change before it could ship.
 
-**Status of this file.** It has not been reviewed by Groww or by a lawyer. Points stated plainly come from the author's research. Anything not checked is marked **to confirm with Groww compliance**. Nothing here is legal advice.
+**Status of this file.** It has **not been reviewed by Groww or by a lawyer**. Nothing here is legal advice. Points marked **sourced (see Sources)** cite public web pages listed at the end. Several of those are news or blog posts, not official documents. Anything not backed by a source is marked **to confirm with Groww compliance**. One point, the 3-business-day cutoff, is marked **secondary source, confirm with Groww**.
 
 ## Key points
 
-- **Personal fund picks can count as investment advice.** For that reason the Starter plan names a category (for example "Nifty 50 index funds") and lists 2–3 funds, sorted by name. The user picks. The app never chooses a fund for them, including for the Payday top-up.
-- **One UPI AutoPay mandate can fund several SIPs.** For mutual funds, a mandate can carry up to ₹1 lakh per transaction without extra authentication. The plan flow uses one mandate for both SIPs.
-- **Skips need a cutoff.** A real debit can't be changed at the last minute. The prototype uses about 3 business days, and the bank sends a pre-debit notice 24 hours before. Inside the cutoff, Skip, Pause and Edit are off, with one line saying why. The exact cutoff is to confirm with Groww compliance.
-- **Fund-house pauses have their own rules.** The pause options in the app (1–3 months) are a simplification. Each fund house sets its own limits.
+- **Personal fund picks can count as investment advice** (sourced, see Sources). For that reason the Starter plan names a category (for example "Nifty 50 index funds") and lists 2–3 funds, sorted by name. The user picks. The app never chooses a fund for them, including for the Payday top-up.
+- **One UPI AutoPay mandate can fund several SIPs.** For mutual funds, a mandate can carry up to ₹1 lakh per transaction without extra authentication (sourced, see Sources). The plan flow uses one mandate for both SIPs.
+- **Skips need a cutoff.** A real debit can't be changed at the last minute. The prototype uses about 3 business days (secondary source, confirm with Groww). The 24-hour pre-debit notice is sourced (see Sources). Inside the cutoff, Skip, Pause and Edit are off, with one line saying why.
+- **Fund-house pauses have their own rules.** The pause options in the app (1–3 months) are a simplification. Each fund house sets its own limits, such as minimums and tenure (sourced, see Sources).
 - **Payday Split works manually today.** The user types the pay amount. Detecting a salary credit on its own would need Account Aggregator consent.
 - **Plan health only sees money held on Groww.** A cushion kept in a bank account is invisible to it. Seeing more would need Account Aggregator consent.
-- **Beginner stock mode has a revenue trade-off.** It hides intraday and F&O, and those products earn brokers money. Groww would trade some of that revenue for retention. This is a business decision, not a technical one.
+- **Beginner stock mode has a revenue trade-off.** It hides intraday and F&O, and those products earn brokers money. Groww would trade some of that revenue for retention. This is a business decision, not a technical one. Under-30 F&O losses are the reason for the guardrail (sourced, see Sources).
 - **The Stop coach must avoid dark patterns.** That is why "Stop anyway" is always visible and the same size as the other options, and why the coach is one screen. Success is measured by users choosing what they meant to, not by stops prevented.
 
 ## How to read the matrix
@@ -26,9 +26,9 @@ Groww Starter is a prototype. This file checks every feature against technical, 
 | Feature | Technical | Regulatory | Business | Verdict | What changes in the real world |
 |---|---|---|---|---|---|
 | Money check-in (6 questions) | A short form. Answers saved on the user profile. | Answers are personal data. Consent and storage rules apply. To confirm with Groww compliance. | Short flows finish more often. Each added question loses some users. | Ship | Add consent text. Compliance should read the questions, because they feed the plan. |
-| Starter plan (categories, user picks the fund) | A rules engine maps answers to a category and a list of 2–3 funds. | A personal fund pick can count as investment advice, so the plan shows categories and the user picks. Whether a short list of 2–3 funds is itself safe is to confirm with Groww compliance. | A shortlist converts less than "one tap, we chose". It keeps Groww out of advice territory. | Ship with changes | Use the real fund catalogue. Keep lists neutral: sorted by name, never by return or cost. |
+| Starter plan (categories, user picks the fund) | A rules engine maps answers to a category and a list of 2–3 funds. | A personal fund pick can count as investment advice, so the plan shows categories and the user picks. The limits on advice for distributors and execution-only platforms are sourced (see Sources). Whether a short list of 2–3 funds is itself safe is to confirm with Groww compliance. | A shortlist converts less than "one tap, we chose". It keeps Groww out of advice territory. | Ship with changes | Use the real fund catalogue. Keep lists neutral: sorted by name, never by return or cost. |
 | Adjust split | Slider and a rounding rule. | None expected. | Gives the user control, which supports trust. | Ship | None. |
-| Start the whole plan in one pass | One review, one risk tick, one mandate, two SIP registrations. | One UPI AutoPay mandate can fund several SIPs, up to ₹1 lakh per transaction for mutual funds without extra authentication. The mandate limit must cover the total debit. | Fewer drop-offs than two separate setups. | Ship with changes | Real mandate and SIP registration calls replace the simulation. Show the mandate limit. |
+| Start the whole plan in one pass | One review, one risk tick, one mandate, two SIP registrations. | One UPI AutoPay mandate can fund several SIPs, up to ₹1 lakh per transaction for mutual funds without extra authentication. Sourced (see Sources). The mandate limit must cover the total debit. | Fewer drop-offs than two separate setups. | Ship with changes | Real mandate and SIP registration calls replace the simulation. Show the mandate limit. |
 | Sign-up (mobile and OTP) | Existing Groww sign-in. | Existing rules. | None. | Prototype only | The existing sign-in replaces it. |
 | KYC at the payment step | Existing KYC stack: PAN, Aadhaar, selfie, bank check. | KYC is required before a real first investment. Asking late is a product choice. To confirm with Groww compliance. | Letting people look around first may raise sign-ups. Some may drop at payment. | Ship with changes | Real KYC replaces the simulation. Resume the draft after verification. |
 | Landing page | Static page. | Claims such as "Start with ₹100" must match real minimums. | First impression. | Ship | Replace sample copy with approved claims. |
@@ -38,16 +38,16 @@ Groww Starter is a prototype. This file checks every feature against technical, 
 | Feature | Technical | Regulatory | Business | Verdict | What changes in the real world |
 |---|---|---|---|---|---|
 | Invest: SIP or one-time, UPI chooser, autopay | Payment and mandate rails. | Mandate rules and limits apply. | The core money flow. | Needs partner or data | Real UPI flow and mandate replace the generic tiles. |
-| Skip an instalment, with undo | Needs control over the next debit. | Skips need a cutoff, about 3 business days. A pre-debit notice goes out 24 hours before. Exact cutoff to confirm with Groww compliance. | Keeps the SIP alive instead of stopped. This is the main retention lever. | Ship with changes | Read the real cutoff per mandate. The prototype counts Monday to Friday and ignores holidays. |
-| Pause 1–3 months | Needs the fund house to support pauses. | Fund-house pauses have their own rules (length, number of pauses). To confirm with Groww compliance. | Same retention lever as Skip. | Needs partner or data | Show each fund house's own rules in the pause sheet. |
-| Edit amount or date | Changes the SIP registration. | The mandate limit must cover a higher amount. Same cutoff as Skip. | Lets people lower an amount instead of stopping. | Ship with changes | Check the mandate limit and the cutoff before allowing the change. |
+| Skip an instalment, with undo | Needs control over the next debit. | Skips need a cutoff, about 3 business days (secondary source, confirm with Groww). A pre-debit notice goes out 24 hours before (sourced, see Sources). Skipping an instalment on Groww is sourced (see Sources). | Keeps the SIP alive instead of stopped. This is the main retention lever. | Ship with changes | Read the real cutoff per mandate. The prototype counts Monday to Friday and ignores holidays. |
+| Pause 1–3 months | Needs the fund house to support pauses. | Fund-house pauses have their own rules, such as minimums and tenure. Sourced (see Sources). | Same retention lever as Skip. | Needs partner or data | Show each fund house's own rules in the pause sheet. |
+| Edit amount or date | Changes the SIP registration. | Editing a SIP is possible on Groww (sourced, see Sources). The mandate limit must cover a higher amount (to confirm with Groww compliance). Same cutoff as Skip. | Lets people lower an amount instead of stopping. | Ship with changes | Check the mandate limit and the cutoff before allowing the change. |
 | Yearly step-up | Stored as a setting. | A higher debit may need a higher mandate limit. To confirm with Groww compliance. | Raises SIP size over time. | Ship with changes | Set the mandate limit with the step-up in mind. The prototype only stores and shows the next step-up date. |
 | Stop coach | One screen, options per reason. | Must avoid dark patterns. "Stop anyway" is always visible and the same size. Which consumer-protection rules apply to a broker is to confirm with Groww compliance. | Can retain users who would have quit. The risk is pressure on people who need to stop. | Ship with changes | Measure "chose what they meant to", and watch re-stops within 7 days as a harm signal. Get a dark-pattern review before launch. |
 | Weekly dip insight | Computed from holdings and a week-by-week series. | Words about a user's own holdings could be read as advice. Keep to facts and neutral wording. To confirm with Groww compliance. | Calm copy at the moment of a fall may reduce panic stops. | Ship with changes | Real prices replace the simulation. Compliance should approve the sentence templates. |
 | Steady mode (big dip) | Changes the layout when a big dip is detected. | None expected. | Hides promotions and the top-up card, so it gives up some cross-sell during dips. | Ship with changes | Needs business sign-off on pausing promotions. |
 | Payday Split | The user types the pay amount. The split is simple maths. | Manual today. Detecting pay automatically would need Account Aggregator consent. | A reason to open the app on payday. | Ship with changes | Keep it manual at launch. Add auto-detection later, with consent. |
 | Milestone cards | Count instalments. Skips and pauses never reset anything. | None expected. | Rewards staying, not trading. No streaks. | Ship | None. |
-| Notifications inbox | Derived from account events. | Transactional messages differ from promotional ones. Marketing consent rules to confirm with Groww compliance. The 24-hour pre-debit notice is a rule, not a nice-to-have. | Opt-out rate is the guardrail. | Ship | Connect to real events. Add push only with consent. |
+| Notifications inbox | Derived from account events. | Transactional messages differ from promotional ones. Marketing consent rules to confirm with Groww compliance. The 24-hour pre-debit notice is sourced (see Sources). | Opt-out rate is the guardrail. | Ship | Connect to real events. Add push only with consent. |
 
 ### Understand
 
@@ -67,7 +67,7 @@ Groww Starter is a prototype. This file checks every feature against technical, 
 | Feature | Technical | Regulatory | Business | Verdict | What changes in the real world |
 |---|---|---|---|---|---|
 | "What made you pick this?" and Tip Check | Local scoring of yes/no answers. | It never says a tip is right or wrong. It must not look like a certification. Mentioning SEBI registration is fine as a question. | Reduces tip-driven buying. May reduce volume. | Ship | Keep the wording neutral. Review the six questions. |
-| Beginner stock mode (delivery only) | Hides other order types. | Hiding products is allowed. Disclose that they exist and why they are hidden. To confirm with Groww compliance. | Revenue trade-off: intraday and F&O earn brokers money, and this mode hides them. Groww would trade some of that revenue for retention. | Ship with changes | Needs business sign-off. Track the share of new users trading intraday or F&O in the first 90 days as a guardrail. |
+| Beginner stock mode (delivery only) | Hides other order types. | Hiding products is allowed. Disclose that they exist and why they are hidden. To confirm with Groww compliance. | Revenue trade-off: intraday and F&O earn brokers money, and this mode hides them. Groww would trade some of that revenue for retention. Under-30 F&O losses are sourced (see Sources). | Ship with changes | Needs business sign-off. Track the share of new users trading intraday or F&O in the first 90 days as a guardrail. |
 | Stock budget cap | A percentage check before a buy. | The user sets it. It never blocks. | Lowers trading volume for users who opt in. | Ship | None. |
 | 5-question quick check, then Pro | Local scoring, pass at 4 of 5. | It is not a regulatory suitability test and must not be described as one. To confirm with Groww compliance. | Pro is earned, not paid. Locked features stay visible, which is a soft promotion outside Steady mode and flows. | Ship with changes | Decide what Pro contains in the real product and whether it is free. |
 | Pro tools: chart ranges, compare two funds, portfolio analytics | Needs real price history. | Past-performance rules apply. The analytics figure is a sample, not the user's own return. | Gives curious users more depth. | Needs partner or data | Real data feed. Required disclaimers. |
@@ -86,3 +86,20 @@ Groww Starter is a prototype. This file checks every feature against technical, 
 ## Not built, on purpose
 
 UPI round-ups, practice mode, a "Future You" projection, a yearly recap, gifting a SIP and squad pots were scored and dropped. See Appendix A in `README.md` for the scores and reasons.
+
+## Sources
+
+These are public web pages. Several are news or blog posts, not official rules. They have not been reviewed by Groww or by a lawyer, and they were not re-checked against the regulator's own documents.
+
+| Topic | Source |
+|---|---|
+| Skip an instalment and edit a SIP on Groww | https://groww.in/blog/how-to-edit-sip-on-groww and https://groww.in/help/mutual-funds/order/can-i-pause-sip-for-next-month |
+| UPI AutoPay up to ₹1 lakh for mutual funds without extra authentication | https://cafemutual.com/news/industry/30894-sip-investors-can-now-set-up-e-mandate-of-up-to-rs1-lakh |
+| One mandate across several SIPs (Zerodha Coin) | https://zerodha.com/z-connect/coin/upi-autopay-on-coin-automate-your-investments |
+| 24-hour pre-debit notification | https://www.analyticsinsight.net/news/upi-autopay-explained-how-rs-1-lakh-recurring-payments-work |
+| Fund-house pause rules (for example minimums and tenure) | https://www.valueresearchonline.com/stories/52346/the-complete-steps-for-pausing-your-sip-investment/ |
+| Distributor advice limits and incidental advice | https://cafemutual.com/news/industry/11776-refer-to-all-consultation-papers-before-sending-your-feedback-to-sebi and https://cafemutual.com/news/industry/34476-mfds-will-have-to-maintain-a-record-of-risk-profiling-of-all-clients-amfi |
+| Execution-only platforms | https://www.mondaq.com/india/commoditiesderivativesstock-exchanges/1293716/regulating-execution-only-players |
+| Under-30 F&O losses | https://hdfcsky.com/blogs/media-coverage/young-investors-transform-indian-stockbroking |
+
+**Secondary source, confirm with Groww:** the 3-business-day skip cutoff. It comes from a secondary source and has not been confirmed with Groww.
