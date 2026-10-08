@@ -30,9 +30,9 @@ export const CUSHION_CATEGORY: PlanCategoryId = 'liquid';
 
 // ---------- labels (shared with the check-in screens) ----------
 export const INCOME_TYPE_LABEL: Record<IncomeType, string> = {
-  stipend: 'Stipend or pocket money',
-  parttime: 'Part-time or freelance',
   salary: 'Salary',
+  stipend: 'Stipend or pocket money',
+  parttime: 'Freelance or part-time',
   none: 'Not earning yet',
 };
 export const INCOME_BAND_LABEL: Record<IncomeBand, string> = {
@@ -236,7 +236,7 @@ export function splitAmounts(monthly: number, cushionPct: number): SplitAmounts 
 const INCOME_PHRASE: Record<IncomeType, string> = {
   salary: 'You earn a monthly salary',
   stipend: 'Your money comes as a stipend or pocket money',
-  parttime: 'Your part-time or freelance income can vary',
+  parttime: 'Your freelance or part-time income can vary',
   none: 'You’re not earning yet',
 };
 const CUSHION_PHRASE: Record<CushionAnswer, string> = {

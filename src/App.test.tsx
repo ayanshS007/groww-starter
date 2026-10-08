@@ -1250,3 +1250,24 @@ describe('Stage 8: wording clarity', () => {
     expect(s).toContain('hospital bill or a broken phone');
   });
 });
+
+describe('Stage 9: real user feedback', () => {
+  const planned = withCheckin(fresh());
+  const t = (route: string, state: State) => text(renderAt(route, state));
+
+  it('check-in step 1 asks "How do you earn?" with four options in order, then the income band', () => {
+    const html = renderAt('#/checkin/1', planned);
+    const s = text(html);
+    expect(s).toContain('How do you earn?');
+    expect(s).toContain('Your monthly income, after tax');
+    const at = ['Salary', 'Stipend or pocket money', 'Freelance or part-time', 'Not earning yet'].map((o) => s.indexOf(o));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    for (const old of ['How does money come in', 'roughly how much a month', 'Roughly how much', 'Part-time or freelance']) expect(s).not.toContain(old);
+  });
+  it('shows a "Sample data" label on Fund detail, Stock detail and the fund list', () => {
+    for (const route of ['#/fund/index50', '#/explore/funds', '#/stock/stk_tealeaf']) {
+      expect(t(route, planned), route).toContain('Sample data');
+    }
+  });
+});

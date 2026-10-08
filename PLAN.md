@@ -928,3 +928,13 @@ No banned words, no em dashes, at most one `!` per screen (`copy.test.tsx` still
 
 ### 8.6 Tests and verification
 Tests that quoted old copy were updated. New App tests cover the check-in wording, Risk comfort for each answer, a scan of 13 route and state pairs for "Cushion" or "Grow" labels, and the glossary entries. Screenshots of changed screens at 390 and 1280 px only.
+
+---
+
+## Stage 9 — Real user feedback
+
+Owner request on 2026-10-08, after four people sent written feedback on the live app. User-facing text only; no identifiers, state keys or routes renamed.
+
+- **Check-in step 1.** The question is "How do you earn?" with Salary · Stipend or pocket money · Freelance or part-time · Not earning yet. The income band row is "Your monthly income, after tax". (Changes the wording in README 8.1 row 1, same basis as C31.)
+- **Sample data label.** A small grey "Sample data" pill sits at the top of Fund detail, Stock detail and the Explore fund list. Muted ink on the neutral fill, checked by `contrast.test.ts` in light and dark.
+- **Docs.** `evals/EVALS.md` holds the feedback and what changed; `evals/README.md`, `evals/SESSION_SCRIPT.md` and `REVIEWER_README.md` point to it.

@@ -59,7 +59,7 @@ The reasoning behind each choice is in [`FEASIBILITY.md`](FEASIBILITY.md) (what 
 |---|---|---|
 | One-pager | [`submission/ONE_PAGER.md`](submission/ONE_PAGER.md) | Written by the author. To be added. |
 | Prompts | [`PROMPT_LOG.md`](PROMPT_LOG.md) (prompts sent) and [`PROMPTS.md`](PROMPTS.md) (stage prompts) | Present |
-| Evals | [`evals/README.md`](evals/README.md) | Layers explained. Real-user results to be added by the author. |
+| Evals | [`evals/README.md`](evals/README.md) | Layers explained, with feedback from 4 real users ([`EVALS.md`](evals/EVALS.md)). |
 | App link | https://ayanshs007.github.io/groww-starter/ | Live. Steps to publish and check it are in [`DEPLOY.md`](DEPLOY.md). |
 
 ## How it was built
@@ -82,7 +82,7 @@ Vite 5, React 18, TypeScript (strict), Tailwind CSS 3, Vitest 2. Hash routing wi
 ```bash
 npm ci            # install
 npm run dev       # dev server
-npm test          # Vitest: 1,354 tests in 42 files at the time of writing
+npm test          # Vitest: 1,365 tests in 42 files at the time of writing
 npm run build     # type check, build, and check the single-file output
 npm run preview   # serve the build
 ```
