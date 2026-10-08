@@ -30,6 +30,7 @@ import { bucketFundId } from '../lib/planStatus';
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
 import { CategoryLabel } from './Plan';
+import { SampleDataBadge } from '../components/SampleDataBadge';
 
 export function FundDetail({ id, query }: { id: string; query: Record<string, string> }) {
   const { state, dispatch } = useStore();
@@ -76,6 +77,7 @@ export function FundDetail({ id, query }: { id: string; query: Record<string, st
     <div className="grid gap-6 pb-28 lg:grid-cols-12 lg:gap-8 lg:pb-0">
       <div className="space-y-6 lg:col-span-8">
         <BackLink fallback="/explore/funds">Funds</BackLink>
+        <SampleDataBadge />
 
         <header className="flex items-start gap-4">
           <LetterAvatar name={fund.name} size="lg" />

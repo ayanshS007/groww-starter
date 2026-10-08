@@ -25,6 +25,7 @@ import { buildPath } from '../lib/routes';
 import { Link } from '../router';
 import { proViewOn } from '../lib/pro';
 import { useStore } from '../state/store';
+import { SampleDataBadge } from '../components/SampleDataBadge';
 
 function initialFilters(query: Record<string, string>): FundFilters {
   const c = query.collection;
@@ -54,6 +55,7 @@ export function Funds({ query }: { query: Record<string, string> }) {
   return (
     <div className="space-y-5">
       <header>
+        <SampleDataBadge className="mb-2" />
         <h1 className="text-3xl font-bold text-ink">Mutual funds</h1>
         <p className="mt-1 text-base text-ink-muted">
           Sample funds. Tap one to read what it is and what could go wrong.

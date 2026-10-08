@@ -136,6 +136,7 @@ export const TEXT_PAIRS: [keyof ColorTokens, keyof ColorTokens][] = [
   ['ink', 'surface2'],
   ['inkMuted', 'bg'],
   ['inkMuted', 'surface'],
+  ['inkMuted', 'surface2'],
   ['onBrand', 'brand'],
   ['brandText', 'bg'],
   ['brandText', 'surface'],

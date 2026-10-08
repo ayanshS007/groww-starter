@@ -67,7 +67,7 @@ const PRESET_HINT: Record<number, string> = {
 type MonthlyValue = (typeof MONTHLY_PRESETS)[number] | 'custom';
 
 const QUESTION: Record<number, string> = {
-  1: 'How does money come in, and roughly how much a month?',
+  1: 'How do you earn?',
   2: 'Do you have an emergency fund?',
   3: 'What is this money for?',
   4: 'When will you need this money?',
@@ -139,7 +139,7 @@ export function Checkin({ step }: { step: number }) {
           {legend}
           <OptionTiles<IncomeType>
             name="incomeType"
-            legend="How money comes in"
+            legend="How you earn"
             options={opts(INCOME_TYPE_LABEL)}
             value={d.incomeType}
             onChange={(v) => save({ incomeType: v })}
@@ -147,7 +147,7 @@ export function Checkin({ step }: { step: number }) {
           />
           <OptionTiles<IncomeBand>
             name="incomeBand"
-            legend="Roughly how much a month"
+            legend="Your monthly income, after tax"
             options={opts(INCOME_BAND_LABEL)}
             value={d.incomeBand}
             onChange={(v) => save({ incomeBand: v })}

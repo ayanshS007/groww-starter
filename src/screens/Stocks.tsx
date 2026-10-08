@@ -30,6 +30,7 @@ import { buysLine, EXAMPLE_AMOUNT, sharesFor, ZERO_SHARES_NOTE } from '../lib/st
 import { Link, navigate } from '../router';
 import { useStore } from '../state/store';
 import type { StockSize } from '../state/types';
+import { SampleDataBadge } from '../components/SampleDataBadge';
 
 const SIZES: StockSize[] = ['Large', 'Mid', 'Small'];
 
@@ -186,6 +187,7 @@ export function StockDetail({ id }: { id: string }) {
     <div className="grid gap-6 pb-28 lg:grid-cols-12 lg:gap-8 lg:pb-0">
       <div className="space-y-6 lg:col-span-8">
         <BackLink fallback="/explore/stocks">Stocks</BackLink>
+        <SampleDataBadge />
         <header className="flex items-start gap-4">
           <LetterAvatar name={stock.name} size="lg" />
           <div className="min-w-0">
